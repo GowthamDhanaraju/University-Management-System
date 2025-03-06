@@ -32,16 +32,42 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
-      <form onSubmit={handleLogin} className="p-6 bg-white rounded shadow-md w-96">
-        <h2 className="text-2xl font-bold mb-4 text-black">Login</h2>
-        {error && <p className="text-red-500">{error}</p>}
-        <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)}
-          className="w-full p-2 border rounded mb-2" required />
-        <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)}
-          className="w-full p-2 border rounded mb-4" required />
-        <button type="submit" className="w-full bg-blue-500 text-white p-2 rounded">Login</button>
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500">
+      <div className="bg-white p-8 rounded-2xl shadow-lg w-96 max-w-sm">
+      <h2 className="text-3xl font-semibold text-center text-gray-800 mb-6">Welcome Back</h2>
+      {error && <p className="text-red-500 text-center">{error}</p>}
+      <form onSubmit={handleLogin} className="space-y-4">
+        <div>
+        <input
+          type="email"
+          placeholder="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none text-gray-900"
+          required
+        />
+        </div>
+        <div>
+        <input
+          type="password"
+          placeholder="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none text-gray-900"
+          required
+        />
+        </div>
+        <button
+        type="submit"
+        className="w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white py-3 rounded-lg text-lg font-semibold shadow-md hover:opacity-90 transition-all"
+        >
+        Login
+        </button>
       </form>
+      <p className="text-gray-600 text-center mt-4">
+        Don't have an account? <a href="#" className="text-blue-600 font-medium hover:underline">Sign Up</a>
+      </p>
+      </div>
     </div>
   );
 }

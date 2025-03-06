@@ -1,5 +1,5 @@
 {
-  "name": "titter",
+  "name": "UMS",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -13,7 +13,8 @@
     "next": "15.1.3",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "titter": "file:"
+    "titter": "file:",
+    "UMS": "file:"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
