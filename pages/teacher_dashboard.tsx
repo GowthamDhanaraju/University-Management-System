@@ -59,7 +59,6 @@ const Calendar: React.FC = () => {
   const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
   const currentDate = new Date();
   const currentDay = currentDate.getDate();
-  const currentMonth = currentDate.toLocaleString('default', { month: 'long' });
   
   // Generate calendar dates (simplified)
   const calendarDates = Array.from({ length: 30 }, (_, i) => i + 1);
@@ -81,7 +80,7 @@ const Calendar: React.FC = () => {
         ))}
       </div>
       <div className="mt-3 border-t border-gray-700 pt-3">
-        <h4 className="text-white font-medium">Today's Schedule</h4>
+        <h4 className="text-white font-medium">Todays Schedule</h4>
         <ul className="mt-2 space-y-2">
           <li className="flex justify-between">
             <span>Data Structures</span>
