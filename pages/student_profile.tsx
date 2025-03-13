@@ -9,7 +9,7 @@ const StudentProfile: React.FC = () => {
   // Student profile data
   const [profileData, setProfileData] = useState({
     personal: {
-      name: "Vyshnav Kumar S",
+      name: "Rajesh K",
       photo: "", // URL for photo
       dob: "2003-08-15",
       gender: "Male",

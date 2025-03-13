@@ -27,7 +27,7 @@ const StudentGrades: React.FC = () => {
     cgpa: number;
     semesters: SemesterGrades[];
   }>({
-    studentName: "Vyshnav Kumar S",
+    studentName: "Rajesh K",
     studentId: "CSE-2145",
     program: "B.Tech Computer Science and Engineering",
     cgpa: 8.7,

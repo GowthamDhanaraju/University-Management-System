@@ -32,41 +32,75 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500">
-      <div className="bg-white p-8 rounded-2xl shadow-lg w-96 max-w-sm">
-      <h2 className="text-3xl font-semibold text-center text-gray-800 mb-6">Welcome Back</h2>
-      {error && <p className="text-red-500 text-center">{error}</p>}
-      <form onSubmit={handleLogin} className="space-y-4">
-        <div>
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none text-gray-900"
-          required
-        />
+    <div className="flex items-center justify-center min-h-screen bg-gray-900">
+      <div className="bg-gray-800 p-8 rounded-2xl shadow-lg w-96 max-w-sm border border-gray-700">
+        <h2 className="text-3xl font-semibold text-center text-white mb-6">University Management System</h2>
+        {error && <p className="text-red-400 text-center bg-red-900/30 p-2 rounded mb-4">{error}</p>}
+        <form onSubmit={handleLogin} className="space-y-4">
+          <div>
+            <input
+              type="email"
+              placeholder="Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full p-3 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none bg-gray-700 text-white"
+              required
+            />
+          </div>
+          <div>
+            <input
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full p-3 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none bg-gray-700 text-white"
+              required
+            />
+          </div>
+          <button
+            type="submit"
+            className="w-full bg-gradient-to-r from-green-500 to-blue-600 text-white py-3 rounded-lg text-lg font-semibold shadow-md hover:opacity-90 transition-all"
+          >
+            Login
+          </button>
+        </form>
+        <div className="flex items-center my-4">
+          <hr className="flex-1 border-gray-600" />
+          <span className="px-3 text-gray-400 text-sm">OR LOGIN AS - for testing</span>
+          <hr className="flex-1 border-gray-600" />
         </div>
-        <div>
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none text-gray-900"
-          required
-        />
+        <div className="grid grid-cols-3 gap-3">
+          <button 
+            onClick={() => {
+              localStorage.setItem("role", "student");
+              router.push("/student_dashboard");
+            }}
+            className="bg-gray-700 text-white py-2 px-4 rounded hover:bg-gray-600 text-sm font-medium"
+          >
+            Student
+          </button>
+          <button 
+            onClick={() => {
+              localStorage.setItem("role", "teacher");
+              router.push("/teacher_dashboard");
+            }}
+            className="bg-gray-700 text-white py-2 px-4 rounded hover:bg-gray-600 text-sm font-medium"
+          >
+            Teacher
+          </button>
+          <button 
+            onClick={() => {
+              localStorage.setItem("role", "admin");
+              router.push("/admin_dashboard");
+            }}
+            className="bg-gray-700 text-white py-2 px-4 rounded hover:bg-gray-600 text-sm font-medium"
+          >
+            Admin
+          </button>
         </div>
-        <button
-        type="submit"
-        className="w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white py-3 rounded-lg text-lg font-semibold shadow-md hover:opacity-90 transition-all"
-        >
-        Login
-        </button>
-      </form>
-      <p className="text-gray-600 text-center mt-4">
-        Dont have an account? <a href="#" className="text-blue-600 font-medium hover:underline">Sign Up</a>
-      </p>
+        <p className="text-gray-400 text-center mt-6 text-sm">
+          Don't have an account? Contact your administrator
+        </p>
       </div>
     </div>
   );

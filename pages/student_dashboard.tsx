@@ -10,7 +10,7 @@ import StudentSidebar from "@/components/student_sidebar";
 const Header: React.FC = () => {
   return (
     <div className="bg-gray-800 p-4 rounded-lg shadow-md text-white">
-      <h2 className="text-xl font-bold">Welcome, Vyshnav Kumar S</h2>
+      <h2 className="text-xl font-bold">Welcome, Rajesh K</h2>
       <p className="text-gray-300">Stay organized and keep track of your academic progress.</p>
     </div>
   );
