@@ -23,6 +23,9 @@ const StudentSidebar: React.FC = () => {
         <li className="flex items-center gap-4 p-4 border-b border-gray-700 cursor-pointer hover:bg-gray-800 whitespace-nowrap" onClick={() => navigateTo("/timetable-edit")}>
           📅<span className="hidden group-hover:inline-block">Timetable</span>
         </li>
+        <li className="flex items-center gap-4 p-4 border-b border-gray-700 cursor-pointer hover:bg-gray-800 whitespace-nowrap" onClick={() => navigateTo("/student_attendance")}>
+          📅<span className="hidden group-hover:inline-block">Attendance</span>
+        </li>
       </ul>
     </div>
   );
