@@ -8,7 +8,6 @@ const Attendance: React.FC = () => {
     <div className="flex min-h-screen bg-gray-900 text-gray-200">
       <Sidebar />
       <div className="flex-1 flex flex-col mt-10 ml-10">
-        {/* Left-aligned heading without overlapping sidebar */}
         <h1 className="text-2xl font-bold mb-4 flex items-center self-start ml-10">
           <FaTasks className="mr-2 text-green-400 text-3xl" />  Attendance
         </h1>
