@@ -1,6 +1,6 @@
 import React from "react";
 import { useRouter } from "next/router";
-import { FiBook, FiUser, FiBarChart2, FiCheckSquare, FiTruck, FiClipboard, FiAward } from "react-icons/fi";
+import { FiBook, FiUser, FiBarChart2, FiTruck, FiClipboard, FiAward } from "react-icons/fi";
 
 
 const StudentSidebar: React.FC = () => {
