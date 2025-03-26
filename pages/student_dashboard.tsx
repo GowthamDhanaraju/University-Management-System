@@ -4,13 +4,14 @@ import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
-import { FaTasks, FaBook, FaChalkboardTeacher, FaComments } from "react-icons/fa";
+import { FaTasks, FaBook, FaChalkboardTeacher, FaComments, FaBookOpen, FaUser, FaClipboardList } from "react-icons/fa";
 import StudentSidebar from "@/components/student_sidebar";
+import { FiAward } from "react-icons/fi";
 
 const Header: React.FC = () => {
   return (
-    <div className="bg-gray-800 p-4 rounded-lg shadow-md text-white">
-      <h2 className="text-xl font-bold">Welcome, Rajesh K</h2>
+    <div className="bg-gray-800 p-6 rounded-lg shadow-lg text-white">
+      <h2 className="text-2xl font-bold">Welcome, Rajesh K</h2>
       <p className="text-gray-300">Stay organized and keep track of your academic progress.</p>
     </div>
   );
@@ -18,7 +19,7 @@ const Header: React.FC = () => {
 
 const Timetable: React.FC = () => {
   return (
-    <div className="bg-gray-700 p-4 rounded-lg shadow-md text-white mt-4">
+    <div className="bg-gray-700 p-6 rounded-lg shadow-md text-white mt-4 h-1/2">
       <h3 className="text-lg font-semibold">Timetable</h3>
       <p className="text-gray-300">Timetable Content Here</p>
     </div>
@@ -31,26 +32,26 @@ const Buttons: React.FC = () => {
   return (
     <div className="grid grid-cols-2 gap-4 mt-6">
       <button
-        className="bg-green-500 p-4 rounded-lg flex items-center justify-center text-white font-semibold hover:bg-green-600"
-        onClick={() => router.push("/attendance")}
+        className="bg-gradient-to-r from-green-500 to-lime-400 p-4 rounded-lg flex items-center justify-center text-white font-semibold hover:opacity-90 transition"
+        onClick={() => router.push("/student_attendance")}
       >
         <FaTasks className="mr-2" /> Attendance
       </button>
       <button
-        className="bg-orange-500 p-4 rounded-lg flex items-center justify-center text-white font-semibold hover:bg-orange-600"
+        className="bg-gradient-to-r from-orange-500 to-yellow-400 p-4 rounded-lg flex items-center justify-center text-white font-semibold hover:opacity-90 transition"
         onClick={() => router.push("/club-activities")}
       >
-        <FaBook className="mr-2" /> Club Activities
+        <FaUser className="mr-2" /> Club Activities
       </button>
       <button
-        className="bg-blue-500 p-4 rounded-lg flex items-center justify-center text-white font-semibold hover:bg-blue-600"
-        onClick={() => router.push("/faculties")}
+        className="bg-gradient-to-r from-blue-500 to-indigo-400 p-4 rounded-lg flex items-center justify-center text-white font-semibold hover:opacity-90 transition"
+        onClick={() => router.push("/student_faculties")}
       >
         <FaChalkboardTeacher className="mr-2" /> Faculties
       </button>
       <button
-        className="bg-purple-500 p-4 rounded-lg flex items-center justify-center text-white font-semibold hover:bg-purple-600"
-        onClick={() => router.push("/feedback")}
+        className="bg-gradient-to-r from-purple-500 to-pink-400 p-4 rounded-lg flex items-center justify-center text-white font-semibold hover:opacity-90 transition"
+        onClick={() => router.push("/student_feedback")}
       >
         <FaComments className="mr-2" /> Feedback
       </button>
@@ -60,25 +61,30 @@ const Buttons: React.FC = () => {
 
 const RightSidebar: React.FC = () => {
   const [date, setDate] = useState<Date>(new Date());
+  const router = useRouter();
 
   return (
-    <div className="bg-gray-800 p-4 rounded-lg shadow-md text-white flex flex-col items-center space-y-4 h-full w-full">
-      <h3 className="text-lg font-semibold mb-2">Academic Calendar</h3>
+    <div className="bg-gray-800 p-6 rounded-lg shadow-md text-white flex flex-col items-center space-y-6 h-full w-full">
+      <h3 className="text-lg font-semibold">Academic Calendar</h3>
       <div className="flex justify-center items-center w-full">
         <Calendar onChange={(value) => setDate(value as Date)} value={date} />
       </div>
 
-      <div className="bg-gray-700 p-4 rounded-lg text-center hover:bg-gray-600 cursor-pointer w-full">
-        Courses Registered
-      </div>
-      <div className="bg-gray-700 p-4 rounded-lg text-center hover:bg-gray-600 cursor-pointer w-full">
-        Grades
-      </div>
+      {/* Styled Courses Registered & Grades Buttons */}
+      <button
+        className="bg-gradient-to-r from-teal-800 to-teal-600 p-4 rounded-lg text-center hover:opacity-80 transition-opacity cursor-pointer w-full h-16 flex items-center justify-center shadow-md"
+        onClick={() => router.push("/registered_courses")}
+      > <FaClipboardList className="mr-2" />Courses Registered
+      </button>
+      <button
+        className="bg-gradient-to-r from-rose-800 to-rose-600 p-4 rounded-lg text-center hover:opacity-80 transition-opacity cursor-pointer w-full h-16 flex items-center justify-center shadow-md"
+        onClick={() => router.push("/student_grade")}
+      > <FiAward className="mr-2" />Grades
+      </button>
 
       <style jsx global>{`
         .react-calendar {
-          width: 100%;
-          max-width: 300px;
+          width: 500px;
           background-color: #2d3748;
           color: white;
           border: none;

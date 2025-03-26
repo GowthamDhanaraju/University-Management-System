@@ -1,6 +1,7 @@
 import React from "react";
 import { useRouter } from "next/router";
-import { FiBook, FiUser, FiBarChart2, FiTruck, FiClipboard, FiAward } from "react-icons/fi";
+import { FiUser, FiBarChart2, FiTruck, FiClipboard, FiAward } from "react-icons/fi";
+import { FaChalkboardTeacher, FaClipboardList, FaComment, FaComments, FaUniversity } from "react-icons/fa";
 
 
 const StudentSidebar: React.FC = () => {
@@ -22,15 +23,28 @@ const StudentSidebar: React.FC = () => {
         <li className="flex items-center gap-4 p-4 border-b border-gray-700 cursor-pointer hover:bg-gray-800 whitespace-nowrap" onClick={() => navigateTo("/student_grade")}>
           <FiAward className="text-xl" /><span className="hidden group-hover:inline-block">Student Grades</span>
         </li>
+        <li className="flex items-center gap-4 p-4 border-b border-gray-700 cursor-pointer hover:bg-gray-800 whitespace-nowrap" onClick={() => navigateTo("/student_courses")}>
+          <FaClipboardList className="text-xl" /><span className="hidden group-hover:inline-block">Courses Registered</span>
+        </li>
+        <li className="flex items-center gap-4 p-4 border-b border-gray-700 cursor-pointer hover:bg-gray-800 whitespace-nowrap" onClick={() => navigateTo("/student_faculties")}>
+          <FaChalkboardTeacher className="text-xl" /><span className="hidden group-hover:inline-block">Faculties</span>
+        </li>
         <li className="flex items-center gap-4 p-4 border-b border-gray-700 cursor-pointer hover:bg-gray-800 whitespace-nowrap" onClick={() => navigateTo("/student_attendance")}>
           <FiClipboard className="text-xl" /><span className="hidden group-hover:inline-block">Attendance</span>
         </li>
+        <li className="flex items-center gap-4 p-4 border-b border-gray-700 cursor-pointer hover:bg-gray-800 whitespace-nowrap" onClick={() => navigateTo("/student_clubs")}>
+          <FiUser className="text-xl" /><span className="hidden group-hover:inline-block">Club Actvities</span>
+        </li>
+        <li className="flex items-center gap-4 p-4 border-b border-gray-700 cursor-pointer hover:bg-gray-800 whitespace-nowrap" onClick={() => navigateTo("/student_feedback")}>
+          <FaComments className="text-xl" /><span className="hidden group-hover:inline-block">Feedback</span>
+        </li>
         <li className="flex items-center gap-4 p-4 border-b border-gray-700 cursor-pointer hover:bg-gray-800 whitespace-nowrap" onClick={() => navigateTo("/library")}>
-          <FiBook className="text-xl" /><span className="hidden group-hover:inline-block">Library</span>
+          <FaUniversity className="text-xl" /><span className="hidden group-hover:inline-block">Library</span>
         </li>
         <li className="flex items-center gap-4 p-4 border-b border-gray-700 cursor-pointer hover:bg-gray-800 whitespace-nowrap" onClick={() => navigateTo("/transport")}>
           <FiTruck className="text-xl" /><span className="hidden group-hover:inline-block">Transport</span>
         </li>
+        
       </ul>
     </div>
   );

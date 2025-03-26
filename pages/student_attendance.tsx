@@ -1,23 +1,47 @@
 import React, { useState } from "react";
 import Sidebar from "../components/student_sidebar";
 import { FaTasks } from "react-icons/fa";
-import { attendanceData, AttendanceRecord } from "../data/attendanceData";
+import { attendanceData, SemesterAttendance, AttendanceRecord } from "../data/attendanceData";
 
 const Attendance: React.FC = () => {
   const [expandedRow, setExpandedRow] = useState<string | null>(null);
+  const [selectedSemester, setSelectedSemester] = useState<string>(attendanceData[0].semester);
 
   const toggleRow = (SID: string) => {
     setExpandedRow(expandedRow === SID ? null : SID);
   };
 
+  const handleSemesterChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedSemester(event.target.value);
+  };
+
+  // Get the records of the selected semester
+  const selectedSemesterData: AttendanceRecord[] =
+    attendanceData.find((sem) => sem.semester === selectedSemester)?.records || [];
+
   return (
     <div className="flex min-h-screen bg-gray-900 text-gray-200">
       <Sidebar />
       <div className="flex-1 flex flex-col mt-10 ml-10">
-        {/* Left-aligned heading */}
-        <h1 className="text-2xl font-bold mb-4 flex items-center self-start ml-10">
-          <FaTasks className="mr-2 text-green-400 text-3xl" /> Attendance
-        </h1>
+        <div className="flex items-center justify-between w-full max-w-7xl mx-auto mb-4">
+          {/* Left-aligned heading */}
+          <h1 className="text-2xl font-bold flex items-center">
+            <FaTasks className="mr-2 text-green-400 text-3xl" /> Attendance
+          </h1>
+
+          {/* Semester Dropdown */}
+          <select
+            className="p-2 bg-gray-800 text-white border border-gray-600 rounded-lg"
+            value={selectedSemester}
+            onChange={handleSemesterChange}
+          >
+            {attendanceData.map((sem, index) => (
+              <option key={index} value={sem.semester}>
+                {sem.semester}
+              </option>
+            ))}
+          </select>
+        </div>
 
         <div className="w-full max-w-7xl mx-auto">
           <table className="w-full bg-gray-800 text-white rounded-lg shadow-md">
@@ -35,7 +59,7 @@ const Attendance: React.FC = () => {
               </tr>
             </thead>
             <tbody>
-              {attendanceData.map((row: AttendanceRecord, index: number) => {
+              {selectedSemesterData.map((row: AttendanceRecord, index: number) => {
                 const attendancePercentage =
                   row.total > 0
                     ? ((row.present + row.dutyLeave + row.medical) / row.total) * 100
@@ -43,7 +67,6 @@ const Attendance: React.FC = () => {
 
                 return (
                   <React.Fragment key={index}>
-                    {/* Main row (clickable) */}
                     <tr
                       onClick={() => toggleRow(row.SID)}
                       className={`cursor-pointer transition-all duration-300 ${
@@ -62,8 +85,6 @@ const Attendance: React.FC = () => {
                       <td className="p-4">{attendancePercentage.toFixed(2)}%</td>
                       <td className="p-4 rounded-r-xl">{row.medical}</td>
                     </tr>
-
-                    {/* Expandable row (absent, medical, duty leave days) */}
                     {expandedRow === row.SID && (
                       <tr className="bg-gray-700">
                         <td colSpan={9} className="p-4 text-sm">
