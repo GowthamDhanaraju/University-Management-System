@@ -1,38 +1,28 @@
-import React, { useEffect, useState } from "react";
-import { useRouter } from "next/router";
-import TeacherSidebar from "@/components/teacher_sidebar";
-import { Bar } from "react-chartjs-2";
-import "chart.js/auto";
-
-const Header: React.FC = () => {
-  return (
-    <header className="p-4 bg-gray-800 shadow-md flex justify-between items-center rounded-lg border border-gray-700">
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+var react_1 = require("react");
+var router_1 = require("next/router");
+var teacher_sidebar_1 = require("@/components/teacher_sidebar");
+var react_chartjs_2_1 = require("react-chartjs-2");
+require("chart.js/auto");
+var Header = function () {
+    return (<header className="p-4 bg-gray-800 shadow-md flex justify-between items-center rounded-lg border border-gray-700">
       <h1 className="text-xl font-bold text-white">Teacher Dashboard</h1>
       <div className="flex items-center">
         <span className="bg-green-500 h-2.5 w-2.5 rounded-full mr-2"></span>
         <span className="text-gray-300">Online</span>
       </div>
-    </header>
-  );
+    </header>);
 };
-
-interface StatCardProps {
-  title: string;
-  content: React.ReactNode;
-}
-
-const StatCard: React.FC<StatCardProps> = ({ title, content }) => {
-  return (
-    <div className="bg-gray-800 text-white p-4 rounded-lg shadow-md text-center border border-gray-700">
+var StatCard = function (_a) {
+    var title = _a.title, content = _a.content;
+    return (<div className="bg-gray-800 text-white p-4 rounded-lg shadow-md text-center border border-gray-700">
       <h3 className="text-blue-400 text-lg font-semibold">{title}</h3>
       <div className="text-md mt-2">{content}</div>
-    </div>
-  );
+    </div>);
 };
-
-const ProfileCard: React.FC = () => {
-  return (
-    <div className="bg-gray-800 text-white p-6 rounded-lg shadow-md border border-gray-700 flex items-center">
+var ProfileCard = function () {
+    return (<div className="bg-gray-800 text-white p-6 rounded-lg shadow-md border border-gray-700 flex items-center">
       <div className="w-24 h-24 rounded-full bg-blue-600 flex items-center justify-center text-2xl font-bold">
         DR
       </div>
@@ -50,34 +40,22 @@ const ProfileCard: React.FC = () => {
           </div>
         </div>
       </div>
-    </div>
-  );
+    </div>);
 };
-
-const Calendar: React.FC = () => {
-  // Simple calendar display - in a real app, you'd use a calendar library
-  const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-  const currentDate = new Date();
-  const currentDay = currentDate.getDate();
-  
-  // Generate calendar dates (simplified)
-  const calendarDates = Array.from({ length: 30 }, (_, i) => i + 1);
-  
-  return (
-    <div className="bg-gray-800 text-white p-4 rounded-lg shadow-md border border-gray-700">
+var Calendar = function () {
+    // Simple calendar display - in a real app, you'd use a calendar library
+    var days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    var currentDate = new Date();
+    var currentDay = currentDate.getDate();
+    // Generate calendar dates (simplified)
+    var calendarDates = Array.from({ length: 30 }, function (_, i) { return i + 1; });
+    return (<div className="bg-gray-800 text-white p-4 rounded-lg shadow-md border border-gray-700">
       <h3 className="text-blue-400 text-lg font-semibold mb-3">March 2025</h3>
       <div className="grid grid-cols-7 gap-1">
-        {days.map(day => (
-          <div key={day} className="text-center text-gray-400 text-sm py-1">{day}</div>
-        ))}
-        {calendarDates.map(date => (
-          <div 
-            key={date} 
-            className={`text-center py-2 rounded-full ${currentDay === date ? 'bg-blue-600' : 'hover:bg-gray-700'} cursor-pointer`}
-          >
+        {days.map(function (day) { return (<div key={day} className="text-center text-gray-400 text-sm py-1">{day}</div>); })}
+        {calendarDates.map(function (date) { return (<div key={date} className={"text-center py-2 rounded-full ".concat(currentDay === date ? 'bg-blue-600' : 'hover:bg-gray-700', " cursor-pointer")}>
             {date}
-          </div>
-        ))}
+          </div>); })}
       </div>
       <div className="mt-3 border-t border-gray-700 pt-3">
         <h4 className="text-white font-medium">Todays Schedule</h4>
@@ -96,16 +74,13 @@ const Calendar: React.FC = () => {
           </li>
         </ul>
       </div>
-    </div>
-  );
+    </div>);
 };
-
-const TeachingCourses: React.FC = () => {
-  return (
-    <div className="bg-gray-800 text-white p-4 rounded-lg shadow-md border border-gray-700">
+var TeachingCourses = function () {
+    return (<div className="bg-gray-800 text-white p-4 rounded-lg shadow-md border border-gray-700">
       <h3 className="text-blue-400 text-lg font-semibold mb-3">Current Courses</h3>
       <div className="space-y-3">
-        <div className="flex justify-between items-center p-2 bg-gray-750 rounded hover:bg-gray-600 cursor-pointer">
+        <div className="flex justify-between items-center p-2 bg-gray-700 rounded hover:bg-gray-600 cursor-pointer">
           <div>
             <h4 className="font-medium">CS301: Data Structures</h4>
             <p className="text-sm text-gray-400">CSE-A, CSE-B</p>
@@ -127,24 +102,20 @@ const TeachingCourses: React.FC = () => {
           <span className="bg-green-600 text-xs px-2 py-1 rounded">60 Students</span>
         </div>
       </div>
-    </div>
-  );
+    </div>);
 };
-
-const Dashboard: React.FC = () => {
-  const performanceData = {
-    labels: ["CSE-A", "CSE-B", "CSE-C", "CSE-D", "AID-A", "AID-B"],
-    datasets: [
-      {
-        label: "Average Marks (%)",
-        data: [85, 78, 92, 88, 74, 69],
-        backgroundColor: ["#3498db", "#2ecc71", "#e74c3c", "#f39c12", "#9b59b6", "#1abc9c"],
-      },
-    ],
-  };
-
-  return (
-    <div className="ml-16 p-4 w-full min-h-screen bg-gray-900">
+var Dashboard = function () {
+    var performanceData = {
+        labels: ["CSE-A", "CSE-B", "CSE-C", "CSE-D", "AID-A", "AID-B"],
+        datasets: [
+            {
+                label: "Average Marks (%)",
+                data: [85, 78, 92, 88, 74, 69],
+                backgroundColor: ["#3498db", "#2ecc71", "#e74c3c", "#f39c12", "#9b59b6", "#1abc9c"],
+            },
+        ],
+    };
+    return (<div className="ml-16 p-4 w-full min-h-screen bg-gray-900">
       <Header />
       
       {/* Profile Overview */}
@@ -154,10 +125,7 @@ const Dashboard: React.FC = () => {
       
       {/* First row - Upcoming Classes and Current Courses side by side */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-        <StatCard 
-          title="Upcoming Classes" 
-          content={
-            <ul className="text-left space-y-2">
+        <StatCard title="Upcoming Classes" content={<ul className="text-left space-y-2">
               <li className="border-l-4 border-blue-500 pl-2">
                 <div className="font-medium">Data Structures</div>
                 <div className="text-sm text-gray-400">Today, 10:00 AM • Room 405</div>
@@ -170,19 +138,14 @@ const Dashboard: React.FC = () => {
                 <div className="font-medium">Machine Learning</div>
                 <div className="text-sm text-gray-400">Tomorrow, 11:30 AM • Lab 2</div>
               </li>
-            </ul>
-          } 
-        />
+            </ul>}/>
         
         <TeachingCourses />
       </div>
       
       {/* Second row - Events/Workshops and Class Performance side by side */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-        <StatCard 
-          title="Upcoming Events & Workshops" 
-          content={
-            <ul className="text-left space-y-2">
+        <StatCard title="Upcoming Events & Workshops" content={<ul className="text-left space-y-2">
               <li className="border-l-4 border-yellow-500 pl-2">
                 <div className="font-medium">Faculty Development Program</div>
                 <div className="text-sm text-gray-400">March 15, 2025 • Main Auditorium</div>
@@ -195,42 +158,37 @@ const Dashboard: React.FC = () => {
                 <div className="font-medium">Research Symposium</div>
                 <div className="text-sm text-gray-400">March 22, 2025 • Conference Hall</div>
               </li>
-            </ul>
-          } 
-        />
+            </ul>}/>
         
         {/* Performance Chart */}
         <div className="bg-gray-800 p-4 rounded-lg shadow-md border border-gray-700">
           <h3 className="text-blue-400 text-lg font-semibold mb-2">Class Performance</h3>
           <div className="h-64">
-            <Bar 
-              data={performanceData} 
-              options={{ 
-                responsive: true, 
-                maintainAspectRatio: false, 
-                scales: { 
-                  y: { 
-                    beginAtZero: true, 
+            <react_chartjs_2_1.Bar data={performanceData} options={{
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
                     max: 100,
                     grid: {
-                      color: 'rgba(255, 255, 255, 0.1)'
+                        color: 'rgba(255, 255, 255, 0.1)'
                     }
-                  },
-                  x: {
-                    grid: {
-                      color: 'rgba(255, 255, 255, 0.1)'
-                    }
-                  }
                 },
-                plugins: {
-                  legend: {
-                    labels: {
-                      color: 'white'
+                x: {
+                    grid: {
+                        color: 'rgba(255, 255, 255, 0.1)'
                     }
-                  }
-                } 
-              }} 
-            />
+                }
+            },
+            plugins: {
+                legend: {
+                    labels: {
+                        color: 'white'
+                    }
+                }
+            }
+        }}/>
           </div>
         </div>
       </div>
@@ -239,25 +197,19 @@ const Dashboard: React.FC = () => {
       <div className="mt-4">
         <Calendar />
       </div>
-    </div>
-  );
+    </div>);
 };
-
-const TeacherDashboard: React.FC = () => {
-  const router = useRouter();
-  const [role, setRole] = useState("");
-
-  useEffect(() => {
-    const storedRole = localStorage.getItem("role");
-    if (storedRole !== "teacher") router.push("/");
-  }, [router]);
-
-  return (
-    <div className="flex">
-      <TeacherSidebar />
+var TeacherDashboard = function () {
+    var router = (0, router_1.useRouter)();
+    var _a = (0, react_1.useState)(""), role = _a[0], setRole = _a[1];
+    (0, react_1.useEffect)(function () {
+        var storedRole = localStorage.getItem("role");
+        if (storedRole !== "teacher")
+            router.push("/");
+    }, [router]);
+    return (<div className="flex">
+      <teacher_sidebar_1.default />
       <Dashboard />
-    </div>
-  );
+    </div>);
 };
-
-export default TeacherDashboard;
+exports.default = TeacherDashboard;
