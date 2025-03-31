@@ -1,10 +1,6 @@
-"use client";
-
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import Calendar from "react-calendar";
-import "react-calendar/dist/Calendar.css";
-import { FaTasks, FaBook, FaChalkboardTeacher, FaComments, FaBookOpen, FaUser, FaClipboardList } from "react-icons/fa";
+import { FaTasks, FaChalkboardTeacher, FaComments, FaUser, FaClipboardList, FaBook, FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import StudentSidebar from "@/components/student_sidebar";
 import { FiAward } from "react-icons/fi";
 
@@ -31,28 +27,16 @@ const Buttons: React.FC = () => {
 
   return (
     <div className="grid grid-cols-2 gap-4 mt-6">
-      <button
-        className="bg-gradient-to-r from-green-500 to-lime-400 p-4 rounded-lg flex items-center justify-center text-white font-semibold hover:opacity-90 transition"
-        onClick={() => router.push("/student_attendance")}
-      >
+      <button className="bg-gradient-to-r from-green-400 to-green-600 p-4 rounded-lg flex items-center justify-center text-white font-semibold hover:opacity-90 transition" onClick={() => router.push("/student_attendance")}>
         <FaTasks className="mr-2" /> Attendance
       </button>
-      <button
-        className="bg-gradient-to-r from-orange-500 to-yellow-400 p-4 rounded-lg flex items-center justify-center text-white font-semibold hover:opacity-90 transition"
-        onClick={() => router.push("/club-activities")}
-      >
-        <FaUser className="mr-2" /> Club Activities
+      <button className="bg-gradient-to-r from-orange-400 to-orange-600 p-4 rounded-lg flex items-center justify-center text-white font-semibold hover:opacity-90 transition" onClick={() => router.push("/club-activities")}>
+        <FaBook className="mr-2" /> Club Activities
       </button>
-      <button
-        className="bg-gradient-to-r from-blue-500 to-indigo-400 p-4 rounded-lg flex items-center justify-center text-white font-semibold hover:opacity-90 transition"
-        onClick={() => router.push("/student_faculties")}
-      >
+      <button className="bg-gradient-to-r from-blue-400 to-blue-600 p-4 rounded-lg flex items-center justify-center text-white font-semibold hover:opacity-90 transition" onClick={() => router.push("/student_faculties")}>
         <FaChalkboardTeacher className="mr-2" /> Faculties
       </button>
-      <button
-        className="bg-gradient-to-r from-purple-500 to-pink-400 p-4 rounded-lg flex items-center justify-center text-white font-semibold hover:opacity-90 transition"
-        onClick={() => router.push("/student_feedback")}
-      >
+      <button className="bg-gradient-to-r from-purple-400 to-purple-600 p-4 rounded-lg flex items-center justify-center text-white font-semibold hover:opacity-90 transition" onClick={() => router.push("/student_feedback")}>
         <FaComments className="mr-2" /> Feedback
       </button>
     </div>
@@ -60,75 +44,72 @@ const Buttons: React.FC = () => {
 };
 
 const RightSidebar: React.FC = () => {
-  const [date, setDate] = useState<Date>(new Date());
+  const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  const currentDate = new Date();
+  const [year, setYear] = useState(currentDate.getFullYear());
+  const [month, setMonth] = useState(currentDate.getMonth());
   const router = useRouter();
 
+  const handlePrevMonth = () => {
+    setMonth((prev) => (prev === 0 ? 11 : prev - 1));
+    if (month === 0) setYear((prev) => prev - 1);
+  };
+
+  const handleNextMonth = () => {
+    setMonth((prev) => (prev === 11 ? 0 : prev + 1));
+    if (month === 11) setYear((prev) => prev + 1);
+  };
+
+  const firstDayOfMonth = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const calendarDates = Array.from({ length: daysInMonth }, (_, i) => i + 1);
+
   return (
-    <div className="bg-gray-800 p-6 rounded-lg shadow-md text-white flex flex-col items-center space-y-6 h-full w-full">
-      <h3 className="text-lg font-semibold">Academic Calendar</h3>
-      <div className="flex justify-center items-center w-full">
-        <Calendar onChange={(value) => setDate(value as Date)} value={date} />
+    <div className="bg-gray-800 text-white p-4 rounded-lg shadow-md border border-gray-700 h-full">
+      <h2 className="text-xl font-bold mb-4 text-center">Academic Calendar</h2>
+      <div className="bg-gray-700 p-4 rounded-lg shadow-md">
+        <div className="flex justify-between items-center mb-3">
+          <button onClick={handlePrevMonth} className="bg-gray-600 px-2 py-1 rounded">
+            <FaChevronLeft className="text-white" />
+          </button>
+          <h3 className="text-blue-400 text-lg font-semibold">
+            {new Date(year, month).toLocaleString("default", { month: "long" })} {year}
+          </h3>
+          <button onClick={handleNextMonth} className="bg-gray-600 px-2 py-1 rounded">
+            <FaChevronRight className="text-white" />
+          </button>
+        </div>
+        <div className="grid grid-cols-7 gap-1">
+          {days.map((day) => (
+            <div key={day} className="text-center text-gray-400 text-sm py-1">
+              {day}
+            </div>
+          ))}
+          {Array.from({ length: firstDayOfMonth }).map((_, i) => (
+            <div key={`empty-${i}`} className="py-2"></div>
+          ))}
+          {calendarDates.map((date) => (
+            <div
+              key={date}
+              className={`text-center py-2 rounded-full cursor-pointer ${
+                date === currentDate.getDate() && month === currentDate.getMonth() && year === currentDate.getFullYear()
+                  ? "bg-blue-500 text-white"
+                  : "hover:bg-gray-700"
+              }`}
+            >
+              {date}
+            </div>
+          ))}
+        </div>
       </div>
-
-      {/* Styled Courses Registered & Grades Buttons */}
-      <button
-        className="bg-gradient-to-r from-teal-800 to-teal-600 p-4 rounded-lg text-center hover:opacity-80 transition-opacity cursor-pointer w-full h-16 flex items-center justify-center shadow-md"
-        onClick={() => router.push("/registered_courses")}
-      > <FaClipboardList className="mr-2" />Courses Registered
-      </button>
-      <button
-        className="bg-gradient-to-r from-rose-800 to-rose-600 p-4 rounded-lg text-center hover:opacity-80 transition-opacity cursor-pointer w-full h-16 flex items-center justify-center shadow-md"
-        onClick={() => router.push("/student_grade")}
-      > <FiAward className="mr-2" />Grades
-      </button>
-
-      <style jsx global>{`
-        .react-calendar {
-          width: 500px;
-          background-color: #2d3748;
-          color: white;
-          border: none;
-          border-radius: 0.5rem;
-          font-family: inherit;
-          padding: 10px;
-        }
-
-        .react-calendar__navigation button {
-          color: white;
-        }
-
-        .react-calendar__navigation button:enabled:hover,
-        .react-calendar__navigation button:enabled:focus {
-          background-color: #4a5568;
-        }
-
-        .react-calendar__tile {
-          color: white;
-          padding: 0.75em 0.5em;
-          border-radius: 4px;
-        }
-
-        .react-calendar__month-view__days__day {
-          color: white;
-        }
-
-        .react-calendar__month-view__days__day--weekend {
-          color: #feb2b2;
-        }
-
-        .react-calendar__tile:enabled:hover,
-        .react-calendar__tile:enabled:focus {
-          background-color: #4a5568;
-        }
-
-        .react-calendar__tile--now {
-          background: #3182ce !important;
-        }
-
-        .react-calendar__tile--active {
-          background: #2b6cb0 !important;
-        }
-      `}</style>
+      <div className="mt-6 space-y-4">
+        <button className="bg-gradient-to-r from-teal-800 to-teal-600 p-4 rounded-lg text-center w-full h-16 flex items-center justify-center shadow-md" onClick={() => router.push("/registered_courses")}>
+          <FaClipboardList className="mr-2" /> Courses Registered
+        </button>
+        <button className="bg-gradient-to-r from-rose-800 to-rose-600 p-4 rounded-lg text-center w-full h-16 flex items-center justify-center shadow-md" onClick={() => router.push("/student_grade")}>
+          <FiAward className="mr-2" /> Grades
+        </button>
+      </div>
     </div>
   );
 };
