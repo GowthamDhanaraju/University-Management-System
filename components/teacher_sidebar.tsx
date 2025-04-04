@@ -23,6 +23,21 @@ const TeacherSidebar: React.FC = () => {
         <li className="flex items-center gap-4 p-4 border-b border-gray-700 cursor-pointer hover:bg-gray-800 whitespace-nowrap" onClick={() => navigateTo("/timetable-edit")}>
           📅<span className="hidden group-hover:inline-block">Timetable</span>
         </li>
+        <li className="flex items-center gap-4 p-4 border-b border-gray-700 cursor-pointer hover:bg-gray-800 whitespace-nowrap" onClick={() => navigateTo("/courses")}>
+          📚<span className="hidden group-hover:inline-block">Courses</span>
+        </li>
+        <li className="flex items-center gap-4 p-4 border-b border-gray-700 cursor-pointer hover:bg-gray-800 whitespace-nowrap" onClick={() => navigateTo("/students")}>
+          🎒<span className="hidden group-hover:inline-block">Students</span>
+        </li>
+        <li className="flex items-center gap-4 p-4 border-b border-gray-700 cursor-pointer hover:bg-gray-800 whitespace-nowrap" onClick={() => navigateTo("/clubdetails")}>
+          🏆<span className="hidden group-hover:inline-block">Club Details</span>
+        </li>
+        <li className="flex items-center gap-4 p-4 border-b border-gray-700 cursor-pointer hover:bg-gray-800 whitespace-nowrap" onClick={() => navigateTo("/auditorium")}>
+          🎭<span className="hidden group-hover:inline-block">Auditorium</span>
+        </li>
+        <li className="flex items-center gap-4 p-4 border-b border-gray-700 cursor-pointer hover:bg-gray-800 whitespace-nowrap" onClick={() => navigateTo("/publications")}>
+          📖<span className="hidden group-hover:inline-block">Publications</span>
+        </li>
       </ul>
     </div>
   );
