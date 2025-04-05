@@ -23,19 +23,19 @@ const TeacherSidebar: React.FC = () => {
         <li className="flex items-center gap-4 p-4 border-b border-gray-700 cursor-pointer hover:bg-gray-800 whitespace-nowrap" onClick={() => navigateTo("/timetable-edit")}>
           📅<span className="hidden group-hover:inline-block">Timetable</span>
         </li>
-        <li className="flex items-center gap-4 p-4 border-b border-gray-700 cursor-pointer hover:bg-gray-800 whitespace-nowrap" onClick={() => navigateTo("/courses")}>
+        <li className="flex items-center gap-4 p-4 border-b border-gray-700 cursor-pointer hover:bg-gray-800 whitespace-nowrap" onClick={() => navigateTo("/teacher_courses")}>
           📚<span className="hidden group-hover:inline-block">Courses</span>
         </li>
-        <li className="flex items-center gap-4 p-4 border-b border-gray-700 cursor-pointer hover:bg-gray-800 whitespace-nowrap" onClick={() => navigateTo("/students")}>
+        <li className="flex items-center gap-4 p-4 border-b border-gray-700 cursor-pointer hover:bg-gray-800 whitespace-nowrap" onClick={() => navigateTo("/teacher_students")}>
           🎒<span className="hidden group-hover:inline-block">Students</span>
         </li>
-        <li className="flex items-center gap-4 p-4 border-b border-gray-700 cursor-pointer hover:bg-gray-800 whitespace-nowrap" onClick={() => navigateTo("/clubdetails")}>
+        <li className="flex items-center gap-4 p-4 border-b border-gray-700 cursor-pointer hover:bg-gray-800 whitespace-nowrap" onClick={() => navigateTo("/teacher_clubdetails")}>
           🏆<span className="hidden group-hover:inline-block">Club Details</span>
         </li>
-        <li className="flex items-center gap-4 p-4 border-b border-gray-700 cursor-pointer hover:bg-gray-800 whitespace-nowrap" onClick={() => navigateTo("/auditorium")}>
+        <li className="flex items-center gap-4 p-4 border-b border-gray-700 cursor-pointer hover:bg-gray-800 whitespace-nowrap" onClick={() => navigateTo("/teacher_auditorium")}>
           🎭<span className="hidden group-hover:inline-block">Auditorium</span>
         </li>
-        <li className="flex items-center gap-4 p-4 border-b border-gray-700 cursor-pointer hover:bg-gray-800 whitespace-nowrap" onClick={() => navigateTo("/publications")}>
+        <li className="flex items-center gap-4 p-4 border-b border-gray-700 cursor-pointer hover:bg-gray-800 whitespace-nowrap" onClick={() => navigateTo("/teacher_publications")}>
           📖<span className="hidden group-hover:inline-block">Publications</span>
         </li>
       </ul>
