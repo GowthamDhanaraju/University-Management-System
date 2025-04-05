@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import Sidebar from "../components/student_sidebar";
 import { FaTasks } from "react-icons/fa";
 import { attendanceData, SemesterAttendance, AttendanceRecord } from "../data/attendanceData";
+import Typography from "@mui/material/Typography";
+
 
 const Attendance: React.FC = () => {
   const [expandedRow, setExpandedRow] = useState<string | null>(null);
@@ -25,13 +27,13 @@ const Attendance: React.FC = () => {
       <div className="flex-1 flex flex-col mt-10 ml-10">
         <div className="flex items-center justify-between w-full max-w-7xl mx-auto mb-4">
           {/* Left-aligned heading */}
-          <h1 className="text-2xl font-bold flex items-center">
-            <FaTasks className="mr-2 text-green-400 text-3xl" /> Attendance
-          </h1>
+          <Typography variant="h4" component="h1" className="flex items-center font-bold">
+              <FaTasks className="mr-2 text-green-400 text-3xl" /> Attendance
+          </Typography>
 
           {/* Semester Dropdown */}
           <select
-            className="p-2 bg-gray-800 text-white border border-gray-600 rounded-lg"
+            className="p-2 w-[200px] bg-gray-800 text-white border border-gray-600 rounded-lg text-center"
             value={selectedSemester}
             onChange={handleSemesterChange}
           >
