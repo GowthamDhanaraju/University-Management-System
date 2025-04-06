@@ -12,14 +12,14 @@ const StudentSidebar: React.FC = () => {
   };
 
   const menuItems = [
-    { path: "/student/dashboard", icon: <FiBarChart2 className="text-xl" />, label: "Dashboard" },
-    { path: "/student/profile", icon: <FiUser className="text-xl" />, label: "Profile" },
-    { path: "/student/grade", icon: <FiAward className="text-xl" />, label: "Grades" },
-    { path: "/student/courses", icon: <FaClipboardList className="text-xl" />, label: "Courses" },
-    { path: "/student/faculties", icon: <FaChalkboardTeacher className="text-xl" />, label: "Faculties" },
-    { path: "/student/attendance", icon: <FaTasks className="text-xl" />, label: "Attendance" },
-    { path: "/student/clubs", icon: <FaUsers className="text-xl" />, label: "Clubs" },
-    { path: "/student/feedback", icon: <FaComments className="text-xl" />, label: "Feedback" },
+    { path: "/student/student_dashboard", icon: <FiBarChart2 className="text-xl" />, label: "Dashboard" },
+    { path: "/student/student_profile", icon: <FiUser className="text-xl" />, label: "Profile" },
+    { path: "/student/student_grade", icon: <FiAward className="text-xl" />, label: "Grades" },
+    { path: "/student/student_courses", icon: <FaClipboardList className="text-xl" />, label: "Courses" },
+    { path: "/student/student_faculties", icon: <FaChalkboardTeacher className="text-xl" />, label: "Faculties" },
+    { path: "/student/student_attendance", icon: <FaTasks className="text-xl" />, label: "Attendance" },
+    { path: "/student/student_clubs", icon: <FaUsers className="text-xl" />, label: "Clubs" },
+    { path: "/student/student_feedback", icon: <FaComments className="text-xl" />, label: "Feedback" },
     { path: "/library", icon: <FaUniversity className="text-xl" />, label: "Library" },
     { path: "/transport", icon: <FiTruck className="text-xl" />, label: "Transport" },
   ];

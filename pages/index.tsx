@@ -73,7 +73,7 @@ export default function LoginPage() {
           <button 
             onClick={() => {
               localStorage.setItem("role", "student");
-              router.push("/student_dashboard");
+              router.push("/student/student_dashboard");
             }}
             className="bg-gray-700 text-white py-2 px-4 rounded hover:bg-gray-600 text-sm font-medium"
           >
@@ -82,7 +82,7 @@ export default function LoginPage() {
           <button 
             onClick={() => {
               localStorage.setItem("role", "teacher");
-              router.push("/teacher_dashboard");
+              router.push("/teacher/teaccher_dashboard");
             }}
             className="bg-gray-700 text-white py-2 px-4 rounded hover:bg-gray-600 text-sm font-medium"
           >
@@ -91,7 +91,7 @@ export default function LoginPage() {
           <button 
             onClick={() => {
               localStorage.setItem("role", "admin");
-              router.push("/admin_dashboard");
+              router.push("/admin/admin_dashboard");
             }}
             className="bg-gray-700 text-white py-2 px-4 rounded hover:bg-gray-600 text-sm font-medium"
           >
