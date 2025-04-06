@@ -12,18 +12,18 @@ const StudentSidebar: React.FC = () => {
   };
 
   const menuItems = [
-    { path: "/student_dashboard", icon: <FiBarChart2 className="text-xl" />, label: "Dashboard" },
-    { path: "/student_profile", icon: <FiUser className="text-xl" />, label: "Profile" },
-    { path: "/student_grade", icon: <FiAward className="text-xl" />, label: "Grades" },
-    { path: "/student_courses", icon: <FaClipboardList className="text-xl" />, label: "Courses" },
-    { path: "/student_faculties", icon: <FaChalkboardTeacher className="text-xl" />, label: "Faculties" },
-    { path: "/student_attendance", icon: <FaTasks className="text-xl" />, label: "Attendance" },
-    { path: "/student_clubs", icon: <FaUsers className="text-xl" />, label: "Clubs" },
-    { path: "/student_feedback", icon: <FaComments className="text-xl" />, label: "Feedback" },
+    { path: "/student/dashboard", icon: <FiBarChart2 className="text-xl" />, label: "Dashboard" },
+    { path: "/student/profile", icon: <FiUser className="text-xl" />, label: "Profile" },
+    { path: "/student/grade", icon: <FiAward className="text-xl" />, label: "Grades" },
+    { path: "/student/courses", icon: <FaClipboardList className="text-xl" />, label: "Courses" },
+    { path: "/student/faculties", icon: <FaChalkboardTeacher className="text-xl" />, label: "Faculties" },
+    { path: "/student/attendance", icon: <FaTasks className="text-xl" />, label: "Attendance" },
+    { path: "/student/clubs", icon: <FaUsers className="text-xl" />, label: "Clubs" },
+    { path: "/student/feedback", icon: <FaComments className="text-xl" />, label: "Feedback" },
     { path: "/library", icon: <FaUniversity className="text-xl" />, label: "Library" },
     { path: "/transport", icon: <FiTruck className="text-xl" />, label: "Transport" },
   ];
-
+  
   return (
     <div className="group w-20 hover:w-64 bg-gradient-to-b from-gray-800 to-gray-900 text-white h-screen fixed transition-all duration-300 ease-in-out overflow-hidden border-r border-gray-700 shadow-xl">
       <ul className="list-none p-2 m-0">
