@@ -341,7 +341,7 @@ const AdminDashboard: React.FC = () => {
 
   return (
     <div className="flex">
-      <AdminSidebar />
+      <AdminSidebar/>
       <Dashboard />
     </div>
   );
