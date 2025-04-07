@@ -43,7 +43,7 @@ const Header = () => {
   const greeting = hour < 12 ? "Good Morning" : hour < 18 ? "Good Afternoon" : "Good Evening";
 
   return (
-    <div className="bg-gradient-to-r from-green-700 to-emerald-800 p-6 rounded-xl shadow-lg text-white">
+    <div className="bg-gradient-to-r from-green-700 to-emerald-800 p-6 rounded-xl shadow-lg text-white ml-5">
       <div className="flex justify-between items-center">
         <div>
           <h2 className="text-2xl font-bold">{greeting}, Rajesh</h2>
@@ -73,7 +73,7 @@ const Timetable = () => {
   const rooms = ["LT-3", "LT-4", "LAB-2", "LT-1", "LT-2"];
 
   return (
-    <div className="bg-gray-800 p-6 rounded-xl shadow-lg text-white mt-6">
+    <div className="bg-gray-800 p-6 rounded-xl shadow-lg text-white mt-6 ml-5">
       <div className="flex justify-between items-center mb-4">
         <h3 className="text-lg font-semibold">Today's Schedule</h3>
         <div className="flex space-x-1 bg-gray-700 p-1 rounded-lg">
@@ -110,7 +110,7 @@ const Buttons = () => {
     { icon: <FaChalkboardTeacher className="mr-2 text-lg" />, text: "Faculties", color: "from-blue-500 to-blue-700", route: "/student_faculties" },
     { icon: <FaComments className="mr-2 text-lg" />, text: "Feedback", color: "from-purple-500 to-purple-700", route: "/student_feedback" },
   ];
-  return <div className="grid grid-cols-2 gap-4 mt-6">{buttons.map((btn, i) => <DashboardButton key={i} {...btn} />)}</div>;
+  return <div className="grid grid-cols-2 gap-4 mt-6 ml-5">{buttons.map((btn, i) => <DashboardButton key={i} {...btn} />)}</div>;
 };
 
 const RightSidebar = () => {
