@@ -32,7 +32,7 @@ const StudentSidebar: React.FC = () => {
             key={item.path}
             className={`flex items-center gap-4 p-3 rounded-lg mx-2 mb-1 cursor-pointer transition-all duration-200 ${
               currentPath === item.path
-                ? "bg-green-600 text-white shadow-md"
+                ? "bg-gray-700 text-black shadow-inner"
                 : "hover:bg-gray-700 hover:pl-4"
             }`}
             onClick={() => navigateTo(item.path)}

@@ -25,23 +25,23 @@ const StudentClubs = () => {
         <TopBar />
         
         {/* Header Section */}
-        <div className="flex items-center mb-6 md:mb-8">
-          <div className="p-3 mr-4 bg-purple-600 rounded-xl shadow-lg">
+        <div className="flex items-center mb-6 md:mb-8 ml-6">
+          <div className="p-3 mr-4 bg-orange-600 rounded-xl shadow-lg">
             <FaUsers className="text-gray-100 text-2xl" />
           </div>
           <Typography 
             variant="h4" 
             component="h1" 
-            className="font-bold bg-purple-600 bg-clip-text text-transparent"
+            className="font-bold bg-orange-600 bg-clip-text text-transparent"
           >
             Club Activity Dashboard
           </Typography>
         </div>
-        
+
         <div className="flex flex-col lg:flex-row gap-4 md:gap-6">
           {/* Clubs List */}
-          <div className="w-full lg:w-1/4 bg-gray-800 rounded-lg p-4">
-            <h2 className="text-xl font-semibold mb-4 text-cyan-400">Your Clubs</h2>
+          <div className="w-[400px] bg-gray-800 rounded-lg p-4 ml-6">
+            <h2 className="text-xl font-semibold mb-4 text-orange-400">Your Clubs</h2>
             <div className="space-y-3">
               {studentClubsData.map(club => (
                 <div 
@@ -49,7 +49,7 @@ const StudentClubs = () => {
                   onClick={() => setSelectedClub(club)}
                   className={`p-3 rounded-lg cursor-pointer transition-all ${
                     selectedClub?.id === club.id 
-                      ? 'bg-purple-900 border-l-4 border-purple-400' 
+                      ? 'bg-orange-900 border-l-4 border-orange-400' 
                       : 'bg-gray-700 hover:bg-gray-600'
                   }`}
                 >
@@ -68,7 +68,7 @@ const StudentClubs = () => {
                 <div className="bg-gray-800 rounded-lg p-4 md:p-6">
                   <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-4">
                     <div className="flex-1">
-                      <h2 className="text-2xl font-bold text-purple-300">{selectedClub.name}</h2>
+                      <h2 className="text-2xl font-bold text-orange-300">{selectedClub.name}</h2>
                       <p className="text-gray-400 mt-2">{selectedClub.description}</p>
                     </div>
                     <div className="bg-gray-700 px-3 py-1 rounded-full text-sm self-start md:self-center">
@@ -96,7 +96,7 @@ const StudentClubs = () => {
                       onClick={() => setActiveTab('activities')}
                       className={`px-4 py-3 font-medium ${
                         activeTab === 'activities' 
-                          ? 'text-purple-400 border-b-2 border-purple-400' 
+                          ? 'text-orange-500 border-b-2 border-orange-500' 
                           : 'text-gray-400 hover:text-gray-300'
                       }`}
                     >
@@ -106,7 +106,7 @@ const StudentClubs = () => {
                       onClick={() => setActiveTab('info')}
                       className={`px-4 py-3 font-medium ${
                         activeTab === 'info' 
-                          ? 'text-purple-400 border-b-2 border-purple-400' 
+                          ? 'text-orange-400 border-b-2 border-orange-400' 
                           : 'text-gray-400 hover:text-gray-300'
                       }`}
                     >
@@ -117,7 +117,7 @@ const StudentClubs = () => {
                   <div className="p-4 md:p-6">
                     {activeTab === 'activities' ? (
                       <div className="space-y-6">
-                        <h3 className="text-lg font-semibold text-cyan-400">Club Activities</h3>
+                        <h3 className="text-lg font-semibold text-orange-400">Club Activities</h3>
                         
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                           <div className="bg-gray-700 p-4 rounded-lg">
@@ -168,7 +168,7 @@ const StudentClubs = () => {
                                       {activity.status}
                                     </span>
                                   </td>
-                                  <td className="px-4 py-4 whitespace-nowrap text-purple-300 font-medium">
+                                  <td className="px-4 py-4 whitespace-nowrap text-orange-500 font-medium">
                                     {activity.points}
                                   </td>
                                 </tr>
@@ -179,7 +179,7 @@ const StudentClubs = () => {
                       </div>
                     ) : (
                       <div className="space-y-6">
-                        <h3 className="text-lg font-semibold text-cyan-400">Club Details</h3>
+                        <h3 className="text-lg font-semibold text-orange-400">Club Details</h3>
                         <div className="bg-gray-700 p-4 rounded-lg">
                           <h4 className="font-medium mb-3">About {selectedClub.name}</h4>
                           <p className="text-gray-300">{selectedClub.description}</p>
@@ -212,7 +212,7 @@ const StudentClubs = () => {
                 {upcomingEvents.filter(event => 
                   studentClubsData.some(club => club.name === event.club)
                 ).map(event => (
-                  <div key={event.id} className="bg-gray-700 p-4 rounded-lg border-l-4 border-purple-500">
+                  <div key={event.id} className="bg-gray-700 p-4 rounded-lg border-l-4 border-orange-500">
                     <h4 className="font-medium">{event.title}</h4>
                     <p className="text-sm text-gray-400 mt-2">{event.club}</p>
                     <div className="flex items-center mt-3 text-sm">

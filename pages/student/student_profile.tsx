@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import StudentSidebar from "@/components/student_sidebar";
+import TopBar from "@/components/student_topbar";
+import { FaChalkboardTeacher } from "react-icons/fa";
+import { Typography } from "@mui/material";
+import { FiUser } from "react-icons/fi";
 
 const StudentProfile: React.FC = () => {
   const router = useRouter();
@@ -70,9 +74,21 @@ const StudentProfile: React.FC = () => {
   return (
     <div className="flex min-h-screen bg-gray-900 text-gray-200">
       <StudentSidebar />
-      <div className="flex-1 ml-16 p-6">
-        <div className="flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-white">Student Profile</h1>
+      <div className="flex-1 p-6 ml-16">
+        <TopBar />
+        <div className="flex items-center justify-between mb-8 ml-6 mr-6">
+          <div className="flex items-center">
+            <div className="p-3 mr-4 bg-blue-500 rounded-xl shadow-lg">
+              <FiUser className="text-gray-100 text-2xl" />
+            </div>
+            <Typography 
+              variant="h4" 
+              component="h1" 
+              className="font-bold bg-blue-500 bg-clip-text text-transparent"
+            >
+              Student Profile
+            </Typography>
+          </div>
           {!isEditing ? (
             <button 
               onClick={handleEdit}
@@ -99,7 +115,7 @@ const StudentProfile: React.FC = () => {
         </div>
 
         {/* Profile Header */}
-        <div className="bg-gray-800 p-6 rounded-lg shadow-md mt-4 border border-gray-700 flex flex-wrap gap-6">
+        <div className="bg-gray-800 p-6 rounded-lg shadow-md mt-4 border border-gray-700 flex flex-wrap gap-6 ml-6">
           <div className="w-32 h-32 rounded-full bg-green-600 flex items-center justify-center text-4xl font-bold">
             {profileData.personal.name.split(' ').map(n => n[0]).join('')}
           </div>
@@ -116,7 +132,7 @@ const StudentProfile: React.FC = () => {
         </div>
 
         {/* Personal Information */}
-        <div className="bg-gray-800 p-6 rounded-lg shadow-md mt-6 border border-gray-700">
+        <div className="bg-gray-800 p-6 rounded-lg shadow-md mt-6 border border-gray-700 ml-6">
           <h3 className="text-xl font-bold mb-4 text-green-400">Personal Information</h3>
           {!isEditing ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -232,7 +248,7 @@ const StudentProfile: React.FC = () => {
         </div>
 
         {/* Contact Information */}
-        <div className="bg-gray-800 p-6 rounded-lg shadow-md mt-6 border border-gray-700">
+        <div className="bg-gray-800 p-6 rounded-lg shadow-md mt-6 border border-gray-700 ml-6">
           <h3 className="text-xl font-bold mb-4 text-green-400">Contact Information</h3>
           {!isEditing ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -296,7 +312,7 @@ const StudentProfile: React.FC = () => {
         </div>
 
         {/* Academic Information */}
-        <div className="bg-gray-800 p-6 rounded-lg shadow-md mt-6 border border-gray-700 mb-6">
+        <div className="bg-gray-800 p-6 rounded-lg shadow-md mt-6 border border-gray-700 mb-6 ml-6">
           <h3 className="text-xl font-bold mb-4 text-green-400">Academic Information</h3>
           {!isEditing ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

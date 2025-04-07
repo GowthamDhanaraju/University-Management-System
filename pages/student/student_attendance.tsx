@@ -33,15 +33,15 @@ const Attendance: React.FC = () => {
         <div className="flex-1 p-4">
           <div className="w-full mx-auto max-w-7xl">
             {/* Header and Dropdown */}
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 mb-6">
               <div className="flex items-center">
-                <div className="p-3 mr-4 bg-blue-500 rounded-xl shadow-lg">
+                <div className="p-3 mr-4 bg-green-500 rounded-xl shadow-lg">
                   <FaTasks className="text-gray-100 text-2xl" />
                 </div>
                 <Typography 
                   variant="h4" 
                   component="h1" 
-                  className="font-bold bg-blue-500 bg-clip-text text-transparent"
+                  className="font-bold bg-green-500 bg-clip-text text-transparent"
                 >
                   Attendance Overview
                 </Typography>

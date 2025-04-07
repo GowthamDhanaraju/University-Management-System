@@ -14,7 +14,7 @@ const Faculties = () => {
       <StudentSidebar />
       <div className="flex-1 p-6 ml-16">
         <TopBar />
-        <div className="flex items-center mb-8"> {/* Increased margin-bottom */}
+        <div className="flex items-center mb-8 ml-6"> {/* Increased margin-bottom */}
           <div className="p-3 mr-4 bg-blue-500 rounded-xl shadow-lg">
             <FaChalkboardTeacher className="text-gray-100 text-2xl" />
           </div>
@@ -26,7 +26,7 @@ const Faculties = () => {
             Faculties Corner
           </Typography>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"> {/* Increased gap between cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 ml-6"> {/* Increased gap between cards */}
           {facultiesData.map((faculty) => (
             <FacultyCard key={faculty.id} faculty={faculty} onClick={() => setSelectedFaculty(faculty)} />
           ))}

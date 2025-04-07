@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import StudentSidebar from "@/components/student_sidebar";
+import TopBar from "@/components/student_topbar";
+import { Typography } from "@mui/material";
+import { FaChalkboardTeacher } from "react-icons/fa";
+import { FiAward } from "react-icons/fi";
 
 interface CourseGrade {
   code: string;
@@ -137,12 +141,25 @@ const StudentGrades: React.FC = () => {
   return (
     <div className="flex min-h-screen bg-gray-900 text-gray-200">
       <StudentSidebar />
-      <div className="flex-1 ml-16 p-6">
-        <div className="flex justify-between items-center flex-wrap gap-3">
-          <h1 className="text-2xl font-bold text-white">Academic Performance</h1>
-          <div className="bg-gray-800 p-2 rounded-lg">
+      <div className="flex-1 p-6 ml-16">
+        <TopBar />
+        <div className="flex justify-between items-center mb-8 mx-6">
+          <div className="flex items-center">
+            <div className="p-3 mr-4 bg-green-600 rounded-xl shadow-lg">
+              <FiAward className="text-gray-100 text-2xl" />
+            </div>
+            <Typography 
+              variant="h4" 
+              component="h1" 
+              className="font-bold bg-green-600 bg-clip-text text-transparent"
+            >
+              Student Grades
+            </Typography>
+          </div>
+
+          <div>
             <select 
-              className="bg-gray-800 text-white border-none outline-none"
+              className="bg-gray-800 text-white border-none outline-none px-4 py-2 rounded-md"
               value={selectedSemester}
               onChange={(e) => setSelectedSemester(e.target.value)}
             >
@@ -156,8 +173,9 @@ const StudentGrades: React.FC = () => {
           </div>
         </div>
 
+
         {/* Student Overview */}
-        <div className="bg-gray-800 p-6 rounded-lg shadow-md mt-4 border border-gray-700">
+        <div className="bg-gray-800 p-6 rounded-lg shadow-md mt-4 border border-gray-700 ml-6">
           <div className="flex flex-wrap items-center justify-between">
             <div>
               <h2 className="text-xl font-bold">{gradesData.studentName}</h2>
@@ -181,8 +199,8 @@ const StudentGrades: React.FC = () => {
         </div>
 
         {/* Semester Details */}
-        <div className="bg-gray-800 p-6 rounded-lg shadow-md mt-6 border border-gray-700 mb-6">
-          <h3 className="text-xl font-bold mb-4 text-green-400 flex items-center">
+        <div className="bg-gray-800 p-6 rounded-lg shadow-md mt-6 border border-gray-700 mb-6 ml-6">
+          <h3 className="text-xl font-bold mb-4 text-green-500 flex items-center">
             Semester {displayedSemester.semester} ({displayedSemester.year})
             {displayedSemester.courses.some(c => c.grade === "In Progress") && 
               <span className="ml-2 text-sm bg-blue-600 px-2 py-1 rounded-full">In Progress</span>
