@@ -78,13 +78,13 @@ const StudentProfile: React.FC = () => {
         <TopBar />
         <div className="flex items-center justify-between mb-8 ml-6 mr-6">
           <div className="flex items-center">
-            <div className="p-3 mr-4 bg-blue-500 rounded-xl shadow-lg">
+            <div className="p-3 mr-4 bg-green-500 rounded-xl shadow-lg">
               <FiUser className="text-gray-100 text-2xl" />
             </div>
             <Typography 
               variant="h4" 
               component="h1" 
-              className="font-bold bg-blue-500 bg-clip-text text-transparent"
+              className="font-bold bg-green-500 bg-clip-text text-transparent"
             >
               Student Profile
             </Typography>

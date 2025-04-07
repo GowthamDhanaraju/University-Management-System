@@ -1,7 +1,7 @@
 import React from "react";
 import { useRouter } from "next/router";
-import { FiUser, FiBarChart2, FiTruck, FiAward, FiChevronRight } from "react-icons/fi";
-import { FaChalkboardTeacher, FaClipboardList, FaUsers, FaComments, FaTasks, FaUniversity } from "react-icons/fa";
+import { FiUser, FiBarChart2, FiAward, FiChevronRight } from "react-icons/fi";
+import { FaChalkboardTeacher, FaClipboardList, FaUsers, FaComments, FaTasks, FaUniversity, FaUser } from "react-icons/fa";
 
 const StudentSidebar: React.FC = () => {
   const router = useRouter();
@@ -20,8 +20,7 @@ const StudentSidebar: React.FC = () => {
     { path: "/student/student_attendance", icon: <FaTasks className="text-xl" />, label: "Attendance" },
     { path: "/student/student_clubs", icon: <FaUsers className="text-xl" />, label: "Clubs" },
     { path: "/student/student_feedback", icon: <FaComments className="text-xl" />, label: "Feedback" },
-    { path: "/library", icon: <FaUniversity className="text-xl" />, label: "Library" },
-    { path: "/transport", icon: <FiTruck className="text-xl" />, label: "Transport" },
+    { path: "/library", icon: <FaUniversity className="text-xl" />, label: "Library" }
   ];
   
   return (
@@ -53,7 +52,7 @@ const StudentSidebar: React.FC = () => {
       <div className="absolute bottom-0 w-full p-4 border-t border-gray-700 hidden group-hover:block bg-gray-800/50">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center">
-            <FiUser className="text-white" />
+            <FaUser className="text-white" />
           </div>
           <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
             <p className="font-medium">Student Name</p>
