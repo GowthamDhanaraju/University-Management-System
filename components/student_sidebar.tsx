@@ -16,11 +16,9 @@ const StudentSidebar: React.FC = () => {
     { path: "/student/student_profile", icon: <FiUser className="text-xl" />, label: "Profile" },
     { path: "/student/student_grade", icon: <FiAward className="text-xl" />, label: "Grades" },
     { path: "/student/student_courses", icon: <FaClipboardList className="text-xl" />, label: "Courses" },
-    { path: "/student/student_faculties", icon: <FaChalkboardTeacher className="text-xl" />, label: "Faculties" },
     { path: "/student/student_attendance", icon: <FaTasks className="text-xl" />, label: "Attendance" },
-    { path: "/student/student_clubs", icon: <FaUsers className="text-xl" />, label: "Clubs" },
     { path: "/student/student_feedback", icon: <FaComments className="text-xl" />, label: "Feedback" },
-    { path: "/library", icon: <FaUniversity className="text-xl" />, label: "Library" }
+    { path: "/student/student_books", icon: <FaUniversity className="text-xl" />, label: "Library" }
   ];
   
   return (
