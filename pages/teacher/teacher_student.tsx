@@ -86,62 +86,36 @@ interface Batch {
 
 // Mock data
 const mockDepartments: Department[] = [
-  { id: '1', name: 'Computer Science' },
-  { id: '2', name: 'Physics' },
-  { id: '3', name: 'Chemistry' },
+  { id: '1', name: 'Computer Science' }
 ];
 
 const mockCourses: Course[] = [
-  { id: '1', name: 'Programming Fundamentals', departmentId: '1' },
-  { id: '2', name: 'Data Structures', departmentId: '1' },
-  { id: '3', name: 'Quantum Mechanics', departmentId: '2' },
-  { id: '4', name: 'Organic Chemistry', departmentId: '3' },
+  { id: '1', name: 'Programming Fundamentals', departmentId: '1' }
 ];
 
 const mockBatches: Batch[] = [
   { id: '1', name: 'Batch A', courseId: '1' },
-  { id: '2', name: 'Batch B', courseId: '1' },
-  { id: '3', name: 'Batch A', courseId: '2' },
-  { id: '4', name: 'Batch A', courseId: '3' },
-  { id: '5', name: 'Batch B', courseId: '3' },
-  { id: '6', name: 'Batch A', courseId: '4' },
+  { id: '2', name: 'Batch B', courseId: '1' }
 ];
 
 const mockStudents: Student[] = [
   { id: '1', name: 'John Doe', email: 'john.doe@example.com', enrollmentDate: '2023-09-01', courses: ['Programming Fundamentals', 'Data Structures'], department: 'Computer Science', batch: 'Batch A' },
-  { id: '2', name: 'Jane Smith', email: 'jane.smith@example.com', enrollmentDate: '2023-09-01', courses: ['Programming Fundamentals'], department: 'Computer Science', batch: 'Batch B' },
-  { id: '3', name: 'Alice Johnson', email: 'alice.johnson@example.com', enrollmentDate: '2023-09-15', courses: ['Quantum Mechanics'], department: 'Physics', batch: 'Batch A' },
-  { id: '4', name: 'Bob Brown', email: 'bob.brown@example.com', enrollmentDate: '2023-09-10', courses: ['Organic Chemistry'], department: 'Chemistry', batch: 'Batch A' },
-  { id: '5', name: 'Charlie Davis', email: 'charlie.davis@example.com', enrollmentDate: '2023-09-05', courses: ['Quantum Mechanics'], department: 'Physics', batch: 'Batch B' },
-  { id: '6', name: 'Diana Evans', email: 'diana.evans@example.com', enrollmentDate: '2023-09-20', courses: ['Data Structures'], department: 'Computer Science', batch: 'Batch A' },
+  { id: '2', name: 'Jane Smith', email: 'jane.smith@example.com', enrollmentDate: '2023-09-01', courses: ['Programming Fundamentals'], department: 'Computer Science', batch: 'Batch B' }
 ];
 
 const mockAttendance: Attendance[] = [
   { id: '1', studentId: '1', date: '2023-10-01', status: 'present', course: 'Programming Fundamentals' },
-  { id: '2', studentId: '1', date: '2023-10-02', status: 'present', course: 'Data Structures' },
-  { id: '3', studentId: '1', date: '2023-10-03', status: 'absent', course: 'Programming Fundamentals' },
-  { id: '4', studentId: '2', date: '2023-10-01', status: 'present', course: 'Programming Fundamentals' },
-  { id: '5', studentId: '2', date: '2023-10-02', status: 'late', course: 'Programming Fundamentals' },
-  { id: '6', studentId: '3', date: '2023-10-01', status: 'absent', course: 'Quantum Mechanics' },
-  { id: '7', studentId: '3', date: '2023-10-02', status: 'present', course: 'Quantum Mechanics' },
+  { id: '2', studentId: '1', date: '2023-10-02', status: 'present', course: 'Data Structures' }
 ];
 
 const mockAssignments: Assignment[] = [
   { id: '1', studentId: '1', title: 'Programming Assignment 1', course: 'Programming Fundamentals', dueDate: '2023-10-10', score: 85, maxScore: 100 },
-  { id: '2', studentId: '1', title: 'Data Structures Project', course: 'Data Structures', dueDate: '2023-10-15', score: 92, maxScore: 100 },
-  { id: '3', studentId: '2', title: 'Programming Assignment 1', course: 'Programming Fundamentals', dueDate: '2023-10-10', score: 78, maxScore: 100 },
-  { id: '4', studentId: '3', title: 'Quantum Problem Set', course: 'Quantum Mechanics', dueDate: '2023-10-12', score: 88, maxScore: 100 },
-  { id: '5', studentId: '4', title: 'Chemistry Lab Report', course: 'Organic Chemistry', dueDate: '2023-10-15', score: 75, maxScore: 100 },
-  { id: '6', studentId: '5', title: 'Quantum Problem Set', course: 'Quantum Mechanics', dueDate: '2023-10-18', score: 90, maxScore: 100 },
+  { id: '2', studentId: '1', title: 'Data Structures Project', course: 'Data Structures', dueDate: '2023-10-15', score: 92, maxScore: 100 }
 ];
 
 const mockExams: Exam[] = [
   { id: '1', studentId: '1', title: 'Midterm Exam', course: 'Programming Fundamentals', date: '2023-10-25', score: 88, maxScore: 100 },
-  { id: '2', studentId: '1', title: 'Midterm Exam', course: 'Data Structures', date: '2023-10-27', score: 85, maxScore: 100 },
-  { id: '3', studentId: '2', title: 'Midterm Exam', course: 'Programming Fundamentals', date: '2023-10-25', score: 82, maxScore: 100 },
-  { id: '4', studentId: '3', title: 'Midterm Exam', course: 'Quantum Mechanics', date: '2023-10-26', score: 79, maxScore: 100 },
-  { id: '5', studentId: '4', title: 'Midterm Exam', course: 'Organic Chemistry', date: '2023-10-27', score: 76, maxScore: 100 },
-  { id: '6', studentId: '5', title: 'Midterm Exam', course: 'Quantum Mechanics', date: '2023-10-28', score: 91, maxScore: 100 },
+  { id: '2', studentId: '1', title: 'Midterm Exam', course: 'Data Structures', date: '2023-10-27', score: 85, maxScore: 100 }
 ];
 
 const DepartmentList: React.FC<{ 
@@ -255,51 +229,7 @@ const StudentList: React.FC<{
 
   return (
     <div className="bg-gray-800 text-white p-4 rounded-lg shadow-md border border-gray-700">
-      <h3 className="text-blue-400 text-lg font-semibold mb-3">
-        Student List - {course?.name} - {batch?.name}
-      </h3>
-      <div className="mb-4">
-        <input
-          type="text"
-          placeholder="Search students..."
-          value={searchTerm}
-          onChange={(e) => onSearchChange(e.target.value)}
-          className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white focus:outline-none focus:border-blue-400"
-        />
-      </div>
-      
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm text-left text-gray-300">
-          <thead className="text-gray-200 bg-gray-700">
-            <tr>
-              <th className="px-4 py-2 rounded-tl-lg">Name</th>
-              <th className="px-4 py-2">Email</th>
-              <th className="px-4 py-2">Enrollment Date</th>
-              <th className="px-4 py-2 rounded-tr-lg">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredStudents.map((student) => (
-              <tr key={student.id} className="border-b border-gray-700 hover:bg-gray-700">
-                <td className="px-4 py-3">{student.name}</td>
-                <td className="px-4 py-3">{student.email}</td>
-                <td className="px-4 py-3">{student.enrollmentDate}</td>
-                <td className="px-4 py-3">
-                  <button 
-                    className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
-                    onClick={() => onStudentSelect(student)}
-                  >
-                    View Details
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-      {filteredStudents.length === 0 && (
-        <p className="text-center text-gray-400 mt-4">No students found</p>
-      )}
+
     </div>
   );
 };
@@ -544,364 +474,9 @@ const AttendanceTracker: React.FC<{
   );
 };
 
-const PerformanceChart: React.FC<{
-  studentId: string;
-  students: Student[];
-  assignments: Assignment[];
-  exams: Exam[];
-  attendance: Attendance[];
-}> = ({ studentId, students, assignments, exams, attendance }) => {
-  const studentCourses = students.find(s => s.id === studentId)?.courses || [];
-  
-  const getAssignmentAverage = (course: string) => {
-    const courseAssignments = assignments.filter(a => a.studentId === studentId && a.course === course);
-    if (courseAssignments.length === 0) return 0;
-    const total = courseAssignments.reduce((sum, assignment) => sum + (assignment.score / assignment.maxScore) * 100, 0);
-    return Math.round(total / courseAssignments.length);
-  };
-  
-  const getExamAverage = (course: string) => {
-    const courseExams = exams.filter(e => e.studentId === studentId && e.course === course);
-    if (courseExams.length === 0) return 0;
-    const total = courseExams.reduce((sum, exam) => sum + (exam.score / exam.maxScore) * 100, 0);
-    return Math.round(total / courseExams.length);
-  };
-  
-  const getAttendanceRate = (course: string) => {
-    const courseAttendance = attendance.filter(a => a.studentId === studentId && a.course === course);
-    if (courseAttendance.length === 0) return 0;
-    const present = courseAttendance.filter(a => a.status === 'present').length;
-    return Math.round((present / courseAttendance.length) * 100);
-  };
-  
-  const chartData = {
-    labels: studentCourses,
-    datasets: [
-      {
-        label: "Assignments",
-        data: studentCourses.map(course => getAssignmentAverage(course)),
-        backgroundColor: "#3498db",
-      },
-      {
-        label: "Exams",
-        data: studentCourses.map(course => getExamAverage(course)),
-        backgroundColor: "#2ecc71",
-      },
-      {
-        label: "Attendance",
-        data: studentCourses.map(course => getAttendanceRate(course)),
-        backgroundColor: "#e74c3c",
-      },
-    ],
-  };
 
-  return (
-    <div className="bg-gray-800 p-4 rounded-lg shadow-md border border-gray-700">
-      <h3 className="text-blue-400 text-lg font-semibold mb-2">Course Performance</h3>
-      <div className="h-64">
-        <Bar 
-          data={chartData} 
-          options={{ 
-            responsive: true, 
-            maintainAspectRatio: false, 
-            scales: { 
-              y: { 
-                beginAtZero: true, 
-                max: 100,
-                grid: {
-                  color: 'rgba(255, 255, 255, 0.1)'
-                }
-              },
-              x: {
-                grid: {
-                  color: 'rgba(255, 255, 255, 0.1)'
-                }
-              }
-            },
-            plugins: {
-              legend: {
-                labels: {
-                  color: 'white'
-                }
-              }
-            } 
-          }} 
-        />
-      </div>
-    </div>
-  );
-};
-const CourseReports: React.FC<{
-  studentId: string;
-  courses: string[];
-  attendance: Attendance[];
-  assignments: Assignment[];
-  exams: Exam[];
-}> = ({ studentId, courses, attendance, assignments, exams }) => {
-  const [selectedCourse, setSelectedCourse] = useState(courses.length > 0 ? courses[0] : '');
   
-  if (courses.length === 0) {
-    return (
-      <div className="bg-gray-800 text-white p-4 rounded-lg shadow-md border border-gray-700">
-        <h3 className="text-blue-400 text-lg font-semibold mb-3">Course Reports</h3>
-        <p>No courses available</p>
-      </div>
-    );
-  }
-  
-  const courseAttendance = attendance.filter(a => a.studentId === studentId && a.course === selectedCourse);
-  const courseAssignments = assignments.filter(a => a.studentId === studentId && a.course === selectedCourse);
-  const courseExams = exams.filter(e => e.studentId === studentId && e.course === selectedCourse);
-  
-  // Calculate attendance statistics
-  const totalClasses = courseAttendance.length;
-  const presentCount = courseAttendance.filter(a => a.status === 'present').length;
-  const absentCount = courseAttendance.filter(a => a.status === 'absent').length;
-  const lateCount = courseAttendance.filter(a => a.status === 'late').length;
-  
-  const attendancePercentage = totalClasses > 0 ? Math.round((presentCount / totalClasses) * 100) : 0;
-  
-  // Calculate assignment statistics
-  const assignmentAverage = courseAssignments.length > 0 
-    ? Math.round(courseAssignments.reduce((sum, a) => sum + (a.score / a.maxScore) * 100, 0) / courseAssignments.length) 
-    : 0;
-  
-  // Calculate exam statistics
-  const examAverage = courseExams.length > 0 
-    ? Math.round(courseExams.reduce((sum, e) => sum + (e.score / e.maxScore) * 100, 0) / courseExams.length) 
-    : 0;
-  
-  // Chart data for attendance
-  const attendanceData = {
-    labels: ['Present', 'Absent', 'Late'],
-    datasets: [
-      {
-        data: [presentCount, absentCount, lateCount],
-        backgroundColor: ['#2ecc71', '#e74c3c', '#f39c12'],
-        borderWidth: 0,
-      },
-    ],
-  };
-  
-  // Chart data for performance over time
-  const performanceData = {
-    labels: courseAssignments.map(a => a.title),
-    datasets: [
-      {
-        label: 'Assignment Scores (%)',
-        data: courseAssignments.map(a => (a.score / a.maxScore) * 100),
-        borderColor: '#3498db',
-        backgroundColor: 'rgba(52, 152, 219, 0.2)',
-        fill: true,
-        tension: 0.4,
-      },
-    ],
-  };
-
-  return (
-    <div className="bg-gray-800 text-white p-4 rounded-lg shadow-md border border-gray-700">
-      <h3 className="text-blue-400 text-lg font-semibold mb-3">Course Report</h3>
-      
-      <div className="mb-4">
-        <label className="block text-gray-400 mb-2">Select Course</label>
-        <select
-          value={selectedCourse}
-          onChange={(e) => setSelectedCourse(e.target.value)}
-          className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white focus:outline-none focus:border-blue-400"
-        >
-          {courses.map(course => (
-            <option key={course} value={course}>{course}</option>
-          ))}
-        </select>
-      </div>
-      
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <div className="bg-gray-700 p-4 rounded-lg">
-          <div className="text-gray-400 text-sm">Attendance Rate</div>
-          <div className="text-2xl font-bold text-blue-400">{attendancePercentage}%</div>
-          <div className="text-xs text-gray-400">
-            {presentCount} present, {absentCount} absent, {lateCount} late
-          </div>
-        </div>
-        
-        <div className="bg-gray-700 p-4 rounded-lg">
-          <div className="text-gray-400 text-sm">Assignment Average</div>
-          <div className="text-2xl font-bold text-green-400">{assignmentAverage}%</div>
-          <div className="text-xs text-gray-400">
-            {courseAssignments.length} assignments
-          </div>
-        </div>
-        
-        <div className="bg-gray-700 p-4 rounded-lg">
-          <div className="text-gray-400 text-sm">Exam Average</div>
-          <div className="text-2xl font-bold text-purple-400">{examAverage}%</div>
-          <div className="text-xs text-gray-400">
-            {courseExams.length} exams
-          </div>
-        </div>
-      </div>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div>
-          <h4 className="text-lg font-medium mb-2">Attendance Breakdown</h4>
-          <div className="h-64">
-            {totalClasses > 0 ? (
-              <Pie 
-                data={attendanceData} 
-                options={{ 
-                  responsive: true, 
-                  maintainAspectRatio: false,
-                  plugins: {
-                    legend: {
-                      position: 'bottom',
-                      labels: {
-                        color: 'white'
-                      }
-                    }
-                  }
-                }} 
-              />
-            ) : (
-              <div className="flex h-full items-center justify-center text-gray-400">
-                No attendance data available
-              </div>
-            )}
-          </div>
-        </div>
-        
-        <div>
-          <h4 className="text-lg font-medium mb-2">Assignment Performance</h4>
-          <div className="h-64">
-            {courseAssignments.length > 0 ? (
-              <Line 
-                data={performanceData} 
-                options={{ 
-                  responsive: true, 
-                  maintainAspectRatio: false,
-                  scales: {
-                    y: {
-                      beginAtZero: true,
-                      max: 100,
-                      grid: {
-                        color: 'rgba(255, 255, 255, 0.1)'
-                      },
-                      ticks: {
-                        color: 'rgba(255, 255, 255, 0.7)'
-                      }
-                    },
-                    x: {
-                      grid: {
-                        color: 'rgba(255, 255, 255, 0.1)'
-                      },
-                      ticks: {
-                        color: 'rgba(255, 255, 255, 0.7)',
-                        maxRotation: 45,
-                        minRotation: 45
-                      }
-                    }
-                  },
-                  plugins: {
-                    legend: {
-                      labels: {
-                        color: 'white'
-                      }
-                    }
-                  }
-                }} 
-              />
-            ) : (
-              <div className="flex h-full items-center justify-center text-gray-400">
-                No assignment data available
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-      
-      <div className="mt-6">
-        <h4 className="text-lg font-medium mb-2">Assignments</h4>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm text-left text-gray-300">
-            <thead className="text-gray-200 bg-gray-700">
-              <tr>
-                <th className="px-4 py-2">Title</th>
-                <th className="px-4 py-2">Due Date</th>
-                <th className="px-4 py-2">Score</th>
-                <th className="px-4 py-2">Percentage</th>
-              </tr>
-            </thead>
-            <tbody>
-              {courseAssignments.map((assignment) => (
-                <tr key={assignment.id} className="border-b border-gray-700 hover:bg-gray-700">
-                  <td className="px-4 py-3">{assignment.title}</td>
-                  <td className="px-4 py-3">{assignment.dueDate}</td>
-                  <td className="px-4 py-3">{assignment.score} / {assignment.maxScore}</td>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center">
-                      <div className="w-full bg-gray-600 rounded-full h-2.5">
-                        <div 
-                          className="bg-blue-500 h-2.5 rounded-full" 
-                          style={{ width: `${(assignment.score / assignment.maxScore) * 100}%` }}
-                        ></div>
-                      </div>
-                      <span className="ml-2">{Math.round((assignment.score / assignment.maxScore) * 100)}%</span>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-              {courseAssignments.length === 0 && (
-                <tr>
-                  <td colSpan={4} className="px-4 py-3 text-center text-gray-400">No assignments found</td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
-      
-      <div className="mt-6">
-        <h4 className="text-lg font-medium mb-2">Exams</h4>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm text-left text-gray-300">
-            <thead className="text-gray-200 bg-gray-700">
-              <tr>
-                <th className="px-4 py-2">Title</th>
-                <th className="px-4 py-2">Date</th>
-                <th className="px-4 py-2">Score</th>
-                <th className="px-4 py-2">Percentage</th>
-              </tr>
-            </thead>
-            <tbody>
-              {courseExams.map((exam) => (
-                <tr key={exam.id} className="border-b border-gray-700 hover:bg-gray-700">
-                  <td className="px-4 py-3">{exam.title}</td>
-                  <td className="px-4 py-3">{exam.date}</td>
-                  <td className="px-4 py-3">{exam.score} / {exam.maxScore}</td>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center">
-                      <div className="w-full bg-gray-600 rounded-full h-2.5">
-                        <div 
-                          className="bg-purple-500 h-2.5 rounded-full" 
-                          style={{ width: `${(exam.score / exam.maxScore) * 100}%` }}
-                        ></div>
-                      </div>
-                      <span className="ml-2">{Math.round((exam.score / exam.maxScore) * 100)}%</span>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-              {courseExams.length === 0 && (
-                <tr>
-                  <td colSpan={4} className="px-4 py-3 text-center text-gray-400">No exams found</td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-  );
-};
+ 
 const CourseWiseStudentManagement: React.FC = () => {
   const [departments] = useState<Department[]>(mockDepartments);
   const [courses] = useState<Course[]>(mockCourses);
@@ -994,12 +569,6 @@ const CourseWiseStudentManagement: React.FC = () => {
               <div className="mb-6">
                 <div className="flex mb-4 border-b border-gray-700">
                   <button 
-                    className={`py-2 px-4 ${activeTab === 'students' ? 'border-b-2 border-blue-500 text-blue-400' : 'text-gray-400'}`}
-                    onClick={() => setActiveTab('students')}
-                  >
-                    Student List
-                  </button>
-                  <button 
                     className={`py-2 px-4 ${activeTab === 'attendance' ? 'border-b-2 border-blue-500 text-blue-400' : 'text-gray-400'}`}
                     onClick={() => setActiveTab('attendance')}
                   >
@@ -1032,77 +601,7 @@ const CourseWiseStudentManagement: React.FC = () => {
                 )}
               </div>
             )}
-            
-            {/* Student Detail View */}
-            {selectedStudent && (
-              <div>
-                <div className="flex justify-between items-center mb-6">
-                  <h2 className="text-2xl font-bold text-white">
-                    {selectedStudent.name}
-                  </h2>
-                  <button 
-                    className="px-3 py-1 bg-gray-700 text-white rounded hover:bg-gray-600 transition-colors"
-                    onClick={() => setSelectedStudent(null)}
-                  >
-                    Back to List
-                  </button>
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                  <StatCard 
-                    title="Email" 
-                    content={selectedStudent.email} 
-                  />
-                  <StatCard 
-                    title="Department" 
-                    content={selectedStudent.department} 
-                  />
-                  <StatCard 
-                    title="Batch" 
-                    content={selectedStudent.batch} 
-                  />
-                </div>
-                
-                <div className="mb-6">
-                  <PerformanceChart 
-                    studentId={selectedStudent.id}
-                    students={students}
-                    assignments={assignments}
-                    exams={exams}
-                    attendance={attendance}
-                  />
-                </div>
-                
-                <div className="grid grid-cols-1 gap-6">
-                  <AttendanceTracker 
-                    attendance={attendance}
-                    studentId={selectedStudent.id}
-                  />
-                  
-                  <CourseReports 
-                    studentId={selectedStudent.id}
-                    courses={selectedStudent.courses}
-                    attendance={attendance}
-                    assignments={assignments}
-                    exams={exams}
-                  />
-                </div>
-              </div>
-            )}
-            
-            {/* Initial State - No Selection */}
-            {!selectedBatchId && !selectedStudent && (
-              <div className="bg-gray-800 text-white p-8 rounded-lg shadow-md text-center border border-gray-700">
-                <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                </svg>
-                <h3 className="mt-2 text-lg font-medium text-gray-200">Select a Department, Course, and Batch</h3>
-                <p className="mt-1 text-gray-400">
-                  Start by selecting a department from the left panel
-                </p>
-              </div>
-            )}
-          </div>
+            </div>
         </div>
       </div>
     </div>
