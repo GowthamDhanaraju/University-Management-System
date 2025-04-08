@@ -24,32 +24,7 @@ interface Club {
   description: string;
   members: ClubMember[];
   facultyCoordinators: FacultyCoordinator[];
-}
-
-interface Announcement {
-  id: string;
-  clubId: string;
-  title: string;
-  content: string;
-  date: string;
-}
-
-interface Discussion {
-  id: string;
-  clubId: string;
-  title: string;
-  content: string;
-  author: string;
-  date: string;
-  replies: Reply[];
-}
-
-interface Reply {
-  id: string;
-  author: string;
-  content: string;
-  date: string;
-}
+}  
 
 // Mock data with your specific clubs
 const mockClubs: Club[] = [
@@ -66,145 +41,14 @@ const mockClubs: Club[] = [
     facultyCoordinators: [
       { id: "f1", name: "Dr. James", department: "AID" }
     ]
-  },
-  {
-    id: "c2",
-    name: "Photography Club",
-    description: "Developing photography skills and visual storytelling through workshops and photo walks.",
-    members: [
-      { id: "m5", name: "Emma Thompson", role: "President", Dept: "AEE" },
-      { id: "m6", name: "Noah Williams", role: "Vice President", Dept: "EEE" },
-      { id: "m7", name: "Olivia Martin", role: "Member", Dept: "AID" },
-    ],
-    facultyCoordinators: [
-      { id: "f2", name: "Mr. Davis", department: "Arts" }
-    ]
-  },
-  {
-    id: "c3",
-    name: "IoT Club",
-    description: "Building internet of things projects and smart devices using sensors, microcontrollers, and cloud services.",
-    members: [
-      { id: "m8", name: "William Anderson", role: "President", Dept: "ECE" },
-      { id: "m9", name: "Sophia Lee", role: "Member", Dept: "EEE" },
-      { id: "m10", name: "James Clark", role: "Member", Dept: "AID" },
-    ],
-    facultyCoordinators: [
-      { id: "f3", name: "Dr. Chen", department: "Electronics" },
-      { id: "f4", name: "Ms. Jennifer", department: "CSE" }
-    ]
-  },
-];
-
-const mockAnnouncements: Announcement[] = [
-  {
-    id: "a1",
-    clubId: "c1",
-    title: "AI Workshop Series",
-    content: "Join us for a 4-week workshop series on neural networks, starting this Friday at 3 PM in Lab 2.",
-    date: "2025-03-29"
-  },
-  {
-    id: "a2",
-    clubId: "c1",
-    title: "Guest Speaker: Dr. Emily Ross",
-    content: "We're excited to host Dr. Emily Ross from Google AI Research next Wednesday. Don't miss this opportunity!",
-    date: "2025-03-25"
-  },
-  {
-    id: "a3",
-    clubId: "c2",
-    title: "Photography Exhibition",
-    content: "Submit your best shots for our annual exhibition by April 15th. Theme: 'Urban Wilderness'.",
-    date: "2025-03-28"
-  },
-  {
-    id: "a4",
-    clubId: "c3",
-    title: "Smart Home Project Deadline",
-    content: "All IoT smart home project proposals are due by this Friday. Components will be ordered next week.",
-    date: "2025-03-27"
-  },
-];
-
-const mockDiscussions: Discussion[] = [
-  {
-    id: "d1",
-    clubId: "c1",
-    title: "TensorFlow vs PyTorch for beginners?",
-    content: "I'm new to deep learning and wondering which framework I should learn first.",
-    author: "Alex Johnson",
-    date: "2025-03-20",
-    replies: [
-      {
-        id: "r1",
-        author: "Maria Garcia",
-        content: "PyTorch has a more intuitive API in my opinion. Start with that!",
-        date: "2025-03-21"
-      },
-      {
-        id: "r2",
-        author: "Dr. James Wilson",
-        content: "Both are excellent choices. PyTorch is more pythonic and easier for beginners, but TensorFlow has excellent deployment options.",
-        date: "2025-03-22"
-      }
-    ]
-  },
-  {
-    id: "d2",
-    clubId: "c2",
-    title: "Recommendations for budget portrait lenses",
-    content: "I'm looking to get into portrait photography. Any lens recommendations under $300?",
-    author: "Noah Williams",
-    date: "2025-03-18",
-    replies: [
-      {
-        id: "r3",
-        author: "Emma Thompson",
-        content: "The 50mm f/1.8 is a classic choice and very affordable. Great bokeh for the price!",
-        date: "2025-03-19"
-      }
-    ]
-  },
-  {
-    id: "d3",
-    clubId: "c3",
-    title: "Which microcontroller for weather station project?",
-    content: "I'm planning to build a solar-powered weather station. ESP32, Arduino, or Raspberry Pi?",
-    author: "Sophia Lee",
-    date: "2025-03-15",
-    replies: [
-      {
-        id: "r4",
-        author: "Dr. Robert Chen",
-        content: "ESP32 would be perfect - low power consumption, WiFi capabilities, and sufficient I/O for sensors.",
-        date: "2025-03-16"
-      },
-      {
-        id: "r5",
-        author: "William Anderson",
-        content: "I used ESP32 for a similar project. Battery lasted for weeks with proper sleep mode configuration!",
-        date: "2025-03-17"
-      }
-    ]
   }
-];
-
+]; 
 const TeacherClubDetails: React.FC = () => {
   const [selectedClub, setSelectedClub] = useState<Club | null>(mockClubs[0]);
-  const [activeTab, setActiveTab] = useState<'members' | 'announcements' | 'discussions'>('members');
+  const [activeTab, setActiveTab] = useState<'members' >('members');
   const [newAnnouncement, setNewAnnouncement] = useState({ title: '', content: '' });
   const [newDiscussion, setNewDiscussion] = useState({ title: '', content: '' });
-  const [newReply, setNewReply] = useState({ discussionId: '', content: '' });
-  const [showForm, setShowForm] = useState<'announcement' | 'discussion' | null>(null);
-
-  const filteredAnnouncements = selectedClub 
-    ? mockAnnouncements.filter(announcement => announcement.clubId === selectedClub.id)
-    : [];
-
-  const filteredDiscussions = selectedClub 
-    ? mockDiscussions.filter(discussion => discussion.clubId === selectedClub.id)
-    : [];
+  const [newReply, setNewReply] = useState({ discussionId: '', content: '' }); 
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -213,23 +57,7 @@ const TeacherClubDetails: React.FC = () => {
       day: 'numeric'
     });
   };
-
-  const handleNewAnnouncementSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    // In a real app, you would send this to your backend
-    console.log('New announcement:', newAnnouncement);
-    setNewAnnouncement({ title: '', content: '' });
-    setShowForm(null);
-  };
-
-  const handleNewDiscussionSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    // In a real app, you would send this to your backend
-    console.log('New discussion:', newDiscussion);
-    setNewDiscussion({ title: '', content: '' });
-    setShowForm(null);
-  };
-
+  
   const handleNewReplySubmit = (e: React.FormEvent, discussionId: string) => {
     e.preventDefault();
     // In a real app, you would send this to your backend
@@ -286,31 +114,7 @@ const TeacherClubDetails: React.FC = () => {
                       >
                         Members & Faculty
                       </button>
-                    </li>
-                    <li className="mr-1">
-                      <button
-                        className={`inline-block py-2 px-4 text-sm font-medium ${
-                          activeTab === 'announcements'
-                            ? 'text-blue-400 border-b-2 border-blue-500'
-                            : 'text-gray-400 hover:text-gray-300'
-                        }`}
-                        onClick={() => setActiveTab('announcements')}
-                      >
-                        Announcements
-                      </button>
-                    </li>
-                    <li className="mr-1">
-                      <button
-                        className={`inline-block py-2 px-4 text-sm font-medium ${
-                          activeTab === 'discussions'
-                            ? 'text-blue-400 border-b-2 border-blue-500'
-                            : 'text-gray-400 hover:text-gray-300'
-                        }`}
-                        onClick={() => setActiveTab('discussions')}
-                      >
-                        Discussions
-                      </button>
-                    </li>
+                    </li>  
                   </ul>
                 </div>
                 
@@ -367,191 +171,6 @@ const TeacherClubDetails: React.FC = () => {
                         </table>
                       </div>
                     </div>
-                  </div>
-                )}
-                
-                {activeTab === 'announcements' && (
-                  <div>
-                    <div className="flex justify-between items-center mb-4">
-                      <h3 className="text-lg font-semibold text-gray-300">Announcements</h3>
-                      <button 
-                        className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm hover:bg-blue-700"
-                        onClick={() => setShowForm('announcement')}
-                      >
-                        New Announcement
-                      </button>
-                    </div>
-                    
-                    {showForm === 'announcement' && (
-                      <div className="bg-gray-700 p-4 rounded-lg mb-6">
-                        <h4 className="font-medium mb-3">Create New Announcement</h4>
-                        <form onSubmit={handleNewAnnouncementSubmit}>
-                          <div className="mb-4">
-                            <label className="block text-gray-300 text-sm font-medium mb-2">Title</label>
-                            <input 
-                              type="text" 
-                              className="w-full px-3 py-2 border border-gray-600 rounded-md bg-gray-800 text-gray-200"
-                              value={newAnnouncement.title}
-                              onChange={(e) => setNewAnnouncement({...newAnnouncement, title: e.target.value})}
-                              required
-                            />
-                          </div>
-                          <div className="mb-4">
-                            <label className="block text-gray-300 text-sm font-medium mb-2">Content</label>
-                            <textarea 
-                              className="w-full px-3 py-2 border border-gray-600 rounded-md bg-gray-800 text-gray-200"
-                              rows={4}
-                              value={newAnnouncement.content}
-                              onChange={(e) => setNewAnnouncement({...newAnnouncement, content: e.target.value})}
-                              required
-                            ></textarea>
-                          </div>
-                          <div className="flex justify-end gap-2">
-                            <button 
-                              type="button" 
-                              className="px-4 py-2 text-sm text-gray-300 hover:bg-gray-600 rounded-md"
-                              onClick={() => setShowForm(null)}
-                            >
-                              Cancel
-                            </button>
-                            <button 
-                              type="submit" 
-                              className="px-4 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700"
-                            >
-                              Post Announcement
-                            </button>
-                          </div>
-                        </form>
-                      </div>
-                    )}
-                    
-                    {filteredAnnouncements.length > 0 ? (
-                      <div className="space-y-4">
-                        {filteredAnnouncements.map(announcement => (
-                          <div key={announcement.id} className="border border-gray-700 rounded-lg p-4 bg-gray-700">
-                            <div className="flex justify-between items-start">
-                              <h4 className="font-medium text-lg">{announcement.title}</h4>
-                              <span className="text-sm text-gray-400">{formatDate(announcement.date)}</span>
-                            </div>
-                            <p className="mt-2 text-gray-300">{announcement.content}</p>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <p className="text-gray-400 italic">No announcements for this club yet.</p>
-                    )}
-                  </div>
-                )}
-                
-                {activeTab === 'discussions' && (
-                  <div>
-                    <div className="flex justify-between items-center mb-4">
-                      <h3 className="text-lg font-semibold text-gray-300">Discussions</h3>
-                      <button 
-                        className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm hover:bg-blue-700"
-                        onClick={() => setShowForm('discussion')}
-                      >
-                        New Discussion
-                      </button>
-                    </div>
-                    
-                    {showForm === 'discussion' && (
-                      <div className="bg-gray-700 p-4 rounded-lg mb-6">
-                        <h4 className="font-medium mb-3">Start New Discussion</h4>
-                        <form onSubmit={handleNewDiscussionSubmit}>
-                          <div className="mb-4">
-                            <label className="block text-gray-300 text-sm font-medium mb-2">Title</label>
-                            <input 
-                              type="text" 
-                              className="w-full px-3 py-2 border border-gray-600 rounded-md bg-gray-800 text-gray-200"
-                              value={newDiscussion.title}
-                              onChange={(e) => setNewDiscussion({...newDiscussion, title: e.target.value})}
-                              required
-                            />
-                          </div>
-                          <div className="mb-4">
-                            <label className="block text-gray-300 text-sm font-medium mb-2">Content</label>
-                            <textarea 
-                              className="w-full px-3 py-2 border border-gray-600 rounded-md bg-gray-800 text-gray-200"
-                              rows={4}
-                              value={newDiscussion.content}
-                              onChange={(e) => setNewDiscussion({...newDiscussion, content: e.target.value})}
-                              required
-                            ></textarea>
-                          </div>
-                          <div className="flex justify-end gap-2">
-                            <button 
-                              type="button" 
-                              className="px-4 py-2 text-sm text-gray-300 hover:bg-gray-600 rounded-md"
-                              onClick={() => setShowForm(null)}
-                            >
-                              Cancel
-                            </button>
-                            <button 
-                              type="submit" 
-                              className="px-4 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700"
-                            >
-                              Post Discussion
-                            </button>
-                          </div>
-                        </form>
-                      </div>
-                    )}
-                    
-                    {filteredDiscussions.length > 0 ? (
-                      <div className="space-y-6">
-                        {filteredDiscussions.map(discussion => (
-                          <div key={discussion.id} className="border border-gray-700 rounded-lg overflow-hidden">
-                            <div className="p-4 bg-gray-700">
-                              <div className="flex justify-between items-start">
-                                <h4 className="font-medium text-lg">{discussion.title}</h4>
-                                <span className="text-sm text-gray-400">{formatDate(discussion.date)}</span>
-                              </div>
-                              <p className="mt-2 text-gray-300">{discussion.content}</p>
-                              <p className="mt-2 text-sm text-gray-400">Posted by: {discussion.author}</p>
-                            </div>
-                            
-                            {/* Replies */}
-                            <div className="border-t border-gray-600">
-                              {discussion.replies.map(reply => (
-                                <div key={reply.id} className="p-4 border-b border-gray-600 last:border-0 ml-6 bg-gray-800">
-                                  <div className="flex justify-between items-start">
-                                    <p className="text-sm font-medium">{reply.author}</p>
-                                    <span className="text-xs text-gray-400">{formatDate(reply.date)}</span>
-                                  </div>
-                                  <p className="mt-1 text-gray-300">{reply.content}</p>
-                                </div>
-                              ))}
-                            </div>
-                            
-                            {/* Reply Form */}
-                            <div className="p-4 bg-gray-700 border-t border-gray-600">
-                              <form onSubmit={(e) => handleNewReplySubmit(e, discussion.id)}>
-                                <div className="flex gap-2">
-                                  <input 
-                                    type="text" 
-                                    className="flex-1 px-3 py-2 border border-gray-600 rounded-md bg-gray-800 text-gray-200"
-                                    placeholder="Write a reply..."
-                                    value={newReply.discussionId === discussion.id ? newReply.content : ''}
-                                    onChange={(e) => setNewReply({discussionId: discussion.id, content: e.target.value})}
-                                    onClick={() => setNewReply({discussionId: discussion.id, content: ''})}
-                                    required
-                                  />
-                                  <button 
-                                    type="submit" 
-                                    className="px-4 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700"
-                                  >
-                                    Reply
-                                  </button>
-                                </div>
-                              </form>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <p className="text-gray-400 italic">No discussions for this club yet.</p>
-                    )}
                   </div>
                 )}
               </div>
