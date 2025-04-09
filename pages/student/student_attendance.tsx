@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import Sidebar from "../../components/student_sidebar";
-import TopBar from "../../components/student_topbar";
+import TopBar from "@/components/topbar";
 import { FaTasks, FaChevronDown, FaChevronUp } from "react-icons/fa";
 import { attendanceData, SemesterAttendance } from "../../data/attendanceData";
 import Typography from "@mui/material/Typography";

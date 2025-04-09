@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from "react";
 import TeacherSidebar from "@/components/teacher_sidebar";
+import TopBar from "@/components/topbar";
 import { CalendarIcon, MapPinIcon, UserGroupIcon, ClockIcon } from "@heroicons/react/24/outline";
 import { FaChalkboardTeacher } from "react-icons/fa";
+import { Typography } from "@mui/material";
 
 const TIME_SLOTS = [
   "9:00 - 9:50",
@@ -186,51 +188,76 @@ const TeacherTimetable: React.FC = () => {
 
   const nextClass = getNextClass();
 
-  return (
-    <div className="flex bg-gray-900 min-h-screen">
-      <TeacherSidebar />
-      <div className="ml-16 p-6 w-full text-gray-200">
-        <div className="flex items-center mb-6">
-          <div className="p-3 bg-blue-600 rounded-xl mr-4">
-            <FaChalkboardTeacher className="text-white text-xl" />
-          </div>
-          <h1 className="text-2xl font-bold text-white">My Teaching Schedule</h1>
-        </div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          <div className="bg-gradient-to-br from-blue-900/70 to-blue-800/40 p-4 rounded-lg border border-blue-700/50 shadow-lg">
+  return (
+    <div className="min-h-screen bg-gray-900 text-gray-200 flex">
+      <TeacherSidebar />
+      <div className="flex-1 p-6 ml-16">
+        <TopBar />
+        <div className="flex flex-col gap-6 ml-6 mr-6">
+          <div className="flex items-center justify-between">
             <div className="flex items-center">
-              <div className="p-3 bg-blue-800 rounded-lg mr-3">
-                <ClockIcon className="h-6 w-6 text-blue-200" />
+              <div className="p-3 mr-4 bg-blue-500 rounded-xl shadow-lg">
+                <CalendarIcon className="text-gray-100 w-6 h-6" />
               </div>
-              <div>
-                <h3 className="text-blue-200 text-sm font-medium">Teaching Hours</h3>
-                <p className="text-white text-xl font-bold">{getTeachingHours()} hrs/week</p>
-              </div>
+              <Typography
+                variant="h4"
+                component="h1"
+                className="font-bold bg-blue-500 bg-clip-text text-transparent"
+              >
+                My Teaching Schedule
+              </Typography>
+            </div>
+            <div className="flex items-center gap-2">
+              <select
+                id="day-filter"
+                value={filterDay}
+                onChange={handleFilterDayChange}
+                className="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">All Days</option>
+                {DAYS.map(day => (
+                  <option key={day} value={day}>{day}</option>
+                ))}
+              </select>
             </div>
           </div>
-          
-          <div className="bg-gradient-to-br from-purple-900/70 to-purple-800/40 p-4 rounded-lg border border-purple-700/50 shadow-lg">
-            <div className="flex items-center">
-              <div className="p-3 bg-purple-800 rounded-lg mr-3">
-                <UserGroupIcon className="h-6 w-6 text-purple-200" />
-              </div>
-              <div>
-                <h3 className="text-purple-200 text-sm font-medium">Classes Assigned</h3>
-                <p className="text-white text-xl font-bold">{CLASSES.length}</p>
+
+          {/* Stat Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="bg-gradient-to-br from-blue-900/70 to-blue-800/40 p-4 rounded-lg border border-blue-700/50 shadow-lg">
+              <div className="flex items-center">
+                <div className="p-3 bg-blue-800 rounded-lg mr-3">
+                  <ClockIcon className="h-6 w-6 text-blue-200" />
+                </div>
+                <div>
+                  <h3 className="text-blue-200 text-sm font-medium">Teaching Hours</h3>
+                  <p className="text-white text-xl font-bold">{getTeachingHours()} hrs/week</p>
+                </div>
               </div>
             </div>
-          </div>
-          
-          <div className="bg-gradient-to-br from-green-900/70 to-green-800/40 p-4 rounded-lg border border-green-700/50 shadow-lg">
-            <div className="flex items-center">
-              <div className="p-3 bg-green-800 rounded-lg mr-3">
-                <CalendarIcon className="h-6 w-6 text-green-200" />
+
+            <div className="bg-gradient-to-br from-purple-900/70 to-purple-800/40 p-4 rounded-lg border border-purple-700/50 shadow-lg">
+              <div className="flex items-center">
+                <div className="p-3 bg-purple-800 rounded-lg mr-3">
+                  <UserGroupIcon className="h-6 w-6 text-purple-200" />
+                </div>
+                <div>
+                  <h3 className="text-purple-200 text-sm font-medium">Classes Assigned</h3>
+                  <p className="text-white text-xl font-bold">{CLASSES.length}</p>
+                </div>
               </div>
-              <div>
-                <h3 className="text-green-200 text-sm font-medium">Subjects</h3>
-                <p className="text-white text-xl font-bold">{TEACHER.subjects.length}</p>
+            </div>
+
+            <div className="bg-gradient-to-br from-green-900/70 to-green-800/40 p-4 rounded-lg border border-green-700/50 shadow-lg">
+              <div className="flex items-center">
+                <div className="p-3 bg-green-800 rounded-lg mr-3">
+                  <CalendarIcon className="h-6 w-6 text-green-200" />
+                </div>
+                <div>
+                  <h3 className="text-green-200 text-sm font-medium">Subjects</h3>
+                  <p className="text-white text-xl font-bold">{TEACHER.subjects.length}</p>
+                </div>
               </div>
             </div>
           </div>
@@ -262,28 +289,7 @@ const TeacherTimetable: React.FC = () => {
           </div>
         )}
 
-        {/* Controls */}
-        <div className="bg-gray-800 p-4 rounded-lg shadow-md mb-6 border border-gray-700">
-          <div className="flex items-center justify-between">
-            <h2 className="text-xl font-semibold text-white">{TEACHER.name}'s Timetable</h2>
-            
-            <div className="w-48">
-              <select 
-                value={filterDay} 
-                onChange={handleFilterDayChange}
-                className="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="">All Days</option>
-                {DAYS.map(day => (
-                  <option key={day} value={day}>{day}</option>
-                ))}
-              </select>
-            </div>
-          </div>
-        </div>
-
-        {/* Timetable */}
-        <div className="bg-gray-800 p-4 rounded-lg shadow-md overflow-x-auto border border-gray-700">
+        <div className="w-[1300px] bg-gray-800 p-4 rounded-lg shadow-md overflow-x-auto border border-gray-700 ml-8 mt-6">
           <table className="w-full border-collapse">
             <thead>
               <tr>

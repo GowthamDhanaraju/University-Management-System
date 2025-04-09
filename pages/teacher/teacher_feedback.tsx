@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import TeacherSidebar from "@/components/teacher_sidebar";
+import TopBar from "@/components/topbar";
 import { FaChalkboardTeacher, FaComments, FaStar, FaFilter } from "react-icons/fa";
-import { Typography, Paper, Divider, Box, Chip } from "@mui/material";
+import { Typography, Divider } from "@mui/material";
 
 interface Feedback {
   id: number;
@@ -24,7 +25,6 @@ interface Feedback {
 }
 
 const TeacherFeedback: React.FC = () => {
-  // Sample data - replace with actual API calls
   const courses = [
     { id: 1, name: "Mathematics" },
     { id: 2, name: "Computer Science" },
@@ -132,16 +132,16 @@ const TeacherFeedback: React.FC = () => {
 
     const courseQuality = filteredFeedbacks.reduce((sum, fb) => {
       return sum + (
-        (fb.courseRatings.contentQuality + 
-         fb.courseRatings.difficultyLevel + 
+        (fb.courseRatings.contentQuality +
+         fb.courseRatings.difficultyLevel +
          fb.courseRatings.practicalApplication) / 3
       );
     }, 0) / filteredFeedbacks.length;
 
     const teachingQuality = filteredFeedbacks.reduce((sum, fb) => {
       return sum + (
-        (fb.facultyRatings.teachingQuality + 
-         fb.facultyRatings.communication + 
+        (fb.facultyRatings.teachingQuality +
+         fb.facultyRatings.communication +
          fb.facultyRatings.availability) / 3
       );
     }, 0) / filteredFeedbacks.length;
@@ -157,41 +157,34 @@ const TeacherFeedback: React.FC = () => {
 
   const averageRatings = calculateAverageRatings();
 
-  // Function to render stars based on rating
-  const renderStars = (rating: number) => {
-    return (
-      <div className="flex">
-        {[...Array(5)].map((_, i) => (
-          <span key={i} className={`text-lg ${i < rating ? "text-yellow-400" : "text-gray-400"}`}>★</span>
-        ))}
-        <span className="ml-2 text-white">{rating.toFixed(1)}</span>
-      </div>
-    );
-  };
+  const renderStars = (rating: number) => (
+    <div className="flex">
+      {[...Array(5)].map((_, i) => (
+        <span key={i} className={`text-lg ${i < rating ? "text-yellow-400" : "text-gray-400"}`}>★</span>
+      ))}
+      <span className="ml-2 text-white">{rating.toFixed(1)}</span>
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-gray-900 text-gray-200 flex">
       <TeacherSidebar />
-      <div className="flex-1 p-6 ml-16 flex flex-col">
-        {/* TopBar component removed */}
+      <div className="flex-1 p-6 ml-16">
+        <TopBar />
 
-        <div className="flex items-center mb-8 ml-6">
-          <div className="p-3 mr-4 bg-purple-500 rounded-xl shadow-lg">
+        <div className="flex items-center space-x-4 ml-6">
+          <div className="p-3 bg-blue-500 rounded-xl shadow-lg">
             <FaComments className="text-gray-100 text-2xl" />
           </div>
-          <Typography 
-            variant="h4" 
-            component="h1" 
-            className="font-bold bg-purple-500 bg-clip-text text-transparent"
-          >
+          <Typography variant="h4" component="h1" className="font-bold bg-blue-500 bg-clip-text text-transparent">
             Feedback Dashboard
           </Typography>
         </div>
-        
-        <div className="ml-6 mb-6">
-          <div className="flex items-center mb-4">
-            <FaFilter className="mr-2 text-purple-400" />
-            <Typography variant="h6" component="h2" className="text-white">
+
+        <div className="ml-6 space-y-4">
+          <div className="flex items-center mb-2 mt-4">
+            <FaFilter className="mr-2 text-blue-400" />
+            <Typography variant="h6" className="text-white">
               Filter by Course
             </Typography>
           </div>
@@ -209,31 +202,23 @@ const TeacherFeedback: React.FC = () => {
           </select>
         </div>
 
-        {/* Feedback Statistics */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 ml-6">
-          <div className="bg-gray-800 p-5 rounded-xl shadow-lg">
-            <h3 className="text-lg font-semibold mb-2 text-purple-300">Course Quality</h3>
-            <div className="flex items-center">
-              {renderStars(averageRatings.courseQuality)}
-            </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-10 ml-6 mt-4">
+          <div className="bg-gray-800 p-6 rounded-xl shadow-lg">
+            <h3 className="text-lg font-semibold mb-2 text-blue-300">Course Quality</h3>
+            {renderStars(averageRatings.courseQuality)}
           </div>
-          <div className="bg-gray-800 p-5 rounded-xl shadow-lg">
-            <h3 className="text-lg font-semibold mb-2 text-purple-300">Teaching Quality</h3>
-            <div className="flex items-center">
-              {renderStars(averageRatings.teachingQuality)}
-            </div>
+          <div className="bg-gray-800 p-6 rounded-xl shadow-lg">
+            <h3 className="text-lg font-semibold mb-2 text-blue-300">Teaching Quality</h3>
+            {renderStars(averageRatings.teachingQuality)}
           </div>
-          <div className="bg-gray-800 p-5 rounded-xl shadow-lg">
-            <h3 className="text-lg font-semibold mb-2 text-purple-300">Overall Rating</h3>
-            <div className="flex items-center">
-              {renderStars(averageRatings.overall)}
-            </div>
+          <div className="bg-gray-800 p-6 rounded-xl shadow-lg">
+            <h3 className="text-lg font-semibold mb-2 text-blue-300">Overall Rating</h3>
+            {renderStars(averageRatings.overall)}
           </div>
         </div>
 
-        {/* Feedback Items */}
-        <div className="ml-6">
-          <Typography variant="h5" component="h2" className="mb-4 font-semibold text-white">
+        <div className="ml-6 space-y-10 mt-4">
+          <Typography variant="h5" className="font-semibold text-white">
             {filteredFeedbacks.length} {filteredFeedbacks.length === 1 ? 'Feedback' : 'Feedbacks'} Received
           </Typography>
 
@@ -242,105 +227,81 @@ const TeacherFeedback: React.FC = () => {
               <Typography variant="body1">No feedback found for the selected course.</Typography>
             </div>
           ) : (
-            <div className="space-y-6">
-              {filteredFeedbacks.map((feedback) => (
-                <div key={feedback.id} className="bg-gray-800 p-6 rounded-xl shadow-lg">
-                  <div className="flex justify-between items-center mb-4">
-                    <div>
-                      <Typography variant="h6" className="text-blue-400">
-                        {feedback.courseName}
-                      </Typography>
-                      <Typography variant="body2" className="text-gray-400">
-                        Student ID: {feedback.studentId} • {feedback.date}
-                      </Typography>
-                    </div>
-                    <div className="flex items-center">
-                      <FaStar className="text-yellow-400 mr-1" />
-                      <span className="font-bold">{feedback.overallRating}/5</span>
-                    </div>
+            filteredFeedbacks.map((feedback) => (
+              <div key={feedback.id} className="bg-gray-800 p-6 md:p-8 rounded-xl shadow-lg space-y-2">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <Typography variant="h6" className="text-blue-400">
+                      {feedback.courseName}
+                    </Typography>
+                    <Typography variant="body2" className="text-gray-400">
+                      Student ID: {feedback.studentId} • {feedback.date}
+                    </Typography>
                   </div>
-                  
-                  <Divider className="bg-gray-600 mb-4" />
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                    <div>
-                      <Typography variant="subtitle2" className="text-purple-300 mb-2">
-                        Course Ratings
-                      </Typography>
-                      <div className="space-y-2">
-                        <div className="flex justify-between">
-                          <span>Content Quality:</span>
-                          <div className="flex">
-                            {[...Array(5)].map((_, i) => (
-                              <span key={i} className={`${i < feedback.courseRatings.contentQuality ? "text-yellow-400" : "text-gray-400"}`}>★</span>
-                            ))}
-                          </div>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>Difficulty Level:</span>
-                          <div className="flex">
-                            {[...Array(5)].map((_, i) => (
-                              <span key={i} className={`${i < feedback.courseRatings.difficultyLevel ? "text-yellow-400" : "text-gray-400"}`}>★</span>
-                            ))}
-                          </div>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>Practical Application:</span>
-                          <div className="flex">
-                            {[...Array(5)].map((_, i) => (
-                              <span key={i} className={`${i < feedback.courseRatings.practicalApplication ? "text-yellow-400" : "text-gray-400"}`}>★</span>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <div>
-                      <Typography variant="subtitle2" className="text-purple-300 mb-2">
-                        Faculty Ratings
-                      </Typography>
-                      <div className="space-y-2">
-                        <div className="flex justify-between">
-                          <span>Teaching Quality:</span>
-                          <div className="flex">
-                            {[...Array(5)].map((_, i) => (
-                              <span key={i} className={`${i < feedback.facultyRatings.teachingQuality ? "text-yellow-400" : "text-gray-400"}`}>★</span>
-                            ))}
-                          </div>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>Communication:</span>
-                          <div className="flex">
-                            {[...Array(5)].map((_, i) => (
-                              <span key={i} className={`${i < feedback.facultyRatings.communication ? "text-yellow-400" : "text-gray-400"}`}>★</span>
-                            ))}
-                          </div>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>Availability:</span>
-                          <div className="flex">
-                            {[...Array(5)].map((_, i) => (
-                              <span key={i} className={`${i < feedback.facultyRatings.availability ? "text-yellow-400" : "text-gray-400"}`}>★</span>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
+                  <div className="flex items-center">
+                    <FaStar className="text-yellow-400 mr-1" />
+                    <span className="font-bold">{feedback.overallRating}/5</span>
                   </div>
-                  
-                  {feedback.comments && (
-                    <>
-                      <Typography variant="subtitle2" className="text-purple-300 mb-2">
-                        Comments
-                      </Typography>
-                      <div className="bg-gray-700 p-4 rounded-lg">
-                        <Typography variant="body2">{feedback.comments}</Typography>
-                      </div>
-                    </>
-                  )}
                 </div>
-              ))}
-            </div>
+
+                <Divider className="bg-gray-600" />
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <Typography variant="subtitle2" className="text-blue-300 mb-2">
+                      Course Ratings
+                    </Typography>
+                    <div className="space-y-2">
+                      {["Content Quality", "Difficulty Level", "Practical Application"].map((label, idx) => {
+                        const rating = Object.values(feedback.courseRatings)[idx];
+                        return (
+                          <div className="flex justify-between" key={label}>
+                            <span>{label}:</span>
+                            <div className="flex">
+                              {[...Array(5)].map((_, i) => (
+                                <span key={i} className={`${i < rating ? "text-yellow-400" : "text-gray-400"}`}>★</span>
+                              ))}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  <div>
+                    <Typography variant="subtitle2" className="text-blue-300 mb-2">
+                      Faculty Ratings
+                    </Typography>
+                    <div className="space-y-2">
+                      {["Teaching Quality", "Communication", "Availability"].map((label, idx) => {
+                        const rating = Object.values(feedback.facultyRatings)[idx];
+                        return (
+                          <div className="flex justify-between" key={label}>
+                            <span>{label}:</span>
+                            <div className="flex">
+                              {[...Array(5)].map((_, i) => (
+                                <span key={i} className={`${i < rating ? "text-yellow-400" : "text-gray-400"}`}>★</span>
+                              ))}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+
+                {feedback.comments && (
+                  <>
+                    <Typography variant="subtitle2" className="text-blue-300">
+                      Comments
+                    </Typography>
+                    <div className="bg-gray-700 p-4 rounded-lg">
+                      <Typography variant="body2">{feedback.comments}</Typography>
+                    </div>
+                  </>
+                )}
+              </div>
+            ))
           )}
         </div>
       </div>

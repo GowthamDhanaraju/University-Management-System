@@ -1,143 +1,161 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import StudentSidebar from "@/components/student_sidebar";
+import TopBar from "@/components/topbar";
+import { FaUniversity } from "react-icons/fa";
+import { Typography } from "@mui/material";
 
 interface Book {
-  id: string;
-  title: string;
-  author: string;
-  category: string;
-  isbn: string;
-  publisher: string;
-  copies: number;
-  available: number;
-  location: string;
-}
+    id: string;
+    title: string;
+    author: string;
+    category: string;
+    isbn: string;
+    publisher: string;
+    copies: number;
+    available: number;
+    location: string;
+  }
+  
+  interface BorrowedBook extends Book {
+    borrowDate: string;
+    dueDate: string;
+  }
 
-interface BorrowedBook extends Book {
-  borrowDate: string;
-  dueDate: string;
-}
+const StudentBooks = () => {
 
-const StudentBooks: React.FC = () => {
-  // Available books list (would come from API in real application)
-  const [books, setBooks] = useState<Book[]>([
-    // Mathematics
-    {
-      id: "BK001",
-      title: "Calculus Made Easy",
-      author: "Silvanus P. Thompson",
-      category: "Mathematics",
-      isbn: "9780312185480",
-      publisher: "St. Martin's Press",
-      copies: 5,
-      available: 3,
-      location: "Shelf A1",
-    },
-    {
-      id: "BK002",
-      title: "Linear Algebra Done Right",
-      author: "Sheldon Axler",
-      category: "Mathematics",
-      isbn: "9783319110790",
-      publisher: "Springer",
-      copies: 4,
-      available: 4,
-      location: "Shelf A1",
-    },
-    // ...existing code with more books...
-  ]);
-
-  // Student's borrowed books
-  const [borrowedBooks, setBorrowedBooks] = useState<BorrowedBook[]>([]);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState<string>("All");
-
-  // Generate due date (14 days from today)
-  const generateDueDate = (): string => {
-    const date = new Date();
-    date.setDate(date.getDate() + 14);
-    return date.toISOString().split('T')[0];
-  };
-
-  // Borrow a book
-  const borrowBook = (book: Book) => {
-    if (book.available <= 0) {
-      alert("Sorry, this book is not available for borrowing");
-      return;
-    }
-
-    // Check if student already has this book
-    if (borrowedBooks.some(b => b.id === book.id)) {
-      alert("You have already borrowed this book");
-      return;
-    }
-
-    // Update available count in books list
-    const updatedBooks = books.map(b => 
-      b.id === book.id ? { ...b, available: b.available - 1 } : b
-    );
+    const [books, setBooks] = useState<Book[]>([
+        // Mathematics
+        {
+          id: "BK001",
+          title: "Calculus Made Easy",
+          author: "Silvanus P. Thompson",
+          category: "Mathematics",
+          isbn: "9780312185480",
+          publisher: "St. Martin's Press",
+          copies: 5,
+          available: 3,
+          location: "Shelf A1",
+        },
+        {
+          id: "BK002",
+          title: "Linear Algebra Done Right",
+          author: "Sheldon Axler",
+          category: "Mathematics",
+          isbn: "9783319110790",
+          publisher: "Springer",
+          copies: 4,
+          available: 4,
+          location: "Shelf A1",
+        },
+        // ...existing code with more books...
+      ]);
     
-    // Add to borrowed books
-    const borrowedBook: BorrowedBook = {
-      ...book,
-      borrowDate: new Date().toISOString().split('T')[0],
-      dueDate: generateDueDate(),
-    };
-
-    setBorrowedBooks([...borrowedBooks, borrowedBook]);
-    setBooks(updatedBooks);
-  };
-
-  // Return a book
-  const returnBook = (bookId: string) => {
-    // Remove from borrowed books
-    const updatedBorrowedBooks = borrowedBooks.filter(b => b.id !== bookId);
+      // Student's borrowed books
+      const [borrowedBooks, setBorrowedBooks] = useState<BorrowedBook[]>([]);
+      const [searchQuery, setSearchQuery] = useState("");
+      const [selectedCategory, setSelectedCategory] = useState<string>("All");
     
-    // Update available count in books list
-    const updatedBooks = books.map(b => 
-      b.id === bookId ? { ...b, available: b.available + 1 } : b
-    );
-
-    setBorrowedBooks(updatedBorrowedBooks);
-    setBooks(updatedBooks);
-  };
-
-  // Get unique categories
-  const categories = ["All", ...new Set(books.map(book => book.category))];
-
-  // Filter books based on search query and category
-  const filteredBooks = books.filter(book => {
-    const matchesSearch = `${book.title} ${book.author} ${book.category}`
-      .toLowerCase()
-      .includes(searchQuery.toLowerCase());
+      // Generate due date (14 days from today)
+      const generateDueDate = (): string => {
+        const date = new Date();
+        date.setDate(date.getDate() + 14);
+        return date.toISOString().split('T')[0];
+      };
     
-    const matchesCategory = selectedCategory === "All" || book.category === selectedCategory;
+      // Borrow a book
+      const borrowBook = (book: Book) => {
+        if (book.available <= 0) {
+          alert("Sorry, this book is not available for borrowing");
+          return;
+        }
     
-    return matchesSearch && matchesCategory;
-  });
-
-  // Group filtered books by category
-  const groupedBooks = filteredBooks.reduce((acc, book) => {
-    if (selectedCategory !== "All") {
-      // When a category is selected, don't group
-      acc["Selected"] = acc["Selected"] || [];
-      acc["Selected"].push(book);
-    } else {
-      // Group by category when "All" is selected
-      acc[book.category] = acc[book.category] || [];
-      acc[book.category].push(book);
-    }
-    return acc;
-  }, {} as { [key: string]: Book[] });
+        // Check if student already has this book
+        if (borrowedBooks.some(b => b.id === book.id)) {
+          alert("You have already borrowed this book");
+          return;
+        }
+    
+        // Update available count in books list
+        const updatedBooks = books.map(b => 
+          b.id === book.id ? { ...b, available: b.available - 1 } : b
+        );
+        
+        // Add to borrowed books
+        const borrowedBook: BorrowedBook = {
+          ...book,
+          borrowDate: new Date().toISOString().split('T')[0],
+          dueDate: generateDueDate(),
+        };
+    
+        setBorrowedBooks([...borrowedBooks, borrowedBook]);
+        setBooks(updatedBooks);
+      };
+    
+      // Return a book
+      const returnBook = (bookId: string) => {
+        // Remove from borrowed books
+        const updatedBorrowedBooks = borrowedBooks.filter(b => b.id !== bookId);
+        
+        // Update available count in books list
+        const updatedBooks = books.map(b => 
+          b.id === bookId ? { ...b, available: b.available + 1 } : b
+        );
+    
+        setBorrowedBooks(updatedBorrowedBooks);
+        setBooks(updatedBooks);
+      };
+    
+      // Get unique categories
+      const categories = ["All", ...new Set(books.map(book => book.category))];
+    
+      // Filter books based on search query and category
+      const filteredBooks = books.filter(book => {
+        const matchesSearch = `${book.title} ${book.author} ${book.category}`
+          .toLowerCase()
+          .includes(searchQuery.toLowerCase());
+        
+        const matchesCategory = selectedCategory === "All" || book.category === selectedCategory;
+        
+        return matchesSearch && matchesCategory;
+      });
+    
+      // Group filtered books by category
+      const groupedBooks = filteredBooks.reduce((acc, book) => {
+        if (selectedCategory !== "All") {
+          // When a category is selected, don't group
+          acc["Selected"] = acc["Selected"] || [];
+          acc["Selected"].push(book);
+        } else {
+          // Group by category when "All" is selected
+          acc[book.category] = acc[book.category] || [];
+          acc[book.category].push(book);
+        }
+        return acc;
+      }, {} as { [key: string]: Book[] });
 
   return (
-    <div className="flex h-screen overflow-hidden bg-gray-900 text-gray-200">
+    <div className="min-h-screen bg-gray-900 text-gray-200 flex">
       <StudentSidebar />
-      <div className="flex-1 overflow-y-auto p-6 pl-24">
-        <h1 className="text-2xl font-bold mb-6">📚 Library Books</h1>
+      <div className="flex-1 p-6 ml-16">
+        <TopBar />
+
+        <div className="flex justify-between items-center mb-8 mt-4 ml-2">
+          <div className="flex items-center ml-2">
+            <div className="p-3 mr-4 bg-green-600 rounded-xl shadow-lg">
+              <FaUniversity className="text-gray-100 text-2xl" />
+            </div>
+            <Typography
+              variant="h4"
+              component="h1"
+              className="font-bold bg-green-600 bg-clip-text text-transparent"
+            >
+              Library Books
+            </Typography>
+          </div>
+        </div>
 
         {/* Borrowed Books Section */}
-        <div className="bg-gray-800 p-6 rounded shadow-md mb-8">
+        <div className="bg-gray-800 p-6 rounded shadow-md mb-8 ml-5">
           <h2 className="text-lg font-semibold mb-4">My Borrowed Books</h2>
           
           {borrowedBooks.length === 0 ? (
@@ -176,9 +194,9 @@ const StudentBooks: React.FC = () => {
             </div>
           )}
         </div>
-
+        
         {/* Available Books Section */}
-        <div className="bg-gray-800 p-6 rounded shadow-md mb-8">
+        <div className="bg-gray-800 p-6 rounded shadow-md mb-8 ml-5">
           <h2 className="text-lg font-semibold mb-4">Available Books</h2>
           
           <div className="flex flex-col md:flex-row gap-4 mb-4">
@@ -249,6 +267,7 @@ const StudentBooks: React.FC = () => {
             </div>
           ))}
         </div>
+        
       </div>
     </div>
   );

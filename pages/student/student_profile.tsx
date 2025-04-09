@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import StudentSidebar from "@/components/student_sidebar";
-import TopBar from "@/components/student_topbar";
-import { FaChalkboardTeacher } from "react-icons/fa";
+import TopBar from "@/components/topbar";
 import { Typography } from "@mui/material";
 import { FiUser } from "react-icons/fi";
 

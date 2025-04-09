@@ -1,5 +1,8 @@
 import React, { useState } from "react";
 import AdminSidebar from "@/components/admin_sidebar";
+import TopBar from "@/components/topbar";
+import { BookOpenIcon } from "@heroicons/react/16/solid";
+import { Typography } from "@mui/material";
 
 interface Book {
   id: string;
@@ -462,9 +465,17 @@ const BookManagement: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-900 text-gray-200">
       <AdminSidebar />
-      <div className="ml-16 p-6 w-full text-gray-200">
-        <h1 className="text-2xl font-bold mb-6">📚 Book Management</h1>
-  
+      <div className="flex-1 p-6 ml-16">
+        <TopBar />
+        <div className="flex items-center space-x-4 ml-10">
+          <div className="p-3 bg-blue-500 rounded-xl shadow-lg">
+            <BookOpenIcon className="w-8 h-8" />
+          </div>
+          <Typography variant="h4" component="h1" className="font-bold bg-blue-500 bg-clip-text text-transparent">
+            Library Management
+          </Typography>
+        </div>
+      <div className="ml-16 p-6 w-full text-gray-200 ml-4">
         {/* Add Book Form */}
         <div className="bg-gray-800 p-6 rounded shadow-md mb-8">
           <h2 className="text-lg font-semibold mb-4">
@@ -593,6 +604,7 @@ const BookManagement: React.FC = () => {
         </div>
       </div>
     </div>
+  </div>
   );
 };
 

@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from "react";
 import AdminSidebar from "@/components/admin_sidebar";
+import TopBar from "@/components/topbar";
+import { AcademicCapIcon } from "@heroicons/react/24/outline";
+import { Typography } from "@mui/material";
 
 const StudentManagement: React.FC = () => {
   const [students, setStudents] = useState([
@@ -103,9 +106,17 @@ const StudentManagement: React.FC = () => {
   return (
     <div className="flex bg-gray-900 min-h-screen">
       <AdminSidebar />
-      <div className="ml-16 p-6 w-full text-gray-200">
-        <h1 className="text-2xl font-bold text-white">Student Management</h1>
-
+      <div className="flex-1 p-6 ml-16">
+        <TopBar />
+        <div className="flex items-center space-x-4 ml-10">
+          <div className="p-3 bg-blue-500 rounded-xl shadow-lg">
+            <AcademicCapIcon className="w-8 h-8" />
+          </div>
+          <Typography variant="h4" component="h1" className="font-bold bg-blue-500 bg-clip-text text-transparent">
+            Student Management
+          </Typography>
+        </div>
+      <div className="ml-16 p-6 w-full text-gray-200 ml-4">
         {/* Add/Edit Student Form */}
         <div className="bg-gray-800 p-6 rounded-lg shadow-md mt-4 border border-gray-700">
           <h3 className="text-lg font-semibold text-gray-100">
@@ -266,6 +277,7 @@ const StudentManagement: React.FC = () => {
         </div>
       </div>
     </div>
+  </div>
   );
 };
 

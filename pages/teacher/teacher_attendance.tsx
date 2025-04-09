@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import Sidebar from "../../components/teacher_sidebar";
-import { FaTasks, FaChevronDown, FaChevronUp, FaCalendarAlt } from "react-icons/fa";
+import TopBar from "@/components/topbar";
+import { FaTasks, FaCalendarAlt } from "react-icons/fa";
 import Typography from "@mui/material/Typography";
 import { Dialog, DialogContent, DialogTitle, DialogActions, Button } from "@mui/material";
 import DatePicker from "react-datepicker";
@@ -35,7 +36,7 @@ const teacherCourses = [
 ];
 
 // Mock attendance data
-const mockAttendanceData = {
+const mockAttendanceData: Record<string, Record<string, Record<string, string>>> = {
   "CS101": {
     "2023-05-15": {
       "S001": "present",
@@ -71,11 +72,11 @@ const mockAttendanceData = {
 
 const TeacherAttendance: React.FC = () => {
   const [selectedCourse, setSelectedCourse] = useState<string>(teacherCourses[0].id);
-  const [attendanceData, setAttendanceData] = useState(mockAttendanceData);
+  const [attendanceData, setAttendanceData] = useState<Record<string, Record<string, Record<string, string>>>>(mockAttendanceData);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [openDateDialog, setOpenDateDialog] = useState(false);
   const [editingAttendance, setEditingAttendance] = useState(false);
-  const [tempAttendance, setTempAttendance] = useState<{[key: string]: string}>({});
+  const [tempAttendance, setTempAttendance] = useState<Record<string, string>>({});
 
   const dateString = selectedDate.toISOString().split('T')[0];
   
@@ -94,7 +95,7 @@ const TeacherAttendance: React.FC = () => {
       }
       
       if (!attendanceData[selectedCourse]?.[dateString]) {
-        const newAttendance: {[key: string]: string} = {};
+        const newAttendance: Record<string, string> = {};
         getCurrentCourseStudents().forEach(student => {
           newAttendance[student.id] = "notTaken";
         });
@@ -112,17 +113,19 @@ const TeacherAttendance: React.FC = () => {
         setTempAttendance(attendanceData[selectedCourse][dateString] || {});
       }
     }
-  }, [selectedCourse, dateString]);
+  }, [selectedCourse, dateString, attendanceData]);
 
   const handleCourseChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     setSelectedCourse(event.target.value);
     setEditingAttendance(false);
   };
 
-  const handleDateChange = (date: Date) => {
-    setSelectedDate(date);
-    setOpenDateDialog(false);
-    setEditingAttendance(false);
+  const handleDateChange = (date: Date | null) => {
+      if (date) {
+          setSelectedDate(date);
+          setOpenDateDialog(false);
+          setEditingAttendance(false);
+      }
   };
 
   const startEditing = () => {
@@ -194,11 +197,12 @@ const TeacherAttendance: React.FC = () => {
       </div>
       
       {/* Main content */}
-      <div className="flex-1 p-6 ml-16 w-[calc(100%-4rem)] relative">
-        <div className="flex-1 p-4">
+      <div className="flex-1 ml-16 p-6">
+        <TopBar />
+        <div className="p-4 pt-2">
           <div className="w-full mx-auto max-w-7xl">
             {/* Header */}
-            <div className="flex items-center mb-6">
+            <div className="flex items-center mb-4">
               <div className="p-3 mr-4 bg-blue-500 rounded-xl shadow-lg">
                 <FaTasks className="text-gray-100 text-2xl" />
               </div>
@@ -212,7 +216,7 @@ const TeacherAttendance: React.FC = () => {
             </div>
 
             {/* Top action bar */}
-            <div className="flex flex-wrap items-center justify-between gap-4 mb-6 bg-gray-800 p-4 rounded-xl">
+            <div className="flex flex-wrap items-center justify-between gap-4 mb-4 bg-gray-800 p-4 rounded-xl">
               {/* Course selection */}
               <div className="flex items-center gap-3">
                 <select
@@ -266,7 +270,7 @@ const TeacherAttendance: React.FC = () => {
             </div>
 
             {/* Stats cards - simplified */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3 mb-6">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3 mb-4">
               <div className="bg-gray-800 p-3 rounded-xl shadow-md hover:bg-gray-750 transition-colors">
                 <h3 className="text-xs font-semibold text-gray-400">Total</h3>
                 <p className="text-xl font-bold text-gray-200">{stats.total}</p>

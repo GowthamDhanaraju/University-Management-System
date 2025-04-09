@@ -1,13 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
 import { useRouter } from "next/router";
 import TeacherSidebar from "@/components/teacher_sidebar";
-import { 
-  BookOpenIcon, 
-  UserGroupIcon, 
-  CalendarIcon, 
-  AcademicCapIcon,
-  BuildingOfficeIcon
-} from "@heroicons/react/24/outline";
+import TopBar from "@/components/topbar";
+import { AcademicCapIcon, BookOpenIcon, BuildingOfficeIcon, CalendarIcon, UserGroupIcon } from "@heroicons/react/24/outline";
+import { Typography } from "@mui/material";
 
 // Type definitions
 interface Course {
@@ -18,13 +14,20 @@ interface Course {
   department: string;
   sections: string[];
   students: number;
-  status: 'Active' | 'Upcoming' | 'Archived';
+  status: "Active" | "Upcoming" | "Archived";
 }
 
-const TeacherCourseManagement: React.FC = () => {
+const TeacherCourses: React.FC = () => {
   const router = useRouter();
-  
-  // Sample data - expanded with more courses for better demonstration
+
+  useEffect(() => {
+    const storedRole = localStorage.getItem("role");
+    if (storedRole !== "teacher") {
+      router.push("/");
+    }
+  }, [router]);
+
+  // Sample course data
   const courses: Course[] = [
     {
       id: "cs101",
@@ -34,7 +37,7 @@ const TeacherCourseManagement: React.FC = () => {
       department: "Computer Science",
       sections: ["A", "B"],
       students: 75,
-      status: "Active"
+      status: "Active",
     },
     {
       id: "cs301",
@@ -44,7 +47,7 @@ const TeacherCourseManagement: React.FC = () => {
       department: "Computer Science",
       sections: ["C"],
       students: 52,
-      status: "Active"
+      status: "Active",
     },
     {
       id: "cs405",
@@ -54,7 +57,7 @@ const TeacherCourseManagement: React.FC = () => {
       department: "Computer Science",
       sections: ["A"],
       students: 45,
-      status: "Active"
+      status: "Active",
     },
     {
       id: "cs202",
@@ -64,30 +67,32 @@ const TeacherCourseManagement: React.FC = () => {
       department: "Computer Science",
       sections: ["B", "D"],
       students: 68,
-      status: "Active"
-    }
+      status: "Active",
+    },
   ];
-  
-  useEffect(() => {
-    // Check if user is logged in as teacher
-    const storedRole = localStorage.getItem("role");
-    if (storedRole !== "teacher") router.push("/");
-  }, [router]);
 
   return (
     <div className="min-h-screen bg-gray-900 text-gray-200 flex">
       <TeacherSidebar />
-      
       <div className="flex-1 p-6 ml-16">
-        <div className="flex items-center mb-6">
-          <div className="p-3 bg-blue-600 rounded-xl mr-4">
-            <BookOpenIcon className="h-6 w-6 text-white" />
+        <TopBar />
+        <div className="flex items-center justify-between mb-8 ml-6 mr-6">
+          <div className="flex items-center">
+            <div className="p-3 mr-4 bg-blue-500 rounded-xl shadow-lg">
+              <BookOpenIcon className="text-gray-100 w-6 h-6" />
+            </div>
+            <Typography
+              variant="h4"
+              component="h1"
+              className="font-bold bg-blue-500 bg-clip-text text-transparent"
+            >
+              Course Management
+            </Typography>
           </div>
-          <h1 className="text-2xl font-bold text-white">My Courses</h1>
         </div>
 
         {/* Summary Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6 ml-6">
           <div className="bg-gradient-to-br from-blue-900/70 to-blue-800/40 p-4 rounded-lg border border-blue-700/50 shadow-lg">
             <div className="flex items-center">
               <div className="p-3 bg-blue-800 rounded-lg mr-3">
@@ -144,7 +149,7 @@ const TeacherCourseManagement: React.FC = () => {
         </div>
 
         {/* Course Cards - Simplified */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 ml-6">
           {courses.map(course => (
             <div key={course.id} className="bg-gray-800 rounded-lg shadow-md overflow-hidden border border-gray-700">
               {/* Course Header */}
@@ -188,9 +193,10 @@ const TeacherCourseManagement: React.FC = () => {
             </div>
           ))}
         </div>
+        
       </div>
     </div>
   );
 };
 
-export default TeacherCourseManagement;
+export default TeacherCourses;

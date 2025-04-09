@@ -1,6 +1,9 @@
 import React, { useState } from "react";
 import AdminSidebar from "@/components/admin_sidebar";
+import TopBar from "@/components/topbar";
 import { useRouter } from "next/router";
+import { UserGroupIcon } from "@heroicons/react/24/outline";
+import { Typography } from "@mui/material";
 
 // Define TypeScript interfaces for our data structures
 interface Teacher {
@@ -280,6 +283,16 @@ const AdminTFeedback: React.FC = () => {
   return (
     <div className="flex bg-gray-900 min-h-screen">
       <AdminSidebar />
+      <div className="flex-1 p-6 ml-16">
+        <TopBar />
+        <div className="flex items-center space-x-4 ml-10">
+          <div className="p-3 bg-blue-500 rounded-xl shadow-lg">
+            <UserGroupIcon className="w-8 h-8" />
+          </div>
+          <Typography variant="h4" component="h1" className="font-bold bg-blue-500 bg-clip-text text-transparent">
+            Teacher Management
+          </Typography>
+        </div>
       <div className="ml-16 p-6 w-full text-gray-200">
         <h1 className="text-2xl font-bold text-white">Teacher Management</h1>
         
@@ -596,6 +609,7 @@ const AdminTFeedback: React.FC = () => {
         )}
       </div>
     </div>
+  </div>
   );
 };
 

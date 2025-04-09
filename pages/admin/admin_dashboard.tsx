@@ -1,15 +1,25 @@
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import AdminSidebar from "@/components/admin_sidebar";
+import TopBar from "@/components/topbar";
 import { Bar, Pie } from "react-chartjs-2";
 import "chart.js/auto";
 
 const Header: React.FC = () => {
+  const [time, setTime] = useState(new Date());
+
+  useEffect(() => {
+    const interval = setInterval(() => setTime(new Date()), 60000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const hour = time.getHours();
+  const greeting = hour < 12 ? "Good Morning" : hour < 18 ? "Good Afternoon" : "Good Evening";
+
   return (
     <header className="bg-gray-800 p-4 rounded-lg shadow-md flex justify-between items-center border border-gray-700">
       <div>
-        <h1 className="text-xl font-bold text-white">Admin Dashboard</h1>
-        <p className="text-gray-400 text-sm">Welcome back, Administrator</p>
+        <h1 className="text-gray-200 text-2xl font-semibold">{greeting}, Administrator</h1>
       </div>
       <div className="flex items-center space-x-4">
         <div className="flex items-center">
@@ -23,6 +33,7 @@ const Header: React.FC = () => {
     </header>
   );
 };
+
 
 interface StatCardProps {
   title: string;
@@ -86,7 +97,7 @@ const Dashboard: React.FC = () => {
   };
 
   return (
-    <div className="ml-16 p-6 w-full min-h-screen bg-gray-900">
+    <div className="ml-16 p-6 w-full min-h-screen bg-gray-900 ml-4">
       <Header />
       
       {/* Quick Stats */}
@@ -212,7 +223,10 @@ const AdminDashboard: React.FC = () => {
   return (
     <div className="flex">
       <AdminSidebar/>
-      <Dashboard />
+      <div className="flex-1 p-6 ml-16 bg-gray-900">
+          <TopBar />
+          <Dashboard />
+      </div>
     </div>
   );
 };

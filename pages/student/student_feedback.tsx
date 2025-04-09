@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import StudentSidebar from "@/components/student_sidebar";
-import TopBar from "@/components/student_topbar";
+import TopBar from "@/components/topbar";
 import { FaChalkboardTeacher, FaComments, FaPaperPlane, FaStar as FilledStar } from "react-icons/fa";
 import { FaRegStar as EmptyStar } from "react-icons/fa";
 import { Typography } from "@mui/material";
@@ -125,17 +125,17 @@ const StudentFeedback: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-900 text-gray-200 flex">
       <StudentSidebar />
-      <div className="flex-1 p-4 ml-16 flex flex-col">
+      <div className="flex-1 p-6 ml-16">
         <TopBar />
 
-        <div className="flex items-center mb-6 ml-4">
-          <div className="p-3 mr-4 bg-purple-500 rounded-xl shadow-lg">
+        <div className="flex items-center mb-6 ml-6">
+          <div className="p-3 mr-4 bg-green-500 rounded-xl shadow-lg">
             <FaComments className="text-gray-100 text-2xl" />
           </div>
           <Typography 
             variant="h4" 
             component="h1" 
-            className="font-bold bg-purple-500 bg-clip-text text-transparent"
+            className="font-bold bg-green-500 bg-clip-text text-transparent"
           >
             Feedback Form
           </Typography>
@@ -171,7 +171,7 @@ const StudentFeedback: React.FC = () => {
             {/* Display Selected Course */}
             {selectedCourse && (
               <div className="mb-6 p-4 bg-gray-700 rounded-lg">
-                <h3 className="text-purple-300 font-medium mb-1">Selected Course:</h3>
+                <h3 className="text-green-300 font-medium mb-1">Selected Course:</h3>
                 <p className="text-lg font-semibold">{selectedCourse}</p>
               </div>
             )}
@@ -180,7 +180,7 @@ const StudentFeedback: React.FC = () => {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
               {/* Course Feedback */}
               <div className="bg-gray-700 p-5 rounded-lg shadow-md">
-                <h2 className="text-xl font-semibold mb-4 text-center text-purple-300">
+                <h2 className="text-xl font-semibold mb-4 text-center text-green-300">
                   Course Feedback
                 </h2>
                 <div className="space-y-5">
@@ -200,7 +200,7 @@ const StudentFeedback: React.FC = () => {
 
               {/* Faculty Feedback */}
               <div className="bg-gray-700 p-5 rounded-lg shadow-md">
-                <h2 className="text-xl font-semibold mb-4 text-center text-purple-300">
+                <h2 className="text-xl font-semibold mb-4 text-center text-green-300">
                   Faculty Feedback
                 </h2>
                 <div className="space-y-5">
@@ -221,7 +221,7 @@ const StudentFeedback: React.FC = () => {
 
             {/* Overall Feedback */}
             <div className="bg-gray-700 p-5 rounded-lg shadow-md mb-6">
-              <h2 className="text-xl font-semibold mb-4 text-center text-purple-300">
+              <h2 className="text-xl font-semibold mb-4 text-center text-green-300">
                 Overall Feedback
               </h2>
               <div className="flex justify-center">

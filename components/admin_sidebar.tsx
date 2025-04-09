@@ -6,61 +6,68 @@ import {
   UserGroupIcon, 
   BookOpenIcon, 
   CalendarIcon, 
-  BuildingOfficeIcon, 
-  TruckIcon, 
-  BuildingLibraryIcon, 
-  ChatBubbleLeftRightIcon, 
-  UserCircleIcon
+  BuildingOfficeIcon,
+  AcademicCapIcon
 } from "@heroicons/react/24/outline";
+import { FiChevronRight } from "react-icons/fi";
+import { FaUser } from "react-icons/fa";
 
 const AdminSidebar: React.FC = () => {
   const router = useRouter();
   const currentPath = router.pathname;
 
+  const navigateTo = (path: string) => {
+    router.push(path);
+  };
+
   const menuItems = [
     { icon: <HomeIcon className="w-6 h-6" />, path: "/admin/admin_dashboard", label: "Dashboard" },
-    { icon: <UserGroupIcon className="w-6 h-6" />, path: "/admin/admin_studentmanage", label: "Students" },
+    { icon: <AcademicCapIcon className="w-6 h-6" />, path: "/admin/admin_studentmanage", label: "Students" },
     { icon: <UserGroupIcon className="w-6 h-6" />, path: "/admin/admin_teachermanage", label: "Teachers" },
-    { icon: <BookOpenIcon className="w-6 h-6" />, path: "/admin/admin_books", label: "Books" },
+    { icon: <BookOpenIcon className="w-6 h-6" />, path: "/admin/admin_books", label: "Library" },
     { icon: <CalendarIcon className="w-6 h-6" />, path: "/admin/admin_timetable", label: "Timetable" },
     { icon: <BuildingOfficeIcon className="w-6 h-6" />, path: "/admin/admin_auditorium", label: "Auditorium" },
   ];
 
   return (
-    <div className="fixed inset-y-0 left-0 w-16 hover:w-56 bg-gray-900 border-r border-gray-700 flex flex-col justify-between items-center py-4 transition-all duration-300 group overflow-hidden">
-      <div className="flex flex-col items-center space-y-6 w-full">
-        {menuItems.map((item) => (
-          <Link 
-            href={item.path} 
-            key={item.path}
-            className={`p-2 rounded-lg flex items-center w-11/12 transition-all duration-200 ${
-              currentPath === item.path ? "bg-blue-600 text-white" : "text-gray-400 hover:bg-gray-800 hover:text-gray-200"
-            }`}
-          >
-            <div className="min-w-[24px] flex justify-center">
-              {item.icon}
+      <div className="group w-20 hover:w-64 bg-gradient-to-b from-gray-800 to-gray-900 text-white h-screen fixed transition-all duration-300 ease-in-out overflow-hidden border-r border-gray-700 shadow-xl">
+        <ul className="list-none p-2 m-0">
+          {menuItems.map((item) => (
+            <li
+              key={item.path}
+              className={`flex items-center gap-4 p-3 rounded-lg mx-2 mb-1 cursor-pointer transition-all duration-200 ${
+                currentPath === item.path
+                  ? "bg-gray-700 text-white shadow-inner"
+                  : "hover:bg-gray-700 hover:pl-4 text-gray-300"
+              }`}
+              onClick={() => navigateTo(item.path)}
+            >
+              <div className="min-w-[24px] flex justify-center">
+                {React.cloneElement(item.icon, {
+                  className: `w-6 h-6 ${currentPath === item.path ? "text-white" : "text-gray-300"}`,
+                })}
+              </div>
+              <span className="hidden group-hover:inline-block font-medium">
+                {item.label}
+              </span>
+              <FiChevronRight className="ml-auto hidden group-hover:inline-block opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            </li>
+          ))}
+        </ul>
+  
+        <div className="absolute bottom-0 w-full p-4 border-t border-gray-700 hidden group-hover:block bg-gray-800/50">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center">
+              <FaUser className="text-white" />
             </div>
-            <span className="ml-3 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-              {item.label}
-            </span>
-          </Link>
-        ))}
-      </div>
-      <Link 
-        href="/logout" 
-        className="p-2 text-red-400 hover:text-red-300 flex items-center w-11/12"
-      >
-        <div className="min-w-[24px] flex justify-center">
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-          </svg>
+            <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+              <p className="font-medium">Admin Name</p>
+              <p className="text-xs text-gray-400">admin@university.edu</p>
+            </div>
+          </div>
         </div>
-        <span className="ml-3 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-          Logout
-        </span>
-      </Link>
-    </div>
-  );
+      </div>
+    );
 };
 
 export default AdminSidebar;

@@ -17,6 +17,6 @@
       "@/*": ["./*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", "../../../../coding/extras/teacher_tasks.tsx", "../../admin_clubs.tsx"],
   "exclude": ["node_modules"]
 }

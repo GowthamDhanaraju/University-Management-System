@@ -8,7 +8,7 @@ import {
 import { FiAward } from "react-icons/fi";
 import { BsGraphUp } from "react-icons/bs";
 import StudentSidebar from "@/components/student_sidebar";
-import TopBar from "@/components/student_topbar";
+import TopBar from "@/components/topbar";
 
 const InfoBox = ({ icon, label, value }: { icon: React.ReactNode, label: string, value: string }) => (
   <div className="flex items-center space-x-2">
@@ -103,16 +103,6 @@ const Timetable = () => {
   );
 };
 
-const Buttons = () => {
-  const buttons = [
-    { icon: <FaTasks className="mr-2 text-lg" />, text: "Attendance", color: "from-green-500 to-green-700", route: "/student_attendance" },
-    { icon: <FaBook className="mr-2 text-lg" />, text: "Club Activities", color: "from-orange-500 to-orange-700", route: "/student_clubs" },
-    { icon: <FaChalkboardTeacher className="mr-2 text-lg" />, text: "Faculties", color: "from-blue-500 to-blue-700", route: "/student_faculties" },
-    { icon: <FaComments className="mr-2 text-lg" />, text: "Feedback", color: "from-purple-500 to-purple-700", route: "/student_feedback" },
-  ];
-  return <div className="grid grid-cols-2 gap-4 mt-6 ml-5">{buttons.map((btn, i) => <DashboardButton key={i} {...btn} />)}</div>;
-};
-
 const RightSidebar = () => {
   const router = useRouter();
   const current = new Date();
@@ -135,11 +125,6 @@ const RightSidebar = () => {
   const firstDay = new Date(year, month, 1).getDay();
   const totalDays = new Date(year, month + 1, 0).getDate();
   const today = current.getDate();
-  const events = [
-    { date: 15, title: "Midterm Exam", color: "bg-red-500" },
-    { date: 20, title: "Project Submission", color: "bg-blue-500" },
-    { date: 25, title: "Guest Lecture", color: "bg-green-500" },
-  ];
 
   return (
     <div className="bg-gray-800 text-white p-6 rounded-xl shadow-lg border border-gray-700 h-full flex flex-col">
@@ -159,7 +144,6 @@ const RightSidebar = () => {
           {Array.from({ length: firstDay }).map((_, i) => <div key={i}></div>)}
           {Array.from({ length: totalDays }, (_, i) => {
             const d = i + 1;
-            const ev = events.find(e => e.date === d);
             const isToday = d === today && month === current.getMonth() && year === current.getFullYear();
             return (
               <div key={d} className={`relative text-center py-1 rounded-full cursor-pointer text-sm ${isToday ? "bg-green-600 text-white font-bold" : "hover:bg-gray-600"}`}>
@@ -170,30 +154,18 @@ const RightSidebar = () => {
         </div>
       </div>
 
-      {/* Event List */}
-      <div className="mb-6">
-        <h3 className="text-lg font-semibold mb-3">Upcoming Events</h3>
-        <div className="space-y-3">
-          {events.map((e, i) => (
-            <div key={i} className="flex items-start">
-              <div className={`${e.color} w-2 h-8 rounded-full mt-1 mr-3`} />
-              <div>
-                <p className="font-medium">{e.title}</p>
-                <p className="text-xs text-gray-400">{new Date(year, month, e.date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
       {/* Buttons */}
       <div className="space-y-4 mt-auto">
         <button className="bg-gradient-to-r from-teal-600 to-teal-800 p-3 rounded-lg w-full flex items-center justify-center shadow-md hover:shadow-lg"
-          onClick={() => router.push("/registered_courses")}>
+          onClick={() => router.push("/student/student_courses")}>
           <FaClipboardList className="mr-2" /> Courses Registered
         </button>
+        <button className="bg-gradient-to-r from-purple-600 to-purple-800 p-3 rounded-lg w-full flex items-center justify-center shadow-md hover:shadow-lg"
+          onClick={() => router.push("/student/student_attendance")}>
+          <FaClipboardList className="mr-2" /> Attendance
+        </button>
         <button className="bg-gradient-to-r from-rose-600 to-rose-800 p-3 rounded-lg w-full flex items-center justify-center shadow-md hover:shadow-lg"
-          onClick={() => router.push("/student_grade")}>
+          onClick={() => router.push("/student/student_grade")}>
           <FiAward className="mr-2" /> View Grades
         </button>
       </div>
@@ -211,7 +183,6 @@ const StudentDashboard = () => {
           <div className="flex-1 space-y-6">
             <Header />
             <Timetable />
-            <Buttons />
           </div>
           <div className="w-full lg:w-96">
             <RightSidebar />

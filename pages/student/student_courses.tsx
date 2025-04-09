@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import StudentSidebar from "@/components/student_sidebar";
-import TopBar from "@/components/student_topbar";
+import TopBar from "@/components/topbar";
 import { Typography } from "@mui/material";
 import { FaChalkboardTeacher, FaBook, FaUserTie, FaComments, FaStar, FaInfoCircle } from "react-icons/fa";
 import Link from "next/link";
@@ -148,14 +148,14 @@ const StudentCourses: React.FC = () => {
       <div className="flex-1 p-6 ml-16">
         <TopBar />
         <div className="flex justify-between items-center mb-8">
-          <div className="flex items-center">
-            <div className="p-3 mr-4 bg-blue-600 rounded-xl shadow-lg">
+          <div className="flex items-center ml-5">
+            <div className="p-3 mr-4 bg-green-600 rounded-xl shadow-lg">
               <FaBook className="text-gray-100 text-2xl" />
             </div>
             <Typography 
               variant="h4" 
               component="h1" 
-              className="font-bold bg-blue-600 bg-clip-text text-transparent"
+              className="font-bold bg-green-600 bg-clip-text text-transparent"
             >
               My Courses
             </Typography>
@@ -172,7 +172,7 @@ const StudentCourses: React.FC = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 gap-6 mb-6">
+        <div className="grid grid-cols-1 gap-6 mb-6 ml-5">
           {filteredCourses.map((course) => (
             <div key={course.code} className="bg-gray-800 rounded-lg shadow-md border border-gray-700 overflow-hidden">
               <div className="flex flex-col md:flex-row">

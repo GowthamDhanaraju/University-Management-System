@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import AdminSidebar from "@/components/admin_sidebar";
-import { PencilIcon, XMarkIcon, PlusIcon, CheckIcon } from "@heroicons/react/24/outline";
+import TopBar from "@/components/topbar";
+import { PencilIcon, XMarkIcon, PlusIcon, CheckIcon, CalendarIcon } from "@heroicons/react/24/outline";
+import { Typography } from "@mui/material";
 
 const TIME_SLOTS = [
   "9:00 - 9:50",
@@ -193,6 +195,7 @@ const AdminTimetable: React.FC = () => {
     return (
       <div className="flex bg-gray-900 min-h-screen">
         <AdminSidebar />
+        
         <div className="ml-16 p-6 w-full text-white">
           <div className="text-center mt-10">Loading timetable data...</div>
         </div>
@@ -203,9 +206,17 @@ const AdminTimetable: React.FC = () => {
   return (
     <div className="flex bg-gray-900 min-h-screen">
       <AdminSidebar />
-      <div className="ml-16 p-6 w-full text-gray-200">
-        <h1 className="text-2xl font-bold text-white mb-4">Timetable Management</h1>
-
+      <div className="flex-1 p-6 ml-16">
+          <TopBar />
+          <div className="flex items-center space-x-4 ml-12">
+            <div className="p-3 bg-blue-500 rounded-xl shadow-lg">
+              <CalendarIcon className="w-8 h-8" />
+            </div>
+            <Typography variant="h4" component="h1" className="font-bold bg-blue-500 bg-clip-text text-transparent">
+              Time Table Creation
+            </Typography>
+          </div>
+      <div className="ml-6 p-6 w-full text-gray-200">
         {/* Control Panel */}
         <div className="bg-gray-800 p-4 rounded-lg shadow-md mb-6 border border-gray-700">
           <div className="flex flex-wrap gap-4 items-center">
@@ -395,6 +406,7 @@ const AdminTimetable: React.FC = () => {
         </div>
       </div>
     </div>
+  </div>
   );
 };
 
