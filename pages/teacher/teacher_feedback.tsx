@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import TeacherSidebar from "@/components/teacher_sidebar";
 import TopBar from "@/components/topbar";
-import { FaChalkboardTeacher, FaComments, FaStar, FaFilter } from "react-icons/fa";
+import { FaComments, FaStar, FaFilter } from "react-icons/fa";
 import { Typography, Divider } from "@mui/material";
 import axios from "axios";
 import { useRouter } from "next/router";
@@ -29,13 +29,14 @@ interface Feedback {
 const TeacherFeedback: React.FC = () => {
   const [courses, setCourses] = useState<Array<{ id: number; name: string }>>([]);
   const [feedbacks, setFeedbacks] = useState<Feedback[]>([]);
+  const [filteredFeedbacks, setFilteredFeedbacks] = useState<Feedback[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [selectedCourse, setSelectedCourse] = useState("");
   const router = useRouter();
 
   useEffect(() => {
-    const fetchFeedbackData = async () => {
+    const fetchData = async () => {
       try {
         setLoading(true);
         const token = localStorage.getItem("token");
@@ -60,32 +61,32 @@ const TeacherFeedback: React.FC = () => {
         }
 
         // Fetch feedback
-        const feedbackResponse = await axios.get("/api/teacher/feedback", {
+        const feedbackResponse = await axios.get("/api/teachers/feedback", {
           headers: { Authorization: `Bearer ${token}` },
         });
 
         if (feedbackResponse.data && Array.isArray(feedbackResponse.data)) {
-          setFeedbacks(
-            feedbackResponse.data.map((fb) => ({
-              id: fb.id,
-              courseId: fb.courseId,
-              courseName: fb.courseName,
-              studentId: fb.studentId || "Anonymous",
-              date: fb.date || new Date().toISOString().split("T")[0],
-              courseRatings: {
-                contentQuality: fb.courseRatings?.contentQuality || 0,
-                difficultyLevel: fb.courseRatings?.difficultyLevel || 0,
-                practicalApplication: fb.courseRatings?.practicalApplication || 0,
-              },
-              facultyRatings: {
-                teachingQuality: fb.facultyRatings?.teachingQuality || 0,
-                communication: fb.facultyRatings?.communication || 0,
-                availability: fb.facultyRatings?.availability || 0,
-              },
-              overallRating: fb.overallRating || 0,
-              comments: fb.comments || "",
-            }))
-          );
+          const formattedFeedbacks = feedbackResponse.data.map((fb) => ({
+            id: fb.id,
+            courseId: fb.courseId,
+            courseName: fb.courseName,
+            studentId: fb.studentId || "Anonymous",
+            date: fb.date || new Date().toISOString().split("T")[0],
+            courseRatings: {
+              contentQuality: fb.courseRatings?.contentQuality || 0,
+              difficultyLevel: fb.courseRatings?.difficultyLevel || 0,
+              practicalApplication: fb.courseRatings?.practicalApplication || 0,
+            },
+            facultyRatings: {
+              teachingQuality: fb.facultyRatings?.teachingQuality || 0,
+              communication: fb.facultyRatings?.communication || 0,
+              availability: fb.facultyRatings?.availability || 0,
+            },
+            overallRating: fb.overallRating || 0,
+            comments: fb.comments || "",
+          }));
+          setFeedbacks(formattedFeedbacks);
+          setFilteredFeedbacks(formattedFeedbacks); // Set initial filtered feedback
         }
 
         setError("");
@@ -97,12 +98,17 @@ const TeacherFeedback: React.FC = () => {
       }
     };
 
-    fetchFeedbackData();
-  }, []);
+    fetchData();
+  }, [router]);
 
-  const filteredFeedbacks = selectedCourse
-    ? feedbacks.filter((feedback) => feedback.courseName === selectedCourse)
-    : feedbacks;
+  const handleFilterChange = (courseName: string) => {
+    setSelectedCourse(courseName);
+    if (courseName) {
+      setFilteredFeedbacks(feedbacks.filter((feedback) => feedback.courseName === courseName));
+    } else {
+      setFilteredFeedbacks(feedbacks); // Show all feedback if no course is selected
+    }
+  };
 
   const calculateAverageRatings = () => {
     if (filteredFeedbacks.length === 0)
@@ -163,6 +169,7 @@ const TeacherFeedback: React.FC = () => {
       <div className="flex-1 p-6 ml-16">
         <TopBar />
 
+        {/* Dashboard Header */}
         <div className="flex items-center space-x-4 ml-6">
           <div className="p-3 bg-blue-500 rounded-xl shadow-lg">
             <FaComments className="text-gray-100 text-2xl" />
@@ -172,6 +179,7 @@ const TeacherFeedback: React.FC = () => {
           </Typography>
         </div>
 
+        {/* Filter Section */}
         <div className="ml-6 space-y-4">
           <div className="flex items-center mb-2 mt-4">
             <FaFilter className="mr-2 text-blue-400" />
@@ -181,7 +189,7 @@ const TeacherFeedback: React.FC = () => {
           </div>
           <select
             value={selectedCourse}
-            onChange={(e) => setSelectedCourse(e.target.value)}
+            onChange={(e) => handleFilterChange(e.target.value)}
             className="px-4 py-2 bg-gray-700 border border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           >
             <option value="">All Courses</option>
@@ -193,6 +201,7 @@ const TeacherFeedback: React.FC = () => {
           </select>
         </div>
 
+        {/* Ratings Overview */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-10 ml-6 mt-4">
           <div className="bg-gray-800 p-6 rounded-xl shadow-lg">
             <h3 className="text-lg font-semibold mb-2 text-blue-300">Course Quality</h3>
@@ -208,6 +217,7 @@ const TeacherFeedback: React.FC = () => {
           </div>
         </div>
 
+        {/* Feedback List */}
         <div className="ml-6 space-y-10 mt-4">
           <Typography variant="h5" className="font-semibold text-white">
             {filteredFeedbacks.length} {filteredFeedbacks.length === 1 ? "Feedback" : "Feedbacks"} Received
