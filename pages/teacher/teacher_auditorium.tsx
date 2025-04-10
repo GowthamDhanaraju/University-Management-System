@@ -1,314 +1,180 @@
-import React, { useState, useEffect } from "react";
-import TeacherSidebar from "@/components/teacher_sidebar";
+import React, { useState } from "react";
 import axios from "axios";
 import { useRouter } from "next/router";
+import TopBar from "@/components/topbar";
+import TeacherSidebar from "@/components/teacher_sidebar";
 
-interface Event {
-  id: string;
-  title: string;
-  date: string;
-  timeSlot: string;
-  description: string;
-  status: "pending" | "approved" | "rejected";
-  auditoriumName: string;
-}
-
-interface BookingSlot {
-  id: string;
-  date: string;
-  timeSlot: string;
-  isAvailable: boolean;
-}
-
-const AuditoriumPage: React.FC = () => {
+const CreateAuditorium: React.FC = () => {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState("booking");
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [myBookings, setMyBookings] = useState<Event[]>([]);
-  const [availableSlots, setAvailableSlots] = useState<BookingSlot[]>([]);
-  const [bookingForm, setBookingForm] = useState({
-    title: "",
-    date: "",
-    time: "",
-    description: ""
+
+  const [formData, setFormData] = useState({
+    name: "",
+    location: "",
+    capacity: "",
+    amenities: "",
+    status: "available",
+    statusNote: "",
+    hasWhiteboard: false,
   });
-  const [submitSuccess, setSubmitSuccess] = useState(false);
-  const [submitError, setSubmitError] = useState("");
 
-  useEffect(() => {
-    const fetchAuditoriumData = async () => {
-      try {
-        setLoading(true);
-        const token = localStorage.getItem("token");
-        
-        if (!token) {
-          router.push("/login");
-          return;
-        }
-        
-        // Fetch my bookings
-        const bookingsRes = await axios.get("/api/teacher/auditorium/bookings", {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        
-        if (bookingsRes.data && Array.isArray(bookingsRes.data)) {
-          setMyBookings(bookingsRes.data.map((booking: any) => ({
-            id: booking.id || String(booking._id),
-            title: booking.title,
-            date: booking.date,
-            timeSlot: booking.timeSlot || booking.time,
-            description: booking.description,
-            status: booking.status
-          })));
-        }
-        
-        // Fetch available slots
-        const slotsRes = await axios.get("/api/teacher/auditorium/available-slots", {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        
-        if (slotsRes.data && Array.isArray(slotsRes.data)) {
-          setAvailableSlots(slotsRes.data.map((slot: any) => ({
-            id: slot.id || String(slot._id),
-            date: slot.date,
-            timeSlot: slot.timeSlot || slot.time
-          })));
-        }
-        
-        setError("");
-      } catch (err) {
-        console.error("Failed to fetch auditorium data:", err);
-        setError("Failed to load auditorium data. Please try again later.");
-      } finally {
-        setLoading(false);
-      }
-    };
-    
-    fetchAuditoriumData();
-  }, [router]);
+  const [error, setError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-      
-      // Reset form and show success message
-      setBookingForm({ title: "", date: "", time: "", description: "" });
-      setSubmitSuccess(true);
-      
-      // Refresh bookings list
-      const bookingsRes = await axios.get("/api/teacher/auditorium/bookings", {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setMyBookings(bookingsRes.data);
-      
-      // Hide success message after 3 seconds
-      setTimeout(() => {
-        setSubmitSuccess(false);
-      }, 3000);
-    } catch (err) {
-      console.error("Failed to submit booking request:", err);
-      setSubmitError("Failed to submit booking request. Please try again.");
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value, type } = e.target;
+  
+    if (type === "checkbox") {
+      const checked = (e.target as HTMLInputElement).checked;
+      setFormData((prevData) => ({
+        ...prevData,
+        [name]: checked,
+      }));
+    } else {
+      setFormData((prevData) => ({
+        ...prevData,
+        [name]: value,
+      }));
     }
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setBookingForm(prev => ({ ...prev, [name]: value }));
-  };
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    setSuccessMessage("");
 
-  const handleCancelBooking = async (bookingId: string) => {
     try {
-      const token = localStorage.getItem("token");
-      
-      if (!token) {
-        router.push("/login");
-        return;
-      }
-      
-      await axios.delete(`/api/teacher/auditorium/bookings/${bookingId}`, {
-        headers: { Authorization: `Bearer ${token}` }
+      const response = await axios.post("/api/auditoriums", {
+        ...formData,
+        capacity: parseInt(formData.capacity, 10), // Ensure capacity is a number
+        amenities: formData.amenities.split(",").map((amenity) => amenity.trim()), // Convert amenities to an array
       });
-      
-      // Update bookings list after cancellation
-      setMyBookings(prev => prev.filter(booking => booking.id !== bookingId));
-    } catch (err) {
-      console.error("Failed to cancel booking:", err);
-      alert("Failed to cancel booking. Please try again.");
+
+      if (response.status === 201) {
+        setSuccessMessage("Auditorium created successfully!");
+        setFormData({
+          name: "",
+          location: "",
+          capacity: "",
+          amenities: "",
+          status: "available",
+          statusNote: "",
+          hasWhiteboard: false,
+        });
+      }
+    } catch (err: any) {
+      setError(err.response?.data?.message || "An error occurred while creating the auditorium.");
     }
   };
-  
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-900 text-gray-200">
-        <TeacherSidebar />
-        <div className="ml-16 p-6 flex items-center justify-center">
-          <div>Loading auditorium data...</div>
-        </div>
-      </div>
-    );
-  }
-  
-  const currentDate = new Date();
-  const formattedCurrentDate = currentDate.toISOString().split('T')[0];
- 
+
   return (
-    <div className="min-h-screen bg-gray-900 text-gray-200">
+    <div className="min-h-screen bg-gray-900 text-gray-200 flex">
       <TeacherSidebar />
-      
-      <div className="ml-16 p-6">
-        {error && (
-          <div className="bg-red-900/50 border border-red-500 text-red-200 p-4 mb-6 rounded-lg">
-            {error}
-          </div>
-        )}
-        
-        <div className="bg-gray-800 rounded-lg shadow-md p-6 mb-6 border border-gray-700">
-          <h1 className="text-2xl font-bold text-gray-100 mb-4">Auditorium Management</h1>
-          
-          {/* Tabs */}
-          <div className="flex border-b border-gray-700 mb-6">
-            <button 
-              className={`px-4 py-2 font-medium ${activeTab === "booking" ? "text-blue-400 border-b-2 border-blue-400" : "text-gray-400 hover:text-gray-200"}`}
-              onClick={() => setActiveTab("booking")}
-            >
-              Booking Details
-            </button> 
-          </div>
-          
-          {/* Booking Details Tab */}
-          {activeTab === "booking" && (
-            <div>
-              {/* Success Message */}
-              {submitSuccess && (
-                <div className="bg-green-900/50 border border-green-500 text-green-200 p-4 mb-6 rounded-lg">
-                  Booking request submitted successfully!
-                </div>
-              )}
-              
-              {/* Error Message */}
-              {submitError && (
-                <div className="bg-red-900/50 border border-red-500 text-red-200 p-4 mb-6 rounded-lg">
-                  {submitError}
-                </div>
-              )}
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* My Bookings Section */}
-                <div className="bg-gray-700 rounded-lg p-4">
-                  <h2 className="text-xl font-semibold mb-4 text-gray-200">My Bookings</h2>
-                  
-                  {myBookings.length === 0 ? (
-                    <div className="text-gray-400 text-center py-4">No bookings found</div>
-                  ) : (
-                    <div className="space-y-4">
-                      {myBookings.map(booking => (
-                        <div key={booking.id} className="bg-gray-800 rounded-lg p-3 flex flex-col">
-                          <div className="flex justify-between items-start">
-                            <div>
-                              <h3 className="font-semibold text-white">{booking.title}</h3>
-                              <p className="text-gray-400 text-sm">{booking.auditoriumName}</p>
-                            </div>
-                            <span className={`text-xs px-2 py-1 rounded ${
-                              booking.status === 'approved' ? 'bg-green-800 text-green-200' : 
-                              booking.status === 'rejected' ? 'bg-red-800 text-red-200' : 
-                              'bg-yellow-800 text-yellow-200'
-                            }`}>
-                              {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
-                            </span>
-                          </div>
-                          <div className="mt-2 text-sm text-gray-300">
-                            <div>Date: {new Date(booking.date).toLocaleDateString()}</div>
-                            <div>Time: {booking.timeSlot}</div>
-                          </div>
-                          <p className="text-gray-400 text-sm mt-2">{booking.description}</p>
-                          
-                          {booking.status === 'pending' && (
-                            <button 
-                              onClick={() => handleCancelBooking(booking.id)}
-                              className="mt-2 self-end text-red-400 hover:text-red-300 text-sm"
-                            >
-                              Cancel Request
-                            </button>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-                
-                {/* Request Booking Form */}
-                <div className="bg-gray-700 rounded-lg p-4">
-                  <h2 className="text-xl font-semibold mb-4 text-gray-200">Request Auditorium Booking</h2>
-                  <form onSubmit={handleBookingSubmit} className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-1">Event Title</label>
-                      <input
-                        type="text"
-                        name="title"
-                        value={bookingForm.title}
-                        onChange={handleInputChange}
-                        className="w-full p-2 border border-gray-600 rounded-md bg-gray-700 text-white"
-                        required
-                      />
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-300 mb-1">Date</label>
-                        <input
-                          type="date"
-                          name="date"
-                          value={bookingForm.date}
-                          onChange={handleInputChange}
-                          min={formattedCurrentDate} // Prevent selecting past dates
-                          className="w-full p-2 border border-gray-600 rounded-md bg-gray-700 text-white"
-                          required
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-300 mb-1">Time Slot</label>
-                        <select
-                          name="time"
-                          value={bookingForm.time}
-                          onChange={handleInputChange}
-                          className="w-full p-2 border border-gray-600 rounded-md bg-gray-700 text-white"
-                          required
-                        >
-                          <option value="">Select time slot</option>
-                          {availableSlots
-                            .filter(slot => !bookingForm.date || slot.date === bookingForm.date)
-                            .map(slot => (
-                              <option key={slot.id} value={slot.timeSlot}>
-                                {slot.timeSlot}
-                              </option>
-                            ))}
-                        </select>
-                      </div>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-1">Event Description</label>
-                      <textarea
-                        name="description"
-                        value={bookingForm.description}
-                        onChange={handleInputChange}
-                        className="w-full p-2 border border-gray-600 rounded-md bg-gray-700 text-white"
-                        rows={3}
-                        required
-                      ></textarea>
-                    </div>
-                    <button
-                      type="submit"
-                      className="bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors"
-                    >
-                      Submit Booking Request
-                    </button>
-                  </form>
-                </div>
+      <div className="flex-1 flex flex-col">
+        <TopBar />
+        <div className="flex-1 flex items-center justify-center">
+          <div className="bg-gray-800 p-6 rounded-lg shadow-lg w-full max-w-md">
+            <h1 className="text-2xl font-bold mb-4">Create Auditorium</h1>
+
+            {error && <div className="bg-red-800 text-red-200 p-3 rounded mb-4">{error}</div>}
+            {successMessage && <div className="bg-green-800 text-green-200 p-3 rounded mb-4">{successMessage}</div>}
+
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-1">Name</label>
+                <input
+                  type="text"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 bg-gray-700 text-gray-200 rounded"
+                  required
+                />
               </div>
-            </div>
-          )}
+
+              <div>
+                <label className="block text-sm font-medium mb-1">Location</label>
+                <input
+                  type="text"
+                  name="location"
+                  value={formData.location}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 bg-gray-700 text-gray-200 rounded"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-1">Capacity</label>
+                <input
+                  type="number"
+                  name="capacity"
+                  value={formData.capacity}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 bg-gray-700 text-gray-200 rounded"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-1">Amenities (comma-separated)</label>
+                <input
+                  type="text"
+                  name="amenities"
+                  value={formData.amenities}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 bg-gray-700 text-gray-200 rounded"
+                  placeholder="e.g., Projector, Sound System, Air Conditioning"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-1">Status</label>
+                <select
+                  name="status"
+                  value={formData.status}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 bg-gray-700 text-gray-200 rounded"
+                >
+                  <option value="available">Available</option>
+                  <option value="maintenance">Maintenance</option>
+                  <option value="unavailable">Unavailable</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-1">Status Note</label>
+                <textarea
+                  name="statusNote"
+                  value={formData.statusNote}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 bg-gray-700 text-gray-200 rounded"
+                  rows={3}
+                />
+              </div>
+
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  name="hasWhiteboard"
+                  checked={formData.hasWhiteboard}
+                  onChange={handleChange}
+                  className="mr-2"
+                />
+                <label className="text-sm font-medium">Has Whiteboard</label>
+              </div>
+
+              <button
+                type="submit"
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded font-medium"
+              >
+                Create Auditorium
+              </button>
+            </form>
+          </div>
         </div>
       </div>
     </div>
   );
 };
 
-export default AuditoriumPage;
+export default CreateAuditorium;
