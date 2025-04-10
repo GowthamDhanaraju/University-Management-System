@@ -21,6 +21,7 @@ model User {
   admin     Admin?
   student   Student?
   teacher   Teacher?
+  token     String? 
 }
 
 model Student {
@@ -140,19 +141,23 @@ model Attendance {
 
   @@unique([studentId, courseId, date])
 }
-
 model Feedback {
   id            String   @id @default(cuid())
-  studentId     String?  // Using studentId consistently
-  teacherId     String
-  courseId      String
-  date          DateTime @default(now())
+  studentId     String?  // Student ID (optional if anonymous feedback is allowed)
+  teacherId     String   // Teacher ID who is being rated
+  courseId      String   // Course ID for which feedback is given
+  date          DateTime @default(now()) // Feedback submission date
   courseRating  Json     // { content: float, assignments: float, difficulty: float }
   teacherRating Json     // { knowledge: float, teaching: float, accessibility: float }
-  overallRating Float
-  comments      String?
+  overallRating Float    // Overall rating for the course and teacher
+  comments      String?  // Additional comments (optional)
+  
+  // Relations
   course        Course   @relation(fields: [courseId], references: [id])
   teacher       Teacher  @relation(fields: [teacherId], references: [id])
+
+  @@index([courseId]) // Add index for courseId to optimize queries
+  @@index([teacherId]) // Add index for teacherId to optimize queries
 }
 
 model Book {
@@ -192,7 +197,8 @@ model Auditorium {
   statusNote    String?
   amenities     String[]
   bookings      AuditoriumBooking[]
-  slots         AvailabilitySlot[]
+  availabilitySlots AvailabilitySlot[] 
+
 }
 
 model AuditoriumBooking {
