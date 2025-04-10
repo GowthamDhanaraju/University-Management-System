@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import prisma from '../../../lib/prisma';
-import { verifyToken } from '../../../lib/auth';
+import { prisma } from '../../../../lib/prisma';
+import { verifyToken } from '../../../../lib/auth';
 
 export default async function handler(
   req: NextApiRequest,
@@ -12,6 +12,7 @@ export default async function handler(
       const events = await prisma.auditoriumBooking.findMany({
         include: {
           auditorium: true,
+          teacher: true
         },
         orderBy: {
           date: 'desc'
@@ -25,8 +26,7 @@ export default async function handler(
         time: event.timeSlot,
         auditoriumId: event.auditoriumId,
         auditoriumName: event.auditorium.name,
-        faculty: event.faculty || '',
-        club: event.club || '',
+        faculty: event.teacher ? event.teacher.name : '',
         description: event.description || '',
         status: event.status
       }));
@@ -38,18 +38,49 @@ export default async function handler(
     }
   }
   
-  // POST method - Create a new auditorium event
-  else if (req.method === 'POST') {
+  // POST method - Create a new auditorium booking
+  if (req.method === 'POST') {
     try {
-      // Verify admin authorization
-      const token = req.headers.authorization?.split(' ')[1];
-      const decoded = verifyToken(token);
+      // For demonstration, we'll use a dummy teacher ID
+      // In a real app, get this from authentication
+      const { title, date, time, auditoriumId, faculty, club, description, status } = req.body;
       
-      if (!decoded || decoded.role !== 'ADMIN') {
-        return res.status(401).json({ message: 'Unauthorized' });
+      // Find a teacher to assign to this booking
+      const teacher = await prisma.teacher.findFirst();
+      if (!teacher) {
+        return res.status(400).json({ message: 'No teachers available to assign to this booking' });
       }
       
-      const { title, date, time, auditoriumId, faculty, club, description, status } = req.body;
+      // Check if auditorium exists and is available
+      const auditorium = await prisma.auditorium.findUnique({
+        where: { id: auditoriumId }
+      });
+      
+      if (!auditorium) {
+        return res.status(404).json({ message: 'Auditorium not found' });
+      }
+      
+      if (auditorium.status !== 'available') {
+        return res.status(400).json({ 
+          message: `Auditorium is currently ${auditorium.status}` 
+        });
+      }
+      
+      // Check for conflicting bookings
+      const existingBooking = await prisma.auditoriumBooking.findFirst({
+        where: {
+          auditoriumId,
+          date: new Date(date),
+          timeSlot: time,
+          status: { in: ['pending', 'approved'] }
+        }
+      });
+      
+      if (existingBooking) {
+        return res.status(400).json({ 
+          message: 'This time slot is already booked' 
+        });
+      }
       
       const newEvent = await prisma.auditoriumBooking.create({
         data: {
@@ -57,11 +88,9 @@ export default async function handler(
           date: new Date(date),
           timeSlot: time,
           auditoriumId,
-          faculty,
-          club,
+          teacherId: teacher.id,
           description,
-          status,
-          requestedBy: decoded.id
+          status
         },
         include: {
           auditorium: true
@@ -75,8 +104,8 @@ export default async function handler(
         time: newEvent.timeSlot,
         auditoriumId: newEvent.auditoriumId,
         auditoriumName: newEvent.auditorium.name,
-        faculty: newEvent.faculty || '',
-        club: newEvent.club || '',
+        faculty: faculty || '',
+        club: club || '',
         description: newEvent.description || '',
         status: newEvent.status
       };
@@ -84,7 +113,9 @@ export default async function handler(
       return res.status(201).json(formattedEvent);
     } catch (error) {
       console.error('Error creating auditorium event:', error);
-      return res.status(500).json({ message: 'Failed to create event' });
+      return res.status(500).json({
+        message: 'Failed to create event'
+      });
     }
   }
   

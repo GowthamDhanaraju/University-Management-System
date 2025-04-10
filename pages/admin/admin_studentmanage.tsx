@@ -12,7 +12,6 @@ const StudentManagement: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [yearFilter, setYearFilter] = useState("");
   const [deptFilter, setDeptFilter] = useState("");
-  const [editingStudent, setEditingStudent] = useState<{ index: number; data: any } | null>(null);
   const [uniqueYears, setUniqueYears] = useState<string[]>([]);
   const [uniqueDepts, setUniqueDepts] = useState<string[]>([]);
 
@@ -97,93 +96,6 @@ const StudentManagement: React.FC = () => {
 
   const handleDeptFilter = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setDeptFilter(e.target.value);
-  };
-
-  const handleNewStudentChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    if (editingStudent) {
-      setEditingStudent({
-        ...editingStudent,
-        data: { ...editingStudent.data, [e.target.name]: e.target.value }
-      });
-    }
-  };
-
-  const updateStudent = async () => {
-    if (editingStudent) {
-      // Update existing student
-      try {
-        // Format the data for the API
-        const studentData = {
-          id: editingStudent.data.id,
-          name: editingStudent.data.name,
-          department: editingStudent.data.dept,
-          year: editingStudent.data.year ? parseInt(editingStudent.data.year) : 1,
-          academicInfo: {
-            currentGPA: parseFloat(editingStudent.data.gpa) || 0 // Update to currentGPA
-          }
-        };
-        
-        console.log("Updating student with data:", studentData); // Debug log
-        
-        const response = await fetch(`/api/students/${editingStudent.data.id}`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(studentData),
-        });
-        
-        if (!response.ok) {
-          throw new Error(`Error: ${response.status}`);
-        }
-        
-        const data = await response.json();
-        
-        if (data.success) {
-          // Refresh student list to get updated data
-          const refreshResponse = await fetch('/api/students');
-          const refreshData = await refreshResponse.json();
-          
-          if (refreshData.success) {
-            const formattedStudents = refreshData.data.map((student: any) => ({
-              id: student.id,
-              name: student.user?.name || "Unknown",
-              dept: student.department?.name || "Unassigned",
-              year: student.year ? `${student.year}th Year` : "1st Year",
-              gpa: student.academicInfo?.gpa || "N/A",
-              gradYear: new Date().getFullYear() + (4 - parseInt(student.year || "1"))
-            }));
-            
-            setStudents(formattedStudents);
-            
-            // Update unique departments and years
-            setUniqueDepts([...new Set(formattedStudents.map(s => s.dept).filter(Boolean))]);
-            setUniqueYears([...new Set(formattedStudents.map(s => s.year).filter(Boolean))]);
-          }
-          
-          setEditingStudent(null);
-          alert("Student updated successfully");
-        } else {
-          alert(data.message || "Failed to update student");
-        }
-      } catch (err) {
-        alert(`Error updating student: ${err instanceof Error ? err.message : 'Unknown error'}`);
-        console.error(err);
-      }
-    }
-  };
-
-  const startEditing = (index: number) => {
-    setEditingStudent({
-      index,
-      data: { ...students[index] }
-    });
-    // Scroll to the edit form
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  const cancelEditing = () => {
-    setEditingStudent(null);
   };
 
   // Helper function to calculate year from semester
@@ -274,86 +186,6 @@ const StudentManagement: React.FC = () => {
           </Typography>
         </div>
       <div className="ml-16 p-6 w-full text-gray-200 ml-4">
-        {/* Edit Student Form - only shown when editing */}
-        {editingStudent && (
-          <div className="bg-gray-800 p-6 rounded-lg shadow-md mt-4 border border-gray-700">
-            <h3 className="text-lg font-semibold text-gray-100">
-              Edit Student
-            </h3>
-            <div className="grid grid-cols-3 gap-4 mt-3">
-              <input
-                type="text"
-                name="id"
-                value={editingStudent.data.id}
-                onChange={handleNewStudentChange}
-                placeholder="Student ID"
-                className="bg-gray-700 border border-gray-600 p-2 rounded text-white placeholder-gray-400"
-                readOnly
-              />
-              <input
-                type="text"
-                name="name"
-                value={editingStudent.data.name}
-                onChange={handleNewStudentChange}
-                placeholder="Full Name"
-                className="bg-gray-700 border border-gray-600 p-2 rounded text-white placeholder-gray-400"
-              />
-              <select
-                name="dept"
-                value={editingStudent.data.dept}
-                onChange={handleNewStudentChange}
-                className="bg-gray-700 border border-gray-600 p-2 rounded text-white"
-              >
-                <option value="">Select Department</option>
-                {uniqueDepts.map((dept, index) => (
-                  <option key={index} value={dept}>{dept}</option>
-                ))}
-              </select>
-              <select
-                name="year"
-                value={editingStudent.data.year}
-                onChange={handleNewStudentChange}
-                className="bg-gray-700 border border-gray-600 p-2 rounded text-white"
-              >
-                <option value="">Select Year</option>
-                {uniqueYears.map((year, index) => (
-                  <option key={index} value={year}>{year}</option>
-                ))}
-              </select>
-              <input
-                type="text"
-                name="gpa"
-                value={editingStudent.data.gpa}
-                onChange={handleNewStudentChange}
-                placeholder="GPA"
-                className="bg-gray-700 border border-gray-600 p-2 rounded text-white placeholder-gray-400"
-              />
-              <input
-                type="text"
-                name="gradYear"
-                value={editingStudent.data.gradYear}
-                onChange={handleNewStudentChange}
-                placeholder="Graduation Year"
-                className="bg-gray-700 border border-gray-600 p-2 rounded text-white placeholder-gray-400"
-              />
-            </div>
-            <div className="flex mt-4">
-              <button 
-                onClick={updateStudent} 
-                className="bg-yellow-600 hover:bg-yellow-700 text-white py-2 px-4 rounded mr-2"
-              >
-                Update Student
-              </button>
-              <button 
-                onClick={cancelEditing} 
-                className="bg-gray-600 text-white py-2 px-4 rounded hover:bg-gray-700"
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        )}
-
         {/* Search and Filter */}
         <div className="bg-gray-800 p-4 rounded-lg shadow-md mt-6 border border-gray-700">
           <h3 className="text-lg font-semibold text-gray-100">Search & Filter</h3>
@@ -401,7 +233,6 @@ const StudentManagement: React.FC = () => {
                 <th className="p-2 border-b border-gray-600">GPA</th>
                 <th className="p-2 border-b border-gray-600">Graduation Year</th>
                 <th className="p-2 border-b border-gray-600">Phone Number</th>
-                <th className="p-2 border-b border-gray-600">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -415,16 +246,11 @@ const StudentManagement: React.FC = () => {
                     <td className="p-2">{student.gpa}</td>
                     <td className="p-2">{student.gradYear}</td>
                     <td className="p-2">{student.contact}</td>
-                    <td className="p-2">
-                      <button onClick={() => startEditing(index)} className="bg-yellow-600 text-white px-3 py-1 rounded hover:bg-yellow-700">
-                        Edit
-                      </button>
-                    </td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan={8} className="p-4 text-center text-gray-400">
+                  <td colSpan={7} className="p-4 text-center text-gray-400">
                     No students found.
                   </td>
                 </tr>

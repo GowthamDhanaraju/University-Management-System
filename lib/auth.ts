@@ -7,8 +7,18 @@ export interface AuthRequest extends NextApiRequest {
     id: string;
     role: string;
     email: string;
+    name?: string;
   };
 }
+
+export type AuthenticatedRequest = AuthRequest & {
+  user: {
+    id: string;
+    role: string;
+    email: string;
+    name?: string;
+  };
+};
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
@@ -16,6 +26,7 @@ export interface DecodedToken {
   id: string;
   email: string;
   role: string;
+  name?: string;
   iat: number;
   exp: number;
 }
@@ -62,6 +73,7 @@ export async function authenticate(
       id: user.id,
       email: user.email,
       role: user.role,
+      name: user.name
     };
     
     next();
@@ -72,7 +84,7 @@ export async function authenticate(
 }
 
 // Helper for protected API routes
-export function withAuth(handler: (req: AuthRequest, res: NextApiResponse) => Promise<void>) {
+export function withAuth(handler: (req: AuthenticatedRequest, res: NextApiResponse) => Promise<void>) {
   return async (req: AuthRequest, res: NextApiResponse) => {
     await new Promise<void>((resolve) => {
       authenticate(req, res, () => resolve());
@@ -80,7 +92,30 @@ export function withAuth(handler: (req: AuthRequest, res: NextApiResponse) => Pr
     
     // If we got here, authentication passed
     if (req.user) {
-      return handler(req, res);
+      return handler(req as AuthenticatedRequest, res);
     }
+  };
+}
+
+// Helper for role-based protection
+export function withRole(handler: (req: AuthenticatedRequest, res: NextApiResponse) => Promise<void>, allowedRoles: string[]) {
+  return async (req: AuthRequest, res: NextApiResponse) => {
+    await new Promise<void>((resolve) => {
+      authenticate(req, res, () => resolve());
+    });
+    
+    // If we got here, authentication passed
+    if (!req.user) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+    
+    // Check if user has the required role
+    if (!allowedRoles.includes(req.user.role)) {
+      return res.status(403).json({ 
+        message: `Access denied. Required role: ${allowedRoles.join(' or ')}` 
+      });
+    }
+    
+    return handler(req as AuthenticatedRequest, res);
   };
 }

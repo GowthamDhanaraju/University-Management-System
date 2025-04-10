@@ -1,54 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
-import { IoMdNotifications } from "react-icons/io";
-
-// Notification badge component
-const NotificationBadge = ({ count }: { count: number }) => {
-  const [isOpen, setIsOpen] = useState(false);
-  
-  return (
-    <div className="relative">
-      <button 
-        onClick={() => setIsOpen(!isOpen)} 
-        className="p-2 rounded-full hover:bg-gray-700"
-      >
-        <IoMdNotifications className="text-gray-300 text-lg" />
-        {count > 0 && (
-          <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-4 h-4 flex items-center justify-center rounded-full">
-            {count > 9 ? '9+' : count}
-          </span>
-        )}
-      </button>
-      
-      {isOpen && (
-        <div className="absolute right-0 mt-2 w-80 bg-gray-800 rounded-md shadow-lg z-10 border border-gray-700">
-          <div className="p-3 border-b border-gray-700">
-            <h3 className="font-medium">Notifications</h3>
-          </div>
-          <div className="max-h-96 overflow-y-auto">
-            {count > 0 ? (
-              <div className="p-3 hover:bg-gray-700 cursor-pointer">
-                <p className="text-sm">Notification example</p>
-                <p className="text-xs text-gray-400">1 minute ago</p>
-              </div>
-            ) : (
-              <div className="p-4 text-center text-gray-400">
-                <p>No new notifications</p>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-};
 
 const TopBar: React.FC = () => {
   const router = useRouter();
   const [time, setTime] = useState(new Date());
   const [mounted, setMounted] = useState(false);
   const [userName, setUserName] = useState("");
-  const [notificationCount, setNotificationCount] = useState(0);
   
   useEffect(() => {
     setMounted(true);
@@ -58,19 +15,6 @@ const TopBar: React.FC = () => {
     // Get user data from localStorage
     const storedUserName = localStorage.getItem("userName");
     if (storedUserName) setUserName(storedUserName);
-    
-    // Fetch notifications (mock for now)
-    const fetchNotifications = async () => {
-      try {
-        // This would be a real API call in production
-        // For now, just set a random number for demonstration
-        setNotificationCount(Math.floor(Math.random() * 5));
-      } catch (error) {
-        console.error("Failed to fetch notifications:", error);
-      }
-    };
-    
-    fetchNotifications();
     
     return () => clearInterval(interval);
   }, []);
@@ -89,7 +33,7 @@ const TopBar: React.FC = () => {
   return (
     <>
       <div className="flex justify-between items-center mb-6">
-        <div className="flex items-center">
+        <div className="flex items-center pl-4">
           {mounted ? (
             <>
               <span className="text-2xl font-semibold mr-2">
@@ -106,8 +50,6 @@ const TopBar: React.FC = () => {
         </div>
         
         <div className="flex items-center space-x-2">
-          <NotificationBadge count={notificationCount} />
-          
           <button 
             onClick={handleLogout}
             className="flex items-center gap-2 px-3 py-1 rounded hover:bg-gray-700 transition-colors"

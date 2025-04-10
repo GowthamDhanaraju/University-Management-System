@@ -1,9 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { z } from 'zod';
-import { connectToDatabase } from '../../../utils/db';
-import { verifyToken } from '../../../utils/auth';
-import { ObjectId } from 'mongodb';
-
+import prisma from '../../../lib/prisma';
+import { verifyToken } from '../../../lib/auth';
 // Validation schema for creating an auditorium
 const createAuditoriumSchema = z.object({
   name: z.string().min(2),
@@ -21,31 +19,49 @@ export default async function handler(
 ) {
   try {
     // Verify authentication
-    const user = await verifyToken(req);
-    if (!user) {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return res.status(401).json({ success: false, message: 'Unauthorized' });
     }
-
-    const { db } = await connectToDatabase();
     
+    const token = authHeader.split(' ')[1];
+    const decoded = verifyToken(token);
+    
+    if (!decoded) {
+      return res.status(401).json({ success: false, message: 'Invalid token' });
+    }
+    
+    const user = await prisma.user.findUnique({
+      where: { id: decoded.id },
+    });
+    
+    if (!user) {
+      return res.status(401).json({ success: false, message: 'User not found' });
+    }
+
     // GET - List auditoriums
     if (req.method === 'GET') {
       const { status, capacity, date, search, page = '1', limit = '20' } = req.query;
       const query: any = {};
       
+      // Build Prisma query instead of MongoDB query
+      let whereClause: any = {};
+      
       if (status) {
-        query.status = status;
+        whereClause.status = status as string;
       }
       
       if (capacity) {
-        query.capacity = { $gte: parseInt(capacity as string, 10) };
+        whereClause.capacity = {
+          gte: parseInt(capacity as string, 10)
+        };
       }
       
       if (search) {
-        const searchRegex = new RegExp(String(search), 'i');
-        query.$or = [
-          { name: searchRegex },
-          { location: searchRegex }
+        const searchString = String(search);
+        whereClause.OR = [
+          { name: { contains: searchString, mode: 'insensitive' } },
+          { location: { contains: searchString, mode: 'insensitive' } }
         ];
       }
       
@@ -53,35 +69,36 @@ export default async function handler(
       const limitNum = parseInt(limit as string, 10);
       const skip = (pageNum - 1) * limitNum;
       
-      const auditoriums = await db.collection('auditoriums')
-        .find(query)
-        .sort({ name: 1 })
-        .skip(skip)
-        .limit(limitNum)
-        .toArray();
+      const auditoriums = await prisma.auditorium.findMany({
+        where: whereClause,
+        orderBy: { name: 'asc' },
+        skip,
+        take: limitNum,
+      });
       
       // If a date is provided, check bookings for that date
       if (date) {
-        const bookingsQuery: any = { date: date as string };
-        const bookings = await db.collection('auditorium_bookings').find(bookingsQuery).toArray();
+        const bookings = await prisma.auditoriumBooking.findMany({
+          where: { date: date as string },
+        });
         
         // Map bookings to auditoriums
         const auditoriumBookings = bookings.reduce((acc, booking) => {
-          if (!acc[booking.auditoriumId.toString()]) {
-            acc[booking.auditoriumId.toString()] = [];
+          if (!acc[booking.auditoriumId]) {
+            acc[booking.auditoriumId] = [];
           }
-          acc[booking.auditoriumId.toString()].push(booking);
+          acc[booking.auditoriumId].push(booking);
           return acc;
-        }, {});
+        }, {} as Record<string, any[]>);
         
         // Add booking info to auditoriums
         for (const auditorium of auditoriums) {
-          const id = auditorium._id.toString();
+          const id = auditorium.id;
           auditorium.bookings = auditoriumBookings[id] || [];
         }
       }
       
-      const total = await db.collection('auditoriums').countDocuments(query);
+      const total = await prisma.auditorium.count({ where: whereClause });
       
       return res.status(200).json({
         success: true,
@@ -96,7 +113,7 @@ export default async function handler(
     }
 
     // Only admins can create auditoriums
-    if (user.role !== 'admin') {
+    if (user.role !== 'ADMIN') {
       return res.status(403).json({ success: false, message: 'Forbidden' });
     }
 
@@ -106,8 +123,8 @@ export default async function handler(
         const validatedData = createAuditoriumSchema.parse(req.body);
         
         // Check if an auditorium with the same name exists
-        const existingAuditorium = await db.collection('auditoriums').findOne({
-          name: validatedData.name
+        const existingAuditorium = await prisma.auditorium.findFirst({
+          where: { name: validatedData.name }
         });
         
         if (existingAuditorium) {
@@ -117,22 +134,17 @@ export default async function handler(
           });
         }
         
-        const newAuditorium = {
-          ...validatedData,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          createdBy: new ObjectId(user.id)
-        };
-        
-        const result = await db.collection('auditoriums').insertOne(newAuditorium);
+        const newAuditorium = await prisma.auditorium.create({
+          data: {
+            ...validatedData,
+            createdBy: user.id
+          }
+        });
         
         return res.status(201).json({
           success: true,
           message: 'Auditorium created successfully',
-          data: {
-            _id: result.insertedId,
-            ...newAuditorium
-          }
+          data: newAuditorium
         });
       } catch (error) {
         if (error instanceof z.ZodError) {

@@ -456,9 +456,9 @@ const AdminTFeedback: React.FC = () => {
   return (
     <div className="flex bg-gray-900 min-h-screen">
       <AdminSidebar />
-      <div className="flex-1 p-6 ml-16">
+      <div className="flex-1 p-6 ml-16 overflow-hidden">
         <TopBar />
-        <div className="flex items-center space-x-4 ml-10">
+        <div className="flex items-center space-x-4 ml-4 md:ml-10">
           <div className="p-3 bg-blue-500 rounded-xl shadow-lg">
             <UserGroupIcon className="w-8 h-8" />
           </div>
@@ -466,78 +466,80 @@ const AdminTFeedback: React.FC = () => {
             Teacher Management
           </Typography>
         </div>
-        <div className="ml-16 p-6 w-full text-gray-200">
+        <div className="ml-0 md:ml-10 p-2 md:p-6 w-full text-gray-200 overflow-hidden">
           {selectedTeacherIndex === null ? (
             <>
-              <div className="bg-gray-800 p-6 rounded-lg shadow-md mt-6 border border-gray-700">
-                <h3 className="text-lg font-semibold text-gray-100">Faculty Information</h3>
-                <table className="w-full border-collapse mt-4">
-                  <thead>
-                    <tr className="bg-gray-700 text-white">
-                      <th className="p-2 border-b border-gray-600">Name</th>
-                      <th className="p-2 border-b border-gray-600">ID</th>
-                      <th className="p-2 border-b border-gray-600">Department</th>
-                      <th className="p-2 border-b border-gray-600">Subjects</th>
-                      <th className="p-2 border-b border-gray-600">Email</th>
-                      <th className="p-2 border-b border-gray-600">Phone</th>
-                      <th className="p-2 border-b border-gray-600">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {teachers.map((teacher, index) => (
-                      <tr key={index} className="border-b border-gray-700 hover:bg-gray-700">
-                        <td className="p-2">{teacher.name}</td>
-                        <td className="p-2">{teacher.id}</td>
-                        <td className="p-2">{teacher.dept !== "Unassigned" ? teacher.dept : 
-                          <span className="text-gray-400 italic">Not assigned</span>}</td>
-                        <td className="p-2">{teacher.subjects}</td>
-                        <td className="p-2">{teacher.email}</td>
-                        <td className="p-2">{teacher.phone !== "Not provided" ? teacher.phone : 
-                          <span className="text-gray-400 italic">Not provided</span>}</td>
-                        <td className="p-2 flex space-x-2">
-                          <button
-                            onClick={() => viewFeedback(index)}
-                            className="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 w-full"
-                          >
-                            Feedback
-                          </button>
-                        </td>
+              <div className="bg-gray-800 p-4 rounded-lg shadow-md mt-6 border border-gray-700 overflow-x-auto max-w-full">
+                <h3 className="text-lg font-semibold text-gray-100 mb-3">Faculty Information</h3>
+                <div className="w-full overflow-x-auto">
+                  <table className="w-full min-w-max table-auto border-collapse">
+                    <thead>
+                      <tr className="bg-gray-700 text-white">
+                        <th className="p-2 border-b border-gray-600">Name</th>
+                        <th className="p-2 border-b border-gray-600">ID</th>
+                        <th className="p-2 border-b border-gray-600">Department</th>
+                        <th className="p-2 border-b border-gray-600">Subjects</th>
+                        <th className="p-2 border-b border-gray-600">Email</th>
+                        <th className="p-2 border-b border-gray-600">Phone</th>
+                        <th className="p-2 border-b border-gray-600">Actions</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {teachers.map((teacher, index) => (
+                        <tr key={index} className="border-b border-gray-700 hover:bg-gray-700">
+                          <td className="p-2">{teacher.name}</td>
+                          <td className="p-2">{teacher.id}</td>
+                          <td className="p-2">{teacher.dept !== "Unassigned" ? teacher.dept : 
+                            <span className="text-gray-400 italic">Not assigned</span>}</td>
+                          <td className="p-2">{teacher.subjects}</td>
+                          <td className="p-2">{teacher.email}</td>
+                          <td className="p-2">{teacher.phone !== "Not provided" ? teacher.phone : 
+                            <span className="text-gray-400 italic">Not provided</span>}</td>
+                          <td className="p-2 flex space-x-2">
+                            <button
+                              onClick={() => viewFeedback(index)}
+                              className="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 w-full"
+                            >
+                              Feedback
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </>
           ) : (
-            <div className="bg-gray-800 p-6 rounded-lg shadow-md mt-4 border border-gray-700">
-              <div className="flex justify-between items-center mb-4">
+            <div className="bg-gray-800 p-4 rounded-lg shadow-md mt-4 border border-gray-700 max-w-full overflow-hidden">
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-2">
                 <h3 className="text-lg font-semibold text-gray-100">
                   Teacher Feedback: {teachers[selectedTeacherIndex].name}
                 </h3>
                 <div className="flex space-x-2">
                   <button
                     onClick={() => setSelectedTeacherIndex(null)}
-                    className="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700 transition"
+                    className="bg-gray-600 text-white px-3 py-1 md:px-4 md:py-2 rounded hover:bg-gray-700 transition text-sm md:text-base"
                     title="Return to teacher list"
                   >
                     Back to List
                   </button>
                   <button
                     onClick={() => setShowAllFeedback(!showAllFeedback)}
-                    className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
+                    className="bg-blue-600 text-white px-3 py-1 md:px-4 md:py-2 rounded hover:bg-blue-700 transition text-sm md:text-base"
                     title="Toggle between showing all feedback or recent feedback"
                   >
-                    {showAllFeedback ? "Show Recent" : "View All Feedback"}
+                    {showAllFeedback ? "Show Recent" : "View All"}
                   </button>
                 </div>
               </div>
 
               {isEditingFeedback ? (
-                <div className="bg-gray-700 p-4 rounded-lg border border-gray-600 mb-6">
+                <div className="bg-gray-700 p-3 md:p-4 rounded-lg border border-gray-600 mb-6 overflow-x-auto">
                   <h4 className="text-white font-semibold mb-3">
                     {editingFeedbackId ? "Edit Feedback" : "Add New Feedback"}
                   </h4>
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
                     <div>
                       <label className="block text-gray-300 mb-1">Subject</label>
                       <select
@@ -588,7 +590,6 @@ const AdminTFeedback: React.FC = () => {
                         className="w-full bg-gray-800 border border-gray-600 p-2 rounded text-white"
                       />
                     </div>
-                    
                     <div className="col-span-2">
                       <label className="block text-gray-300 mb-1">Comment</label>
                       <textarea
@@ -608,7 +609,7 @@ const AdminTFeedback: React.FC = () => {
                       Cancel
                     </button>
                     <button
-                      onClick={saveFeedback}
+                      onClick={saveFeedback} 
                       className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-500 transition"
                       title="Save feedback entry"
                     >
@@ -617,52 +618,53 @@ const AdminTFeedback: React.FC = () => {
                   </div>
                 </div>
               ) : (
-                <>
-                  <div className="mb-6">
-                    <h4 className="font-semibold text-lg text-white mb-2">
-                      {showAllFeedback ? "All Feedback" : "Recent Feedback"}
-                    </h4>
-                    {teachers[selectedTeacherIndex].feedback &&
-                    teachers[selectedTeacherIndex].feedback!.length > 0 ? (
-                      <div className="space-y-4">
-                        {(showAllFeedback
-                          ? teachers[selectedTeacherIndex].feedback
-                          : teachers[selectedTeacherIndex].feedback!.slice(0, 10)
-                        ).map((feedback) => (
-                          <div key={feedback.id} className="bg-gray-700 p-4 rounded-lg border border-gray-600">
-                            <div className="flex justify-between items-start">
-                              <div>
-                                <p className="text-green-300 text-sm font-medium">
-                                  {feedback.studentName && feedback.studentName !== 'Anonymous' 
-                                    ? feedback.studentName.replace(/\(\)/g, '').trim() 
-                                    : 'Anonymous'}
-                                </p>
-                                <p className="text-blue-300 text-xs mt-1 flex items-center">
-                                  <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                  </svg>
-                                  {formatDate(feedback.date)}
-                                </p>
-                              </div>
-                              <div className="flex items-center">
-                                <span className="bg-blue-900 text-white px-3 py-1 rounded text-md font-bold">
-                                  {(feedback.overallRating || feedback.rating).toFixed(1)}
-                                </span>
-                              </div>
+                <div className="mb-6 overflow-x-auto max-w-full">
+                  <h4 className="font-semibold text-lg text-white mb-2">
+                    {showAllFeedback ? "All Feedback" : "Recent Feedback"}
+                  </h4>
+                  {teachers[selectedTeacherIndex].feedback &&
+                  teachers[selectedTeacherIndex].feedback!.length > 0 ? (
+                    <div className="space-y-3 w-full">
+                      {(showAllFeedback
+                        ? teachers[selectedTeacherIndex].feedback
+                        : teachers[selectedTeacherIndex].feedback!.slice(0, 10)
+                      ).map((feedback) => (
+                        <div key={feedback.id} className="bg-gray-700 p-3 rounded-lg border border-gray-600">
+                          <div className="flex justify-between items-start flex-wrap gap-2">
+                            <div>
+                              <p className="text-green-300 text-sm font-medium">
+                                {feedback.studentName && feedback.studentName !== 'Anonymous' 
+                                  ? feedback.studentName.replace(/\(\)/g, '').trim() 
+                                  : 'Anonymous'}
+                              </p>
+                              <p className="text-blue-300 text-xs mt-1 flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                                {formatDate(feedback.date)}
+                              </p>
+                              <p className="text-gray-400 text-xs mt-1">
+                                {feedback.subject} {feedback.section && `(${feedback.section})`}
+                              </p>
                             </div>
-                            
-                            <div className="mt-3 bg-gray-800 p-3 rounded-md">
-                              <p className="text-gray-300 font-medium mb-1">Comment:</p>
-                              <p className="text-gray-200">{feedback.comment}</p>
+                            <div className="flex items-center">
+                              <span className="bg-blue-900 text-white px-3 py-1 rounded text-md font-bold">
+                                {(feedback.overallRating || feedback.rating).toFixed(1)}
+                              </span>
                             </div>
                           </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <p className="text-gray-400">No feedback available for this teacher.</p>
-                    )}
-                  </div>
-                </>
+                          
+                          <div className="mt-3 bg-gray-800 p-3 rounded-md">
+                            <p className="text-gray-300 font-semibold text-sm mb-1">Comment:</p>
+                            <p className="text-gray-200 break-words text-sm">{feedback.comment}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-gray-400">No feedback available for this teacher.</p>
+                  )}
+                </div>
               )}
             </div>
           )}
@@ -671,5 +673,6 @@ const AdminTFeedback: React.FC = () => {
     </div>
   );
 };
+
 
 export default AdminTFeedback;

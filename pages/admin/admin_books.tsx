@@ -60,8 +60,8 @@ const BookManagement: React.FC = () => {
         setLoading(true);
         console.log('Fetching books from API');
         
-        // Try with a more reliable endpoint path
-        const response = await fetch('/api/books', {
+        // Updated endpoint with proper path
+        const response = await fetch('/api/library/books', {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -105,7 +105,8 @@ const BookManagement: React.FC = () => {
     
     const fetchBorrowedBooks = async () => {
       try {
-        const response = await fetch('/api/library/borrowed', {
+        // Updated endpoint for borrowed books
+        const response = await fetch('/api/library/borrowed-books', {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -217,7 +218,8 @@ const BookManagement: React.FC = () => {
     }
 
     try {
-      const response = await fetch('/api/books', {
+      // Updated API endpoint for adding books
+      const response = await fetch('/api/library/books', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -271,7 +273,8 @@ const BookManagement: React.FC = () => {
     }
 
     try {
-      const response = await fetch(`/api/books/${editingBook.id}`, {
+      // Updated API endpoint for updating books
+      const response = await fetch(`/api/library/books/${editingBook.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -303,8 +306,12 @@ const BookManagement: React.FC = () => {
   const deleteBook = async (id: string) => {
     if (confirm("Are you sure you want to delete this book?")) {
       try {
-        const response = await fetch(`/api/books/${id}`, {
+        // Updated API endpoint for deleting books
+        const response = await fetch(`/api/library/books/${id}`, {
           method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+          },
         });
         
         if (!response.ok) {
