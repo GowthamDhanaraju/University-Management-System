@@ -232,7 +232,7 @@ const TeacherAttendance: React.FC = () => {
       else if (status === "absent") absentCount++;
       else if (status === "dutyLeave") dutyLeaveCount++;
       else if (status === "medical") medicalCount++;
-      else if (status === "notTaken") notTakenCount++;
+      else notTakenCount++;
     });
 
     return {
@@ -242,6 +242,66 @@ const TeacherAttendance: React.FC = () => {
       dutyLeave: dutyLeaveCount,
       medical: medicalCount,
       notTaken: notTakenCount,
+    };
+  };
+  
+  // Helper function to get students for the current course
+  const getCurrentCourseStudents = () => {
+    return studentList;
+  };
+  
+  // Calculate the stats for the current view
+  const stats = calculateStats();
+
+  return (
+    <div className="flex h-screen bg-gray-900 text-gray-100">
+      <Sidebar />
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <TopBar />
+        <div className="flex-1 overflow-y-auto p-6">
+          <div className="max-w-7xl mx-auto space-y-6">
+            {/* Header */}
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
+              <div>
+                <h1 className="text-2xl font-bold mb-1">Attendance Management</h1>
+                <p className="text-gray-400">Record and manage student attendance</p>
+              </div>
+              
+              <div className="flex gap-4 mt-4 sm:mt-0">
+                <div>
+                  <label htmlFor="course-select" className="block text-sm font-medium text-gray-400 mb-1">
+                    Select Course
+                  </label>
+                  <select
+                    id="course-select"
+                    value={selectedCourse}
+                    onChange={handleCourseChange}
+                    className="w-full bg-gray-800 border border-gray-700 rounded-lg py-2 px-3 text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    {courseList.map((course) => (
+                      <option key={course.id} value={course.id}>
+                        {course.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-400 mb-1">Date</label>
+                  <button
+                    onClick={() => setOpenDateDialog(true)}
+                    className="flex items-center gap-2 bg-gray-800 border border-gray-700 rounded-lg py-2 px-3 text-gray-100 hover:bg-gray-750 transition-colors"
+                  >
+                    <FaCalendarAlt className="text-gray-400" />
+                    {selectedDate.toLocaleDateString()}
+                  </button>
+                </div>
+              </div>
+            </div>
+            
+            {/* Action Button */}
+            <div className="flex justify-end mb-4">
+              {!editingAttendance ? (
                 <button
                   onClick={startEditing}
                   className="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg shadow-md transition-colors"
@@ -301,7 +361,7 @@ const TeacherAttendance: React.FC = () => {
             <div className="bg-gray-800 rounded-xl shadow-xl overflow-hidden">
               <div className="bg-gray-750 p-3 flex justify-between items-center">
                 <h3 className="font-medium text-gray-100">
-                  {teacherCourses.find(c => c.id === selectedCourse)?.name} - {selectedDate.toLocaleDateString()}
+                  {courseList.find(c => c.id === selectedCourse)?.name} - {selectedDate.toLocaleDateString()}
                 </h3>
                 {editingAttendance && (
                   <div className="text-sm text-gray-400">
