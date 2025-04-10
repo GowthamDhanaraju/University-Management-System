@@ -304,4 +304,139 @@ const TeacherTimetable: React.FC = () => {
             </div>
 
             <div className="bg-gradient-to-br from-purple-900/70 to-purple-800/40 p-4 rounded-lg border border-purple-700/50 shadow-lg">
-              <div className="
+            <div className="bg-gradient-to-br from-purple-900/70 to-purple-800/40 p-4 rounded-lg border border-purple-700/50 shadow-lg">
+                <div className="flex items-center">
+                  <div className="p-3 bg-purple-800 rounded-lg mr-3">
+                    <UserGroupIcon className="h-6 w-6 text-purple-200" />
+                  </div>
+                  <div>
+                    <h3 className="text-purple-200 text-sm font-medium">Teaching Classes</h3>
+                    <p className="text-white text-xl font-bold">{teacherInfo.subjects.length || 3} Subjects</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-gradient-to-br from-green-900/70 to-green-800/40 p-4 rounded-lg border border-green-700/50 shadow-lg">
+                <div className="flex items-center">
+                  <div className="p-3 bg-green-800 rounded-lg mr-3">
+                    <MapPinIcon className="h-6 w-6 text-green-200" />
+                  </div>
+                  <div>
+                    <h3 className="text-green-200 text-sm font-medium">Department</h3>
+                    <p className="text-white text-xl font-bold">{teacherInfo.department}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Next Class Card */}
+            {nextClass && (
+              <div className="bg-gradient-to-r from-indigo-900/80 to-purple-900/60 p-4 rounded-lg border border-indigo-700/50 shadow-lg">
+                <h3 className="text-lg font-medium text-white mb-2 flex items-center">
+                  <ClockIcon className="h-5 w-5 mr-2 text-indigo-300" />
+                  Next Class
+                </h3>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-indigo-200 font-medium">{nextClass.session.subject}</p>
+                    <p className="text-gray-300 text-sm">{nextClass.session.className} • {nextClass.session.room}</p>
+                  </div>
+                  <div className="bg-indigo-800/80 px-3 py-1 rounded-lg text-white font-medium">
+                    {nextClass.timeSlot}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Timetable Grid */}
+            <div className="overflow-x-auto mt-4 bg-gray-900/50 rounded-xl border border-gray-800">
+              <table className="min-w-full divide-y divide-gray-800">
+                <thead>
+                  <tr>
+                    <th className="py-3 px-4 bg-gray-800 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                      Time
+                    </th>
+                    {daysToDisplay.map((day) => (
+                      <th 
+                        key={day} 
+                        className={`py-3 px-4 bg-gray-800 text-left text-xs font-medium text-gray-400 uppercase tracking-wider ${
+                          day === currentDay ? "bg-gray-700" : ""
+                        }`}
+                      >
+                        {day}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-800">
+                  {TIME_SLOTS.map((timeSlot) => (
+                    <tr key={timeSlot} className="hover:bg-gray-800/60">
+                      <td className="py-3 px-4 whitespace-nowrap text-sm font-medium text-gray-300">
+                        {timeSlot}
+                      </td>
+                      {daysToDisplay.map((day) => {
+                        const session = timetable[day]?.[timeSlot];
+                        return (
+                          <td 
+                            key={`${day}-${timeSlot}`} 
+                            className={`py-2 px-4 whitespace-nowrap text-sm text-gray-300 ${getCellColorClass(session)}`}
+                          >
+                            {session ? (
+                              <div className="p-2">
+                                <div className="font-medium">{session.subject}</div>
+                                {session.type !== "break" && (
+                                  <>
+                                    <div className="text-xs text-gray-400 flex items-center">
+                                      <UserGroupIcon className="h-3 w-3 mr-1" />
+                                      {session.className}
+                                    </div>
+                                    <div className="text-xs text-gray-400 flex items-center">
+                                      <MapPinIcon className="h-3 w-3 mr-1" />
+                                      {session.room}
+                                    </div>
+                                  </>
+                                )}
+                              </div>
+                            ) : (
+                              <div className="p-2 text-gray-500 italic">Free</div>
+                            )}
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Legend */}
+            <div className="mt-4 flex flex-wrap gap-4">
+              <div className="flex items-center">
+                <span className="w-4 h-4 inline-block mr-2 rounded bg-blue-900/60"></span>
+                <span className="text-sm text-gray-400">Lecture</span>
+              </div>
+              <div className="flex items-center">
+                <span className="w-4 h-4 inline-block mr-2 rounded bg-green-900/60"></span>
+                <span className="text-sm text-gray-400">Lab</span>
+              </div>
+              <div className="flex items-center">
+                <span className="w-4 h-4 inline-block mr-2 rounded bg-purple-900/60"></span>
+                <span className="text-sm text-gray-400">Tutorial</span>
+              </div>
+              <div className="flex items-center">
+                <span className="w-4 h-4 inline-block mr-2 rounded bg-gray-700"></span>
+                <span className="text-sm text-gray-400">Break</span>
+              </div>
+              <div className="flex items-center">
+                <span className="w-4 h-4 inline-block mr-2 rounded bg-gray-800/50"></span>
+                <span className="text-sm text-gray-400">Free</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default TeacherTimetable;
