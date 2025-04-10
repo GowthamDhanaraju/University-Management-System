@@ -127,8 +127,8 @@ const CourseOverview: React.FC<{ course: Course }> = ({ course }) => {
         setGradeData(gradesRes.data);
         setProgressData(progressRes.data);
       } catch (err) {
-        console.error("Failed to fetch course data:", err);
-        setError("Failed to load course data");
+        console.error("");
+        setError("");
       } finally {
         setLoading(false);
       }
