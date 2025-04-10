@@ -78,6 +78,7 @@ async function main() {
   await createFeedback(students, teachers, courses);
   
   console.log('Seeding completed successfully!');
+  
 }
 
 async function clearDatabase() {
@@ -327,7 +328,7 @@ async function createCourses(departments) {
       { name: 'Soil Mechanics', semester: 3 },
       { name: 'Reinforced Concrete Design', semester: 4 },
       { name: 'Transportation Engineering', semester: 5 },
-      { name: 'Environmental Engineering', semester: 6 },
+      { name: 'Environmental Engineering',  semester: 6 },
       { name: 'Construction Management', semester: 7 }
     ],
     'EE': [
@@ -1216,103 +1217,119 @@ async function createFeedback(students, teachers, courses) {
   const courseTeacherPairs = await prisma.teacherCourse.findMany({
     include: {
       course: true,
-      teacher: true
-    }
+      teacher: true,
+    },
   });
-  
+
   const enrollments = await prisma.enrollment.findMany({
     where: {
-      status: 'Completed' // Only provide feedback for completed courses
+      status: "Completed", // Only provide feedback for completed courses
     },
     include: {
       student: true,
-      course: true
-    }
+      course: true,
+    },
   });
-  
+
   // Create feedback for 30-50 random enrollments
-  const numberOfFeedbacks = Math.min(Math.floor(Math.random() * 21) + 30, enrollments.length); // 30-50 feedbacks but not more than enrollments
+  const numberOfFeedbacks = Math.min(
+    Math.floor(Math.random() * 21) + 30,
+    enrollments.length
+  ); // 30-50 feedbacks but not more than enrollments
   const selectedEnrollmentIds = new Set();
-  
+
   for (let i = 0; i < numberOfFeedbacks; i++) {
     // Find a random enrollment that hasn't been selected yet
     let randomEnrollment;
     let attempts = 0;
-    
-    while (attempts < 100) { // Prevent infinite loop
-      randomEnrollment = enrollments[Math.floor(Math.random() * enrollments.length)];
+
+    while (attempts < 100) {
+      // Prevent infinite loop
+      randomEnrollment =
+        enrollments[Math.floor(Math.random() * enrollments.length)];
       if (!selectedEnrollmentIds.has(randomEnrollment.id)) {
         selectedEnrollmentIds.add(randomEnrollment.id);
         break;
       }
       attempts++;
     }
-    
+
     if (attempts >= 100) continue; // Skip if we couldn't find a unique enrollment
-    
+
     // Find teacher for this course
-    const courseTeacher = courseTeacherPairs.find(ct => 
-      ct.courseId === randomEnrollment.courseId
+    const courseTeacher = courseTeacherPairs.find(
+      (ct) => ct.courseId === randomEnrollment.courseId
     );
-    
+
     if (!courseTeacher) continue; // Skip if no teacher found
-    
+
     // Generate random ratings
-    const generateRating = () => Math.floor(Math.random() * 2) + 3 + Math.random(); // 3.0-5.0 range
-    
-    const courseRating = {
-      content: generateRating(),
-      assignments: generateRating(),
-      difficulty: generateRating()
+    const generateRating = () =>
+      Math.floor(Math.random() * 2) + 3 + Math.random(); // 3.0-5.0 range
+
+    const courseRatings = {
+      contentQuality: generateRating(),
+      difficultyLevel: generateRating(),
+      practicalApplication: generateRating(),
     };
-    
-    const teacherRating = {
-      knowledge: generateRating(),
-      teaching: generateRating(),
-      accessibility: generateRating()
+
+    const facultyRatings = {
+      teachingQuality: generateRating(),
+      communication: generateRating(),
+      availability: generateRating(),
     };
-    
-    const overallRating = (
-      (courseRating.content + courseRating.assignments + courseRating.difficulty +
-       teacherRating.knowledge + teacherRating.teaching + teacherRating.accessibility) / 6
-    );
-    
+
+    const overallRating =
+      (courseRatings.contentQuality +
+        courseRatings.difficultyLevel +
+        courseRatings.practicalApplication +
+        facultyRatings.teachingQuality +
+        facultyRatings.communication +
+        facultyRatings.availability) /
+      6;
+
     // Generate a random comment
     const positiveComments = [
-      'Great course! I learned a lot.',
-      'The instructor was very knowledgeable and helpful.',
-      'Well-structured course with good learning materials.',
-      'I really enjoyed the practical aspects of this course.',
-      'The instructor made complex topics easy to understand.',
-      'Excellent teaching methods and engaging content.',
-      'Very relevant and up-to-date information.',
-      'The instructor was always available to answer questions.',
-      'The assignments were challenging but very educational.',
-      'I would recommend this course to other students.'
+      "Great course! I learned a lot.",
+      "The instructor was very knowledgeable and helpful.",
+      "Well-structured course with good learning materials.",
+      "I really enjoyed the practical aspects of this course.",
+      "The instructor made complex topics easy to understand.",
+      "Excellent teaching methods and engaging content.",
+      "Very relevant and up-to-date information.",
+      "The instructor was always available to answer questions.",
+      "The assignments were challenging but very educational.",
+      "I would recommend this course to other students.",
     ];
-    
+
     const constructiveComments = [
-      'More practical examples would be helpful.',
-      'The pace was a bit fast at times.',
-      'Additional reference materials would be beneficial.',
-      'Some assignments were unclear.',
-      'More feedback on assignments would be appreciated.',
-      'The course could benefit from more interactive sessions.',
-      'I would have liked more real-world applications.',
-      'The grading criteria could be more transparent.',
-      'More time for questions during lectures would be helpful.',
-      'Lecture recordings would be useful for revision.'
+      "More practical examples would be helpful.",
+      "The pace was a bit fast at times.",
+      "Additional reference materials would be beneficial.",
+      "Some assignments were unclear.",
+      "More feedback on assignments would be appreciated.",
+      "The course could benefit from more interactive sessions.",
+      "I would have liked more real-world applications.",
+      "The grading criteria could be more transparent.",
+      "More time for questions during lectures would be helpful.",
+      "Lecture recordings would be useful for revision.",
     ];
-    
-    let comment = '';
+
+    let comment = "";
     if (overallRating >= 4.5) {
-      comment = positiveComments[Math.floor(Math.random() * positiveComments.length)];
+      comment =
+        positiveComments[Math.floor(Math.random() * positiveComments.length)];
     } else if (overallRating >= 3.5) {
-      comment = `${positiveComments[Math.floor(Math.random() * positiveComments.length)]} ${constructiveComments[Math.floor(Math.random() * constructiveComments.length)]}`;
+      comment = `${positiveComments[Math.floor(Math.random() * positiveComments.length)]} ${
+        constructiveComments[Math.floor(Math.random() * constructiveComments.length)]
+      }`;
     } else {
-      comment = constructiveComments[Math.floor(Math.random() * constructiveComments.length)];
+      comment =
+        constructiveComments[
+          Math.floor(Math.random() * constructiveComments.length)
+        ];
     }
-    
+
     // Create the feedback
     await prisma.feedback.create({
       data: {
@@ -1320,11 +1337,11 @@ async function createFeedback(students, teachers, courses) {
         teacherId: courseTeacher.teacherId,
         courseId: randomEnrollment.courseId,
         date: new Date(randomEnrollment.updatedAt),
-        courseRating: courseRating,
-        teacherRating: teacherRating,
+        courseRatings: courseRatings,
+        facultyRatings: facultyRatings,
         overallRating: parseFloat(overallRating.toFixed(2)),
-        comments: comment
-      }
+        comments: comment,
+      },
     });
   }
 }
