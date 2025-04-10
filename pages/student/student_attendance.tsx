@@ -1,13 +1,85 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Sidebar from "../../components/student_sidebar";
 import TopBar from "@/components/topbar";
 import { FaTasks, FaChevronDown, FaChevronUp } from "react-icons/fa";
-import { attendanceData, SemesterAttendance } from "../../data/attendanceData";
 import Typography from "@mui/material/Typography";
+import { useRouter } from "next/router";
+
+interface AttendanceRecord {
+  courseID: string;
+  courseName: string;
+  courseCode: string;
+  faculty: string;
+  total: number;
+  present: number;
+  absent: number;
+  dutyLeave: number;
+  medical: number;
+  absentDates: string[];
+  presentDates: string[];
+  dutyLeaveDates: string[];
+  medicalDates: string[];
+}
+
+interface SemesterData {
+  semester: string;
+  year: number;
+  records: AttendanceRecord[];
+}
 
 const Attendance: React.FC = () => {
+  const router = useRouter();
   const [expandedRow, setExpandedRow] = useState<string | null>(null);
-  const [selectedSemester, setSelectedSemester] = useState<string>(attendanceData[0].semester);
+  const [attendanceData, setAttendanceData] = useState<SemesterData[]>([]);
+  const [selectedSemester, setSelectedSemester] = useState<string>("");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    // Authentication check
+    const storedRole = localStorage.getItem("role");
+    if (storedRole !== "student") {
+      router.push("/");
+      return;
+    }
+
+    const fetchAttendance = async () => {
+      try {
+        setLoading(true);
+        const studentId = localStorage.getItem("userId") || "";
+        if (!studentId) {
+          throw new Error("Student ID not found");
+        }
+
+        const timestamp = new Date().getTime();
+        const response = await fetch(`/api/students/${studentId}/attendance?t=${timestamp}`);
+
+        if (!response.ok) {
+          throw new Error(`Error ${response.status}: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+
+        if (data.success) {
+          setAttendanceData(data.data || []);
+          // Set the current semester as default
+          if (data.data.length > 0) {
+            setSelectedSemester(`${data.data[0].semester}-${data.data[0].year}`);
+          }
+        } else {
+          setError(data.message || "Failed to load attendance data");
+        }
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+        setError(`Failed to fetch attendance: ${errorMessage}`);
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAttendance();
+  }, [router]);
 
   const toggleRow = (courseID: string) => {
     setExpandedRow(expandedRow === courseID ? null : courseID);
@@ -17,7 +89,60 @@ const Attendance: React.FC = () => {
     setSelectedSemester(event.target.value);
   };
 
-  const selectedSemesterData = attendanceData.find((sem) => sem.semester === selectedSemester)?.records || [];
+  // Get the selected semester data
+  const getSelectedSemesterData = (): SemesterData | null => {
+    if (!selectedSemester || !attendanceData.length) return null;
+    
+    const [semester, yearStr] = selectedSemester.split('-');
+    const year = parseInt(yearStr);
+    
+    return attendanceData.find(data => 
+      data.semester === semester && data.year === year
+    ) || null;
+  };
+
+  const selectedSemesterData = getSelectedSemesterData()?.records || [];
+
+  if (loading) {
+    return (
+      <div className="flex min-h-screen bg-gray-900 text-gray-200 overflow-x-hidden">
+        <div className="fixed z-50">
+          <Sidebar />
+        </div>
+        <div className="flex-1 p-6 ml-16 w-[calc(100%-4rem)] relative">
+          <TopBar />
+          <div className="flex justify-center items-center h-[80vh]">
+            <div className="animate-spin h-10 w-10 border-4 border-green-500 rounded-full border-t-transparent"></div>
+            <span className="ml-3 text-xl">Loading attendance data...</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex min-h-screen bg-gray-900 text-gray-200 overflow-x-hidden">
+        <div className="fixed z-50">
+          <Sidebar />
+        </div>
+        <div className="flex-1 p-6 ml-16 w-[calc(100%-4rem)] relative">
+          <TopBar />
+          <div className="flex justify-center items-center h-[80vh] flex-col">
+            <div className="bg-red-500/20 border border-red-500 text-red-100 p-4 rounded-lg max-w-md">
+              <p>{error}</p>
+              <button 
+                onClick={() => window.location.reload()} 
+                className="mt-2 text-sm underline hover:text-white"
+              >
+                Try again
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen bg-gray-900 text-gray-200 overflow-x-hidden">
@@ -55,8 +180,8 @@ const Attendance: React.FC = () => {
                   onChange={handleSemesterChange}
                 >
                   {attendanceData.map((sem, index) => (
-                    <option key={index} value={sem.semester}>
-                      {sem.semester}
+                    <option key={index} value={`${sem.semester}-${sem.year}`}>
+                      {`${sem.semester} (${sem.year})`}
                     </option>
                   ))}
                 </select>
@@ -137,7 +262,7 @@ const Attendance: React.FC = () => {
                                     Absent Days
                                   </h4>
                                   <p className="text-gray-300">
-                                    {record.absentDays.length > 0 ? record.absentDays.join(", ") : "No absent days"}
+                                    {record.absentDates.length > 0 ? record.absentDates.join(", ") : "No absent days"}
                                   </p>
                                 </div>
                                 <div className="p-3 bg-gray-700 bg-opacity-50 rounded-lg border border-gray-600">
@@ -146,7 +271,7 @@ const Attendance: React.FC = () => {
                                     Medical Leave
                                   </h4>
                                   <p className="text-gray-300">
-                                    {record.medicalDays.length > 0 ? record.medicalDays.join(", ") : "No medical leave days"}
+                                    {record.medicalDates.length > 0 ? record.medicalDates.join(", ") : "No medical leave days"}
                                   </p>
                                 </div>
                                 <div className="p-3 bg-gray-700 bg-opacity-50 rounded-lg border border-gray-600">
@@ -155,7 +280,7 @@ const Attendance: React.FC = () => {
                                     Duty Leave
                                   </h4>
                                   <p className="text-gray-300">
-                                    {record.dutyLeaveDays.length > 0 ? record.dutyLeaveDays.join(", ") : "No duty leave days"}
+                                    {record.dutyLeaveDates.length > 0 ? record.dutyLeaveDates.join(", ") : "No duty leave days"}
                                   </p>
                                 </div>
                               </div>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "next/router";
 import {
   FaTasks, FaChalkboardTeacher, FaComments, FaBell, FaSignOutAlt,
   FaClipboardList, FaBook, FaChevronLeft, FaChevronRight,
@@ -33,7 +33,7 @@ const DashboardButton = ({ icon, text, color, route }: any) => {
   );
 };
 
-const Header = () => {
+const Header = ({ studentName, program }: { studentName: string, program: string }) => {
   const [time, setTime] = useState(new Date());
   useEffect(() => {
     const interval = setInterval(() => setTime(new Date()), 60000);
@@ -46,14 +46,14 @@ const Header = () => {
     <div className="bg-gradient-to-r from-green-700 to-emerald-800 p-6 rounded-xl shadow-lg text-white ml-5">
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-2xl font-bold">{greeting}, Rajesh</h2>
+          <h2 className="text-2xl font-bold">{greeting}, {studentName}</h2>
           <p className="text-sm text-indigo-100 mt-1">
             {time.toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
           </p>
         </div>
         <div className="flex items-center space-x-2 bg-white/10 px-4 py-2 rounded-full">
           <FaUserCircle className="text-xl" />
-          <span className="font-medium">B.Tech CSE</span>
+          <span className="font-medium">{program}</span>
         </div>
       </div>
       <div className="mt-4 flex justify-between items-center">
@@ -64,13 +64,10 @@ const Header = () => {
   );
 };
 
-const Timetable = () => {
+const Timetable = ({ courses }: { courses: any[] }) => {
   const [activeDay, setActiveDay] = useState(0);
   const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
   const timeSlots = ["8:00-9:00", "9:00-10:00", "10:00-11:00", "11:00-12:00", "12:00-1:00"];
-  const courses = ["Data Structures", "Algorithms", "Database Systems", "Computer Networks", "Operating Systems"];
-  const codes = ["CS201", "CS202", "CS203", "CS204", "CS205"];
-  const rooms = ["LT-3", "LT-4", "LAB-2", "LT-1", "LT-2"];
 
   return (
     <div className="bg-gray-800 p-6 rounded-xl shadow-lg text-white mt-6 ml-5">
@@ -93,8 +90,8 @@ const Timetable = () => {
           <div key={time} className="flex items-center bg-gray-700/50 p-3 rounded-lg hover:bg-gray-700 transition">
             <div className="w-24 text-sm text-gray-300">{time}</div>
             <div className="flex-1">
-              <div className="font-medium">{courses[i]}</div>
-              <div className="text-xs text-gray-400">{codes[i]} • {rooms[i]}</div>
+              <div className="font-medium">{courses[i]?.name || "No Class"}</div>
+              <div className="text-xs text-gray-400">{courses[i]?.code || ""} • {courses[i]?.room || ""}</div>
             </div>
           </div>
         ))}
@@ -173,7 +170,136 @@ const RightSidebar = () => {
   );
 };
 
-const StudentDashboard = () => {
+const StudentDashboard: React.FC = () => {
+  const [studentData, setStudentData] = useState<any>(null);
+  const [courseData, setCourseData] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [attendanceSummary, setAttendanceSummary] = useState({
+    good: 0,
+    warning: 0,
+    critical: 0
+  });
+  const router = useRouter();
+  
+  useEffect(() => {
+    // Authentication check
+    const storedRole = localStorage.getItem("role");
+    if (storedRole !== "student") {
+      router.push("/");
+      return;
+    }
+    
+    const fetchStudentData = async () => {
+      try {
+        setLoading(true);
+        // Get student ID from localStorage
+        const studentId = localStorage.getItem("userId") || "";
+        
+        // Add timestamp to prevent caching
+        const timestamp = new Date().getTime();
+        const response = await fetch(`/api/students/${studentId}?t=${timestamp}`);
+        
+        if (!response.ok) {
+          throw new Error(`Error ${response.status}: ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          // Save student data to state and localStorage for other components
+          setStudentData(data.data);
+          localStorage.setItem("userName", data.data.name || "Student");
+          localStorage.setItem("userEmail", data.data.email || "student@university.edu");
+          
+          // Fetch courses for timetable
+          try {
+            const coursesResponse = await fetch(`/api/students/${studentId}/courses?t=${timestamp}`);
+            
+            if (!coursesResponse.ok) {
+              throw new Error(`Error ${coursesResponse.status}: ${coursesResponse.statusText}`);
+            }
+            
+            const coursesData = await coursesResponse.json();
+            
+            if (coursesData.success) {
+              setCourseData(coursesData.data || []);
+            } else {
+              console.warn("Failed to fetch courses:", coursesData.message);
+            }
+
+            // Fetch attendance summary
+            const attendanceResponse = await fetch(`/api/students/${studentId}/attendance/summary?t=${timestamp}`);
+            
+            if (attendanceResponse.ok) {
+              const attendanceData = await attendanceResponse.json();
+              if (attendanceData.success) {
+                setAttendanceSummary({
+                  good: attendanceData.data.good || 0,
+                  warning: attendanceData.data.warning || 0,
+                  critical: attendanceData.data.critical || 0
+                });
+              }
+            }
+          } catch (courseErr) {
+            console.error("Error fetching additional data:", courseErr);
+          }
+        } else {
+          setError(data.message || "Failed to load student data");
+        }
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+        setError(`Failed to fetch student data: ${errorMessage}`);
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchStudentData();
+  }, [router]);
+  
+  if (loading) {
+    return (
+      <div className="flex min-h-screen bg-gray-900 text-gray-200">
+        <StudentSidebar />
+        <div className="flex-1 p-6 ml-16">
+          <TopBar />
+          <div className="flex justify-center items-center h-[80vh]">
+            <div className="animate-spin h-10 w-10 border-4 border-blue-500 rounded-full border-t-transparent"></div>
+            <span className="ml-3 text-xl">Loading dashboard...</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex min-h-screen bg-gray-900 text-gray-200">
+        <StudentSidebar />
+        <div className="flex-1 p-6 ml-16">
+          <TopBar />
+          <div className="flex justify-center items-center h-[80vh] flex-col">
+            <div className="bg-red-800/30 border border-red-700 rounded-lg p-6 max-w-md">
+              <h2 className="text-xl font-bold text-red-400 mb-2">Error Loading Dashboard</h2>
+              <p className="text-gray-300">{error}</p>
+              <p className="mt-4 text-sm text-gray-400">
+                There may be an issue with the server or API connection. Please try refreshing the page or contact support.
+              </p>
+              <button 
+                onClick={() => window.location.reload()}
+                className="mt-4 bg-red-700 hover:bg-red-600 px-4 py-2 rounded-md text-white"
+              >
+                Refresh Page
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-900 text-gray-200 flex">
       <StudentSidebar />
@@ -181,8 +307,11 @@ const StudentDashboard = () => {
         <TopBar />
         <div className="flex flex-col lg:flex-row gap-6">
           <div className="flex-1 space-y-6">
-            <Header />
-            <Timetable />
+            <Header 
+              studentName={studentData?.name || "Student"} 
+              program={studentData?.dept || "B.Tech CSE"} 
+            />
+            <Timetable courses={courseData} />
           </div>
           <div className="w-full lg:w-96">
             <RightSidebar />

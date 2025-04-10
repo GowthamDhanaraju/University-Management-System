@@ -6,159 +6,218 @@ import Typography from "@mui/material/Typography";
 import { Dialog, DialogContent, DialogTitle, DialogActions, Button } from "@mui/material";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-
-// Mock data for courses taught by teacher
-const teacherCourses = [
-  { id: "CS101", name: "Introduction to Computer Science", 
-    students: [
-      { id: "S001", name: "John Doe", roll: "CSE001" },
-      { id: "S002", name: "Jane Smith", roll: "CSE002" },
-      { id: "S003", name: "Bob Johnson", roll: "CSE003" },
-      { id: "S004", name: "Alice Brown", roll: "CSE004" },
-      { id: "S005", name: "Chris Davis", roll: "CSE005" },
-    ]
-  },
-  { id: "CS201", name: "Data Structures", 
-    students: [
-      { id: "S006", name: "Emily Wilson", roll: "CSE006" },
-      { id: "S007", name: "Michael Clark", roll: "CSE007" },
-      { id: "S008", name: "Sarah Miller", roll: "CSE008" },
-      { id: "S009", name: "David Taylor", roll: "CSE009" },
-    ]
-  },
-  { id: "CS301", name: "Database Management Systems", 
-    students: [
-      { id: "S010", name: "James Anderson", roll: "CSE010" },
-      { id: "S011", name: "Olivia White", roll: "CSE011" },
-      { id: "S012", name: "Thomas Martin", roll: "CSE012" },
-    ]
-  },
-];
-
-// Mock attendance data
-const mockAttendanceData: Record<string, Record<string, Record<string, string>>> = {
-  "CS101": {
-    "2023-05-15": {
-      "S001": "present",
-      "S002": "present",
-      "S003": "absent",
-      "S004": "present",
-      "S005": "dutyLeave",
-    },
-    "2023-05-16": {
-      "S001": "present",
-      "S002": "medical",
-      "S003": "present",
-      "S004": "present",
-      "S005": "present",
-    }
-  },
-  "CS201": {
-    "2023-05-15": {
-      "S006": "present",
-      "S007": "absent",
-      "S008": "present",
-      "S009": "present",
-    }
-  },
-  "CS301": {
-    "2023-05-15": {
-      "S010": "present",
-      "S011": "present",
-      "S012": "medical",
-    }
-  }
-};
+import axios from "axios";
+import { useRouter } from "next/router";
 
 const TeacherAttendance: React.FC = () => {
-  const [selectedCourse, setSelectedCourse] = useState<string>(teacherCourses[0].id);
-  const [attendanceData, setAttendanceData] = useState<Record<string, Record<string, Record<string, string>>>>(mockAttendanceData);
+  const [selectedCourse, setSelectedCourse] = useState<string>("");
+  const [courseList, setCourseList] = useState<Array<{ id: string; name: string }>>([]);
+  const [studentList, setStudentList] = useState<Array<{ id: string; name: string; roll: string }>>([]);
+  const [attendanceData, setAttendanceData] = useState<Record<string, Record<string, Record<string, string>>>>({});
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [openDateDialog, setOpenDateDialog] = useState(false);
   const [editingAttendance, setEditingAttendance] = useState(false);
   const [tempAttendance, setTempAttendance] = useState<Record<string, string>>({});
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const router = useRouter();
 
-  const dateString = selectedDate.toISOString().split('T')[0];
-  
-  const getCurrentCourseStudents = () => {
-    return teacherCourses.find(course => course.id === selectedCourse)?.students || [];
+  const dateString = selectedDate.toISOString().split("T")[0];
+
+  useEffect(() => {
+    const fetchCourses = async () => {
+      try {
+        setLoading(true);
+        const token = localStorage.getItem("token");
+
+        if (!token) {
+          router.push("/login");
+          return;
+        }
+
+        const response = await axios.get("/api/teacher/courses", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (response.data && Array.isArray(response.data)) {
+          const courses = response.data.map((course: any) => ({
+            id: course.id || String(course._id),
+            name: course.name || course.title,
+          }));
+
+          setCourseList(courses);
+
+          // Select the first course by default if available
+          if (courses.length > 0) {
+            setSelectedCourse(courses[0].id);
+            fetchStudents(courses[0].id);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to fetch courses:", err);
+        setError("Failed to load courses. Please try again.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCourses();
+  }, [router]);
+
+  const fetchStudents = async (courseId: string) => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem("token");
+
+      if (!token) {
+        router.push("/login");
+        return;
+      }
+
+      const response = await axios.get(`/api/teacher/courses/${courseId}/students`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (response.data && Array.isArray(response.data)) {
+        const students = response.data.map((student: any) => ({
+          id: student.id || String(student._id),
+          name: student.name,
+          roll: student.rollNumber || student.studentId,
+        }));
+
+        setStudentList(students);
+        fetchAttendance(courseId);
+      }
+    } catch (err) {
+      console.error(`Failed to fetch students for course ${courseId}:`, err);
+      setError("Failed to load students. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  // Initialize attendance data for a new date if not exists
-  useEffect(() => {
-    if (selectedCourse && dateString) {
-      if (!attendanceData[selectedCourse]) {
-        setAttendanceData(prev => ({
-          ...prev,
-          [selectedCourse]: {}
-        }));
-      }
-      
-      if (!attendanceData[selectedCourse]?.[dateString]) {
-        const newAttendance: Record<string, string> = {};
-        getCurrentCourseStudents().forEach(student => {
-          newAttendance[student.id] = "notTaken";
-        });
-        
-        setAttendanceData(prev => ({
-          ...prev,
-          [selectedCourse]: {
-            ...(prev[selectedCourse] || {}),
-            [dateString]: newAttendance
-          }
-        }));
+  const fetchAttendance = async (courseId: string) => {
+    try {
+      const token = localStorage.getItem("token");
 
-        setTempAttendance(newAttendance);
-      } else {
-        setTempAttendance(attendanceData[selectedCourse][dateString] || {});
+      if (!token) {
+        router.push("/login");
+        return;
       }
+
+      const formattedDate = selectedDate.toISOString().split("T")[0];
+
+      const response = await axios.get(`/api/teacher/attendance/${courseId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+        params: { date: formattedDate },
+      });
+
+      if (response.data) {
+        // Transform API response to our attendanceData format
+        const courseAttendance = { ...attendanceData };
+
+        if (!courseAttendance[courseId]) {
+          courseAttendance[courseId] = {};
+        }
+
+        courseAttendance[courseId][formattedDate] = {};
+
+        // Map attendance records
+        response.data.forEach((record: any) => {
+          if (record.studentId && record.status) {
+            courseAttendance[courseId][formattedDate][record.studentId] = record.status;
+          }
+        });
+
+        setAttendanceData(courseAttendance);
+      }
+    } catch (err) {
+      console.error(`Failed to fetch attendance for course ${courseId}:`, err);
     }
-  }, [selectedCourse, dateString, attendanceData]);
+  };
 
   const handleCourseChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    setSelectedCourse(event.target.value);
+    const newCourseId = event.target.value;
+    setSelectedCourse(newCourseId);
     setEditingAttendance(false);
+    fetchStudents(newCourseId);
   };
 
   const handleDateChange = (date: Date | null) => {
-      if (date) {
-          setSelectedDate(date);
-          setOpenDateDialog(false);
-          setEditingAttendance(false);
+    if (date) {
+      setSelectedDate(date);
+      setOpenDateDialog(false);
+      setEditingAttendance(false);
+
+      if (selectedCourse) {
+        fetchAttendance(selectedCourse);
       }
+    }
   };
 
   const startEditing = () => {
     setEditingAttendance(true);
-    setTempAttendance({...(attendanceData[selectedCourse]?.[dateString] || {})});
+    setTempAttendance({ ...(attendanceData[selectedCourse]?.[dateString] || {}) });
   };
 
   const cancelEditing = () => {
     setEditingAttendance(false);
   };
 
-  const saveAttendance = () => {
-    setAttendanceData(prev => ({
-      ...prev,
-      [selectedCourse]: {
-        ...(prev[selectedCourse] || {}),
-        [dateString]: tempAttendance
+  const saveAttendance = async () => {
+    try {
+      const token = localStorage.getItem("token");
+
+      if (!token) {
+        router.push("/login");
+        return;
       }
-    }));
-    setEditingAttendance(false);
+
+      // Prepare attendance records for API
+      const attendanceRecords = Object.entries(tempAttendance).map(([studentId, status]) => ({
+        studentId,
+        status,
+        date: dateString,
+        courseId: selectedCourse,
+      }));
+
+      await axios.post(
+        "/api/teacher/attendance",
+        {
+          courseId: selectedCourse,
+          date: dateString,
+          records: attendanceRecords,
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      // Update local state
+      setAttendanceData((prev) => ({
+        ...prev,
+        [selectedCourse]: {
+          ...(prev[selectedCourse] || {}),
+          [dateString]: tempAttendance,
+        },
+      }));
+
+      setEditingAttendance(false);
+    } catch (err) {
+      console.error("Failed to save attendance:", err);
+      alert("Failed to save attendance. Please try again.");
+    }
   };
 
   const updateAttendance = (studentId: string, status: string) => {
-    setTempAttendance(prev => ({
+    setTempAttendance((prev) => ({
       ...prev,
-      [studentId]: status
+      [studentId]: status,
     }));
   };
 
-  // Calculate statistics
   const calculateStats = () => {
-    const students = getCurrentCourseStudents();
-    const studentCount = students.length;
+    const studentCount = studentList.length;
     let presentCount = 0;
     let absentCount = 0;
     let dutyLeaveCount = 0;
@@ -166,8 +225,8 @@ const TeacherAttendance: React.FC = () => {
     let notTakenCount = 0;
 
     const currentAttendance = attendanceData[selectedCourse]?.[dateString] || {};
-    
-    students.forEach(student => {
+
+    studentList.forEach((student) => {
       const status = currentAttendance[student.id];
       if (status === "present") presentCount++;
       else if (status === "absent") absentCount++;
@@ -183,65 +242,6 @@ const TeacherAttendance: React.FC = () => {
       dutyLeave: dutyLeaveCount,
       medical: medicalCount,
       notTaken: notTakenCount,
-      presentPercentage: studentCount > 0 ? (presentCount / studentCount) * 100 : 0
-    };
-  };
-
-  const stats = calculateStats();
-
-  return (
-    <div className="flex min-h-screen bg-gray-900 text-gray-200 overflow-x-hidden">
-      {/* Sidebar */}
-      <div className="fixed z-50">
-        <Sidebar />
-      </div>
-      
-      {/* Main content */}
-      <div className="flex-1 ml-16 p-6">
-        <TopBar />
-        <div className="p-4 pt-2">
-          <div className="w-full mx-auto max-w-7xl">
-            {/* Header */}
-            <div className="flex items-center mb-4">
-              <div className="p-3 mr-4 bg-blue-500 rounded-xl shadow-lg">
-                <FaTasks className="text-gray-100 text-2xl" />
-              </div>
-              <Typography 
-                variant="h4" 
-                component="h1" 
-                className="font-bold bg-blue-500 bg-clip-text text-transparent"
-              >
-                Live Attendance
-              </Typography>
-            </div>
-
-            {/* Top action bar */}
-            <div className="flex flex-wrap items-center justify-between gap-4 mb-4 bg-gray-800 p-4 rounded-xl">
-              {/* Course selection */}
-              <div className="flex items-center gap-3">
-                <select
-                  className="p-3 pl-4 pr-10 bg-gray-700 text-gray-200 border border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none"
-                  value={selectedCourse}
-                  onChange={handleCourseChange}
-                  aria-label="Select course"
-                >
-                  {teacherCourses.map((course) => (
-                    <option key={course.id} value={course.id}>
-                      {course.name} ({course.id})
-                    </option>
-                  ))}
-                </select>
-                <button
-                  onClick={() => setOpenDateDialog(true)}
-                  className="p-3 flex items-center justify-center gap-2 bg-gray-700 text-gray-200 border border-gray-600 rounded-lg shadow-sm hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
-                  aria-label="Select date"
-                >
-                  <FaCalendarAlt className="text-blue-400" />
-                  <span>{selectedDate.toLocaleDateString()}</span>
-                </button>
-              </div>
-
-              {!editingAttendance ? (
                 <button
                   onClick={startEditing}
                   className="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg shadow-md transition-colors"

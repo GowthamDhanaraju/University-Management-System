@@ -3,6 +3,8 @@ import TeacherSidebar from "@/components/teacher_sidebar";
 import TopBar from "@/components/topbar";
 import { FaChalkboardTeacher, FaComments, FaStar, FaFilter } from "react-icons/fa";
 import { Typography, Divider } from "@mui/material";
+import axios from "axios";
+import { useRouter } from "next/router";
 
 interface Feedback {
   id: number;
@@ -25,133 +27,120 @@ interface Feedback {
 }
 
 const TeacherFeedback: React.FC = () => {
-  const courses = [
-    { id: 1, name: "Mathematics" },
-    { id: 2, name: "Computer Science" },
-    { id: 3, name: "Physics" },
-    { id: 4, name: "Chemistry" },
-  ];
-
-  const mockFeedbacks: Feedback[] = [
-    {
-      id: 1,
-      courseId: 1,
-      courseName: "Mathematics",
-      studentId: "S12345",
-      date: "2023-05-10",
-      courseRatings: {
-        contentQuality: 4,
-        difficultyLevel: 3,
-        practicalApplication: 5,
-      },
-      facultyRatings: {
-        teachingQuality: 5,
-        communication: 4,
-        availability: 4,
-      },
-      overallRating: 4,
-      comments: "Excellent teaching methods and course material was well structured."
-    },
-    {
-      id: 2,
-      courseId: 1,
-      courseName: "Mathematics",
-      studentId: "S67890",
-      date: "2023-05-15",
-      courseRatings: {
-        contentQuality: 5,
-        difficultyLevel: 4,
-        practicalApplication: 4,
-      },
-      facultyRatings: {
-        teachingQuality: 5,
-        communication: 5,
-        availability: 3,
-      },
-      overallRating: 5,
-      comments: "The professor was very knowledgeable and helped me understand complex concepts."
-    },
-    {
-      id: 3,
-      courseId: 2,
-      courseName: "Computer Science",
-      studentId: "S23456",
-      date: "2023-05-12",
-      courseRatings: {
-        contentQuality: 4,
-        difficultyLevel: 5,
-        practicalApplication: 5,
-      },
-      facultyRatings: {
-        teachingQuality: 4,
-        communication: 3,
-        availability: 4,
-      },
-      overallRating: 4,
-      comments: "Great practical examples, but sometimes the explanations were too complex."
-    },
-    {
-      id: 4,
-      courseId: 3,
-      courseName: "Physics",
-      studentId: "S45678",
-      date: "2023-05-18",
-      courseRatings: {
-        contentQuality: 5,
-        difficultyLevel: 5,
-        practicalApplication: 4,
-      },
-      facultyRatings: {
-        teachingQuality: 5,
-        communication: 5,
-        availability: 5,
-      },
-      overallRating: 5,
-      comments: "The best professor I've had. Perfectly balanced theory and practical applications."
-    }
-  ];
-
-  const [selectedCourse, setSelectedCourse] = useState<string>("");
-  const [feedbacks, setFeedbacks] = useState<Feedback[]>(mockFeedbacks);
-  const [filteredFeedbacks, setFilteredFeedbacks] = useState<Feedback[]>(mockFeedbacks);
+  const [courses, setCourses] = useState<Array<{ id: number; name: string }>>([]);
+  const [feedbacks, setFeedbacks] = useState<Feedback[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [selectedCourse, setSelectedCourse] = useState("");
+  const router = useRouter();
 
   useEffect(() => {
-    if (selectedCourse) {
-      setFilteredFeedbacks(feedbacks.filter(feedback => feedback.courseName === selectedCourse));
-    } else {
-      setFilteredFeedbacks(feedbacks);
-    }
-  }, [selectedCourse, feedbacks]);
+    const fetchFeedbackData = async () => {
+      try {
+        setLoading(true);
+        const token = localStorage.getItem("token");
 
-  const calculateAverageRatings = () => {
-    if (filteredFeedbacks.length === 0) return {
-      courseQuality: 0,
-      teachingQuality: 0,
-      overall: 0
+        if (!token) {
+          router.push("/login");
+          return;
+        }
+
+        // Fetch courses
+        const coursesResponse = await axios.get("/api/teacher/courses", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (coursesResponse.data && Array.isArray(coursesResponse.data)) {
+          setCourses(
+            coursesResponse.data.map((course) => ({
+              id: course.id,
+              name: course.name,
+            }))
+          );
+        }
+
+        // Fetch feedback
+        const feedbackResponse = await axios.get("/api/teacher/feedback", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (feedbackResponse.data && Array.isArray(feedbackResponse.data)) {
+          setFeedbacks(
+            feedbackResponse.data.map((fb) => ({
+              id: fb.id,
+              courseId: fb.courseId,
+              courseName: fb.courseName,
+              studentId: fb.studentId || "Anonymous",
+              date: fb.date || new Date().toISOString().split("T")[0],
+              courseRatings: {
+                contentQuality: fb.courseRatings?.contentQuality || 0,
+                difficultyLevel: fb.courseRatings?.difficultyLevel || 0,
+                practicalApplication: fb.courseRatings?.practicalApplication || 0,
+              },
+              facultyRatings: {
+                teachingQuality: fb.facultyRatings?.teachingQuality || 0,
+                communication: fb.facultyRatings?.communication || 0,
+                availability: fb.facultyRatings?.availability || 0,
+              },
+              overallRating: fb.overallRating || 0,
+              comments: fb.comments || "",
+            }))
+          );
+        }
+
+        setError("");
+      } catch (err) {
+        console.error("Failed to fetch feedback data:", err);
+        setError("Failed to load feedback data. Please try again later.");
+      } finally {
+        setLoading(false);
+      }
     };
 
-    const courseQuality = filteredFeedbacks.reduce((sum, fb) => {
-      return sum + (
-        (fb.courseRatings.contentQuality +
-         fb.courseRatings.difficultyLevel +
-         fb.courseRatings.practicalApplication) / 3
-      );
-    }, 0) / filteredFeedbacks.length;
+    fetchFeedbackData();
+  }, []);
 
-    const teachingQuality = filteredFeedbacks.reduce((sum, fb) => {
-      return sum + (
-        (fb.facultyRatings.teachingQuality +
-         fb.facultyRatings.communication +
-         fb.facultyRatings.availability) / 3
-      );
-    }, 0) / filteredFeedbacks.length;
+  const filteredFeedbacks = selectedCourse
+    ? feedbacks.filter((feedback) => feedback.courseName === selectedCourse)
+    : feedbacks;
 
-    const overall = filteredFeedbacks.reduce((sum, fb) => sum + fb.overallRating, 0) / filteredFeedbacks.length;
+  const calculateAverageRatings = () => {
+    if (filteredFeedbacks.length === 0)
+      return {
+        courseQuality: 0,
+        teachingQuality: 0,
+        overall: 0,
+      };
+
+    const courseQuality =
+      filteredFeedbacks.reduce((sum, fb) => {
+        return (
+          sum +
+          (fb.courseRatings.contentQuality +
+            fb.courseRatings.difficultyLevel +
+            fb.courseRatings.practicalApplication) /
+            3
+        );
+      }, 0) / filteredFeedbacks.length;
+
+    const teachingQuality =
+      filteredFeedbacks.reduce((sum, fb) => {
+        return (
+          sum +
+          (fb.facultyRatings.teachingQuality +
+            fb.facultyRatings.communication +
+            fb.facultyRatings.availability) /
+            3
+        );
+      }, 0) / filteredFeedbacks.length;
+
+    const overall =
+      filteredFeedbacks.reduce((sum, fb) => sum + fb.overallRating, 0) / filteredFeedbacks.length;
 
     return {
       courseQuality: parseFloat(courseQuality.toFixed(1)),
       teachingQuality: parseFloat(teachingQuality.toFixed(1)),
-      overall: parseFloat(overall.toFixed(1))
+      overall: parseFloat(overall.toFixed(1)),
     };
   };
 
@@ -160,7 +149,9 @@ const TeacherFeedback: React.FC = () => {
   const renderStars = (rating: number) => (
     <div className="flex">
       {[...Array(5)].map((_, i) => (
-        <span key={i} className={`text-lg ${i < rating ? "text-yellow-400" : "text-gray-400"}`}>★</span>
+        <span key={i} className={`text-lg ${i < rating ? "text-yellow-400" : "text-gray-400"}`}>
+          ★
+        </span>
       ))}
       <span className="ml-2 text-white">{rating.toFixed(1)}</span>
     </div>
@@ -219,10 +210,20 @@ const TeacherFeedback: React.FC = () => {
 
         <div className="ml-6 space-y-10 mt-4">
           <Typography variant="h5" className="font-semibold text-white">
-            {filteredFeedbacks.length} {filteredFeedbacks.length === 1 ? 'Feedback' : 'Feedbacks'} Received
+            {filteredFeedbacks.length} {filteredFeedbacks.length === 1 ? "Feedback" : "Feedbacks"} Received
           </Typography>
 
-          {filteredFeedbacks.length === 0 ? (
+          {loading ? (
+            <div className="bg-gray-800 p-6 rounded-xl shadow-lg text-center">
+              <Typography variant="body1">Loading feedback...</Typography>
+            </div>
+          ) : error ? (
+            <div className="bg-gray-800 p-6 rounded-xl shadow-lg text-center">
+              <Typography variant="body1" className="text-red-500">
+                {error}
+              </Typography>
+            </div>
+          ) : filteredFeedbacks.length === 0 ? (
             <div className="bg-gray-800 p-6 rounded-xl shadow-lg text-center">
               <Typography variant="body1">No feedback found for the selected course.</Typography>
             </div>
@@ -259,7 +260,9 @@ const TeacherFeedback: React.FC = () => {
                             <span>{label}:</span>
                             <div className="flex">
                               {[...Array(5)].map((_, i) => (
-                                <span key={i} className={`${i < rating ? "text-yellow-400" : "text-gray-400"}`}>★</span>
+                                <span key={i} className={`${i < rating ? "text-yellow-400" : "text-gray-400"}`}>
+                                  ★
+                                </span>
                               ))}
                             </div>
                           </div>
@@ -280,7 +283,9 @@ const TeacherFeedback: React.FC = () => {
                             <span>{label}:</span>
                             <div className="flex">
                               {[...Array(5)].map((_, i) => (
-                                <span key={i} className={`${i < rating ? "text-yellow-400" : "text-gray-400"}`}>★</span>
+                                <span key={i} className={`${i < rating ? "text-yellow-400" : "text-gray-400"}`}>
+                                  ★
+                                </span>
                               ))}
                             </div>
                           </div>

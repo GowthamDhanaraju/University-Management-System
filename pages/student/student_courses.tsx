@@ -2,26 +2,22 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import StudentSidebar from "@/components/student_sidebar";
 import TopBar from "@/components/topbar";
-import { Typography } from "@mui/material";
-import { FaChalkboardTeacher, FaBook, FaUserTie, FaComments, FaStar, FaInfoCircle } from "react-icons/fa";
-import Link from "next/link";
+import { FaBook, FaInfoCircle, FaSearch } from "react-icons/fa";
 
 interface Teacher {
   id: string;
   name: string;
-  email: string;
-  department: string;
   profileImage: string;
   designation: string;
-  rating: number;
+  rating: string;
 }
 
 interface Course {
+  id: string;
   code: string;
   name: string;
-  credits: number;
-  semester: string;
   description: string;
+  credits: number;
   teacher: Teacher;
   nextClass: string;
   hasFeedbackSubmitted: boolean;
@@ -29,103 +25,73 @@ interface Course {
 
 const StudentCourses: React.FC = () => {
   const router = useRouter();
+  const [courses, setCourses] = useState<Course[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [courses, setCourses] = useState<Course[]>([
-    {
-      code: "CS301",
-      name: "Software Engineering",
-      credits: 4,
-      semester: "5",
-      description: "This course introduces the methodologies and tools used in modern software development.",
-      teacher: {
-        id: "T101",
-        name: "Dr. Sharma",
-        email: "sharma@university.edu",
-        department: "Computer Science",
-        profileImage: "https://randomuser.me/api/portraits/men/32.jpg",
-        designation: "Associate Professor",
-        rating: 4.7
-      },
-      nextClass: "Monday, 10:00 AM",
-      hasFeedbackSubmitted: true
-    },
-    {
-      code: "CS302",
-      name: "Theory of Computation",
-      credits: 3,
-      semester: "5",
-      description: "Study of theoretical models of computing, including finite automata and Turing machines.",
-      teacher: {
-        id: "T102",
-        name: "Dr. Gupta",
-        email: "gupta@university.edu",
-        department: "Computer Science",
-        profileImage: "https://randomuser.me/api/portraits/women/41.jpg",
-        designation: "Professor",
-        rating: 4.5
-      },
-      nextClass: "Wednesday, 2:00 PM",
-      hasFeedbackSubmitted: false
-    },
-    {
-      code: "CS303",
-      name: "Artificial Intelligence",
-      credits: 4,
-      semester: "5",
-      description: "Introduction to AI concepts and techniques including search algorithms and machine learning.",
-      teacher: {
-        id: "T103",
-        name: "Prof. Joshi",
-        email: "joshi@university.edu",
-        department: "Computer Science",
-        profileImage: "https://randomuser.me/api/portraits/men/22.jpg",
-        designation: "Assistant Professor",
-        rating: 4.2
-      },
-      nextClass: "Thursday, 11:00 AM",
-      hasFeedbackSubmitted: false
-    },
-    {
-      code: "CS304",
-      name: "Web Technologies",
-      credits: 3,
-      semester: "5",
-      description: "Fundamentals of web development, including front-end and back-end technologies.",
-      teacher: {
-        id: "T104",
-        name: "Dr. Patel",
-        email: "patel@university.edu",
-        department: "Information Technology",
-        profileImage: "https://randomuser.me/api/portraits/women/26.jpg",
-        designation: "Associate Professor",
-        rating: 4.8
-      },
-      nextClass: "Tuesday, 9:00 AM",
-      hasFeedbackSubmitted: false
-    },
-    {
-      code: "CS305",
-      name: "Cloud Computing",
-      credits: 3,
-      semester: "5",
-      description: "Introduction to cloud computing services, deployment models, and applications.",
-      teacher: {
-        id: "T105",
-        name: "Prof. Mehta",
-        email: "mehta@university.edu",
-        department: "Computer Science",
-        profileImage: "https://randomuser.me/api/portraits/men/45.jpg",
-        designation: "Professor",
-        rating: 4.3
-      },
-      nextClass: "Friday, 3:00 PM",
-      hasFeedbackSubmitted: true
-    }
-  ]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
+    // Authentication check
     const storedRole = localStorage.getItem("role");
-    if (storedRole !== "student") router.push("/");
+    if (storedRole !== "student") {
+      router.push("/");
+      return;
+    }
+
+    // Fetch courses for the student
+    const fetchCourses = async () => {
+      try {
+        setLoading(true);
+        // Use the student ID from localStorage
+        const studentId = localStorage.getItem("userId") || "";
+        if (!studentId) {
+          throw new Error("Student ID not found");
+        }
+        
+        const timestamp = new Date().getTime();
+        const response = await fetch(`/api/students/${studentId}/courses?t=${timestamp}`);
+        
+        if (!response.ok) {
+          throw new Error(`Error ${response.status}: ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          // Format courses
+          const formattedCourses = data.data.map((course: any) => ({
+            id: course.id,
+            code: course.code,
+            name: course.title,
+            description: course.description || "",
+            credits: course.credits,
+            status: "Enrolled",
+            teacher: {
+              id: course.instructorId,
+              name: course.instructorName,
+              department: course.department,
+              profileImage: course.instructorImage || `https://randomuser.me/api/portraits/${Math.random() > 0.5 ? 'men' : 'women'}/${Math.floor(Math.random() * 50)}.jpg`,
+              designation: course.instructorDesignation || "Professor",
+              rating: course.instructorRating || (3 + Math.random() * 2).toFixed(1)
+            },
+            nextClass: course.schedule || "Not scheduled",
+            hasFeedbackSubmitted: course.hasFeedbackSubmitted || false
+          }));
+          
+          setCourses(formattedCourses);
+        } else {
+          setError(data.message || "Failed to load courses");
+        }
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+        setError(`Failed to fetch courses: ${errorMessage}`);
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCourses();
   }, [router]);
 
   const handleFeedbackClick = (courseCode: string, teacherId: string) => {
@@ -136,107 +102,134 @@ const StudentCourses: React.FC = () => {
     router.push(`/student/student_faculties?id=${teacherId}`);
   };
 
-  const filteredCourses = courses.filter(course => 
-    course.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    course.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
+  const filteredCourses = courses.filter((course) => 
+    course.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    course.code.toLowerCase().includes(searchTerm.toLowerCase()) || 
     course.teacher.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  if (loading) {
+    return (
+      <div className="flex min-h-screen bg-gray-900 text-gray-200">
+        <StudentSidebar />
+        <div className="flex-1 p-6 ml-16">
+          <TopBar />
+          <div className="flex justify-center items-center h-[80vh]">
+            <div className="animate-spin h-10 w-10 border-4 border-blue-500 rounded-full border-t-transparent"></div>
+            <span className="ml-3 text-xl">Loading courses...</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen bg-gray-900 text-gray-200">
       <StudentSidebar />
       <div className="flex-1 p-6 ml-16">
         <TopBar />
-        <div className="flex justify-between items-center mb-8">
-          <div className="flex items-center ml-5">
-            <div className="p-3 mr-4 bg-green-600 rounded-xl shadow-lg">
-              <FaBook className="text-gray-100 text-2xl" />
-            </div>
-            <Typography 
-              variant="h4" 
-              component="h1" 
-              className="font-bold bg-green-600 bg-clip-text text-transparent"
-            >
-              My Courses
-            </Typography>
+        
+        <div className="mb-6 flex items-center">
+          <div className="p-3 mr-4 bg-green-600 rounded-xl shadow-lg">
+            <FaBook className="text-gray-100 text-2xl" />
           </div>
-
-          <div className="w-1/3">
+          <h1 className="text-2xl font-bold">My Courses</h1>
+        </div>
+        
+        {error && (
+          <div className="bg-red-900/50 border border-red-500 text-red-200 p-4 mb-6 rounded-lg">
+            <p>{error}</p>
+            <button 
+              onClick={() => window.location.reload()} 
+              className="mt-2 text-sm underline hover:text-red-100"
+            >
+              Try again
+            </button>
+          </div>
+        )}
+        
+        <div className="mb-6">
+          <div className="relative w-full max-w-lg">
+            <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+              <FaSearch className="text-gray-500" />
+            </div>
             <input
               type="text"
               placeholder="Search courses or teachers..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full px-4 py-2 rounded-lg bg-gray-800 border border-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2 pl-10 rounded-lg bg-gray-800 border border-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
         </div>
-
+        
         <div className="grid grid-cols-1 gap-6 mb-6 ml-5">
-          {filteredCourses.map((course) => (
-            <div key={course.code} className="bg-gray-800 rounded-lg shadow-md border border-gray-700 overflow-hidden">
-              <div className="flex flex-col md:flex-row">
-                {/* Course Information */}
-                <div className="p-5 flex-1">
-                  <div className="flex items-center justify-between mb-3">
-                    <div>
-                      <h2 className="text-xl font-bold text-blue-400">{course.name}</h2>
-                      <p className="text-gray-400 text-sm">{course.code} • {course.credits} Credits</p>
+          {filteredCourses.length === 0 ? (
+            <div className="bg-gray-800 p-5 rounded-lg text-center border border-gray-700">
+              <p className="text-gray-400">
+                {searchTerm ? "No courses match your search" : "No courses found. Please contact your advisor."}
+              </p>
+            </div>
+          ) : (
+            filteredCourses.map((course) => (
+              <div key={course.id} className="bg-gray-800 rounded-lg shadow overflow-hidden border border-gray-700">
+                <div className="md:flex">
+                  <div className="p-5 flex-1">
+                    <h2 className="text-xl font-semibold mb-2 flex items-center">
+                      <span className="text-blue-400">{course.code}</span>
+                      <span className="mx-2">-</span>
+                      <span>{course.name}</span>
+                    </h2>
+                    <p className="text-gray-300 mb-4">{course.description}</p>
+                    <div className="mb-4">
+                      <p className="flex items-center text-sm text-gray-400">
+                        <FaInfoCircle className="mr-2" />
+                        Next class: <span className="ml-1 text-blue-300">{course.nextClass}</span>
+                      </p>
                     </div>
-                    <span className="px-3 py-1 bg-blue-900 text-blue-200 rounded-full text-xs">
-                      Semester {course.semester}
-                    </span>
                   </div>
-                  <p className="text-gray-300 mb-4">{course.description}</p>
-                  <div className="text-sm text-gray-400">
-                    <div className="flex items-center">
-                      <FaInfoCircle className="mr-2" />
-                      Next class: <span className="ml-1 text-blue-300">{course.nextClass}</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Teacher Information with Feedback Link */}
-                <div className="bg-gray-750 p-5 md:w-80 border-t md:border-t-0 md:border-l border-gray-700">
-                  <h3 className="text-lg font-semibold mb-3">
-                    Course Faculty
-                  </h3>
                   
-                  <div className="flex items-center mb-4">
-                    <div>
-                      <p className="font-medium text-white">{course.teacher.name}</p>
-                      <p className="text-sm text-gray-400">{course.teacher.designation}</p>
-                      <div className="flex items-center mt-1">
-                        {[...Array(5)].map((_, i) => (
-                          <FaStar 
-                            key={i} 
-                            className={`text-xs ${i < Math.floor(course.teacher.rating) ? "text-yellow-400" : "text-gray-600"}`}
-                          />
-                        ))}
-                        <span className="ml-2 text-gray-400">{course.teacher.rating.toFixed(1)}</span>
+                  <div className="bg-gray-750 p-5 md:w-80 border-t md:border-t-0 md:border-l border-gray-700">
+                    <h3 className="text-lg font-semibold mb-3">Course Faculty</h3>
+                    <div className="flex items-center mb-4">
+                      <div>
+                        <img 
+                          src={course.teacher.profileImage} 
+                          alt={course.teacher.name}
+                          className="w-16 h-16 rounded-full object-cover border-2 border-blue-500"
+                        />
+                      </div>
+                      <div className="ml-4">
+                        <h4 className="font-medium">{course.teacher.name}</h4>
+                        <p className="text-sm text-gray-400">{course.teacher.designation}</p>
+                        <div className="flex items-center mt-1">
+                          <span className="text-yellow-400 text-sm">★</span>
+                          <span className="text-sm ml-1">{course.teacher.rating}/5</span>
+                        </div>
                       </div>
                     </div>
-                  </div>
-
-                  <button
-                    onClick={() => handleTeacherProfileClick(course.teacher.id)}
-                    className="w-full py-2 mb-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-200"
-                  >
-                    View Profile
-                  </button>
-
-                  {!course.hasFeedbackSubmitted && (
+                    <button
+                      onClick={() => handleTeacherProfileClick(course.teacher.id)}
+                      className="w-full py-2 mb-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-200"
+                    >
+                      View Profile
+                    </button>
                     <button
                       onClick={() => handleFeedbackClick(course.code, course.teacher.id)}
-                      className="w-full py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition duration-200"
+                      disabled={course.hasFeedbackSubmitted}
+                      className={`w-full py-2 rounded-lg transition duration-200 ${
+                        course.hasFeedbackSubmitted
+                          ? "bg-gray-600 text-gray-400 cursor-not-allowed"
+                          : "bg-green-600 text-white hover:bg-green-700"
+                      }`}
                     >
-                      Submit Feedback
+                      {course.hasFeedbackSubmitted ? "Feedback Submitted" : "Submit Feedback"}
                     </button>
-                  )}
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ))
+          )}
         </div>
       </div>
     </div>

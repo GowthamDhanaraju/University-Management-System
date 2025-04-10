@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import { FiUser, FiBarChart2, FiAward, FiChevronRight } from "react-icons/fi";
 import {
@@ -15,16 +15,37 @@ import { FaUser } from "react-icons/fa";
 const StudentSidebar: React.FC = () => {
   const router = useRouter();
   const currentPath = router.pathname;
+  const [studentName, setStudentName] = useState("Student");
+  const [studentEmail, setStudentEmail] = useState("student@university.edu");
+
+  useEffect(() => {
+    // Get student data from localStorage or fetch from backend
+    const storedStudentName = localStorage.getItem("userName");
+    const storedStudentEmail = localStorage.getItem("userEmail");
+    
+    if (storedStudentName) setStudentName(storedStudentName);
+    if (storedStudentEmail) setStudentEmail(storedStudentEmail);
+  }, []);
 
   const navigateTo = (path: string) => {
     router.push(path);
+  };
+
+  const handleLogout = () => {
+    // Clear all authentication data
+    localStorage.removeItem("token");
+    localStorage.removeItem("role");
+    localStorage.removeItem("userId");
+    localStorage.removeItem("userName");
+    localStorage.removeItem("userEmail");
+    // Redirect to login page
+    router.push("/");
   };
 
   const menuItems = [
     { path: "/student/student_dashboard", icon: <ChartBarIcon className="w-6 h-6" />, label: "Dashboard" },
     { path: "/student/student_profile", icon: <UserCircleIcon className="w-6 h-6" />, label: "Profile" },
     { path: "/student/student_grade", icon: <AcademicCapIcon className="w-6 h-6" />, label: "Grades" },
-    { path: "/student/student_courses", icon: <ClipboardDocumentListIcon className="w-6 h-6" />, label: "Courses" },
     { path: "/student/student_attendance", icon: <ClipboardDocumentCheckIcon className="w-6 h-6" />, label: "Attendance" },
     { path: "/student/student_feedback", icon: <ChatBubbleBottomCenterTextIcon className="w-6 h-6" />, label: "Feedback" },
     { path: "/student/student_books", icon: <BuildingLibraryIcon className="w-6 h-6" />, label: "Library" },
@@ -58,14 +79,20 @@ const StudentSidebar: React.FC = () => {
 
       <div className="absolute bottom-0 w-full p-4 border-t border-gray-700 hidden group-hover:block bg-gray-800/50">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-green-600 flex items-center justify-center">
+          <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center">
             <FaUser className="text-white" />
           </div>
           <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-            <p className="font-medium">Student Name</p>
-            <p className="text-xs text-gray-400">student@university.edu</p>
+            <p className="font-medium">{studentName}</p>
+            <p className="text-xs text-gray-400">{studentEmail}</p>
           </div>
         </div>
+        <button 
+          onClick={handleLogout}
+          className="w-full mt-3 py-2 text-sm text-center text-red-300 hover:text-red-200 hover:bg-red-900/30 rounded-md transition-colors"
+        >
+          Logout
+        </button>
       </div>
     </div>
   );

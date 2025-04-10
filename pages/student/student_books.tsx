@@ -1,137 +1,260 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useRouter } from "next/router";
 import StudentSidebar from "@/components/student_sidebar";
 import TopBar from "@/components/topbar";
 import { FaUniversity } from "react-icons/fa";
 import { Typography } from "@mui/material";
 
 interface Book {
-    id: string;
-    title: string;
-    author: string;
-    category: string;
-    isbn: string;
-    publisher: string;
-    copies: number;
-    available: number;
-    location: string;
-  }
-  
-  interface BorrowedBook extends Book {
-    borrowDate: string;
-    dueDate: string;
-  }
+  id: string;
+  title: string;
+  author: string;
+  category: string;
+  isbn: string;
+  publisher: string;
+  copies: number;
+  available: number;
+  location: string;
+}
+
+interface BorrowedBook extends Book {
+  borrowDate: string;
+  dueDate: string;
+}
 
 const StudentBooks = () => {
+  const router = useRouter();
+  const [books, setBooks] = useState<Book[]>([]);
+  const [borrowedBooks, setBorrowedBooks] = useState<BorrowedBook[]>([]);
+  const [category, setCategory] = useState("All");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-    const [books, setBooks] = useState<Book[]>([
-        // Mathematics
-        {
-          id: "BK001",
-          title: "Calculus Made Easy",
-          author: "Silvanus P. Thompson",
-          category: "Mathematics",
-          isbn: "9780312185480",
-          publisher: "St. Martin's Press",
-          copies: 5,
-          available: 3,
-          location: "Shelf A1",
-        },
-        {
-          id: "BK002",
-          title: "Linear Algebra Done Right",
-          author: "Sheldon Axler",
-          category: "Mathematics",
-          isbn: "9783319110790",
-          publisher: "Springer",
-          copies: 4,
-          available: 4,
-          location: "Shelf A1",
-        },
-        // ...existing code with more books...
-      ]);
-    
-      // Student's borrowed books
-      const [borrowedBooks, setBorrowedBooks] = useState<BorrowedBook[]>([]);
-      const [searchQuery, setSearchQuery] = useState("");
-      const [selectedCategory, setSelectedCategory] = useState<string>("All");
-    
-      // Generate due date (14 days from today)
-      const generateDueDate = (): string => {
-        const date = new Date();
-        date.setDate(date.getDate() + 14);
-        return date.toISOString().split('T')[0];
-      };
-    
-      // Borrow a book
-      const borrowBook = (book: Book) => {
-        if (book.available <= 0) {
-          alert("Sorry, this book is not available for borrowing");
-          return;
+  useEffect(() => {
+    // Authentication check
+    const storedRole = localStorage.getItem("role");
+    if (storedRole !== "student") {
+      router.push("/");
+      return;
+    }
+
+    const fetchBooks = async () => {
+      try {
+        setLoading(true);
+
+        // Fetch available books
+        const booksResponse = await fetch("/api/library/books");
+
+        if (!booksResponse.ok) {
+          throw new Error(`Error ${booksResponse.status}: ${booksResponse.statusText}`);
         }
-    
-        // Check if student already has this book
-        if (borrowedBooks.some(b => b.id === book.id)) {
-          alert("You have already borrowed this book");
-          return;
+
+        const booksData = await booksResponse.json();
+
+        if (booksData.success) {
+          setBooks(booksData.data || []);
+        } else {
+          setError(booksData.message || "Failed to load books");
         }
-    
+
+        // Fetch student's borrowed books
+        const studentId = localStorage.getItem("userId") || "";
+        const borrowedResponse = await fetch(`/api/students/${studentId}/borrowed-books`);
+
+        if (borrowedResponse.ok) {
+          const borrowedData = await borrowedResponse.json();
+
+          if (borrowedData.success) {
+            setBorrowedBooks(borrowedData.data || []);
+          }
+        }
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : "Unknown error";
+        setError(`Failed to fetch books: ${errorMessage}`);
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBooks();
+  }, [router]);
+
+  // Generate a due date 14 days from now
+  const generateDueDate = () => {
+    const date = new Date();
+    date.setDate(date.getDate() + 14);
+    return date.toISOString().split("T")[0];
+  };
+
+  // Borrow a book
+  const borrowBook = async (book: Book) => {
+    try {
+      // Check if student already has this book
+      if (borrowedBooks.some((b) => b.id === book.id)) {
+        alert("You have already borrowed this book");
+        return;
+      }
+
+      if (book.available <= 0) {
+        alert("This book is not available for borrowing");
+        return;
+      }
+
+      const studentId = localStorage.getItem("userId") || "";
+      const response = await fetch("/api/library/borrow", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          studentId,
+          bookId: book.id,
+          borrowDate: new Date().toISOString().split("T")[0],
+          dueDate: generateDueDate(),
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error ${response.status}: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+
+      if (data.success) {
         // Update available count in books list
-        const updatedBooks = books.map(b => 
+        const updatedBooks = books.map((b) =>
           b.id === book.id ? { ...b, available: b.available - 1 } : b
         );
-        
+
         // Add to borrowed books
         const borrowedBook: BorrowedBook = {
           ...book,
-          borrowDate: new Date().toISOString().split('T')[0],
+          borrowDate: new Date().toISOString().split("T")[0],
           dueDate: generateDueDate(),
         };
-    
-        setBorrowedBooks([...borrowedBooks, borrowedBook]);
+
         setBooks(updatedBooks);
-      };
-    
-      // Return a book
-      const returnBook = (bookId: string) => {
+        setBorrowedBooks([...borrowedBooks, borrowedBook]);
+        alert("Book borrowed successfully!");
+      } else {
+        alert(data.message || "Failed to borrow book");
+      }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Unknown error";
+      alert(`Error borrowing book: ${errorMessage}`);
+      console.error(err);
+    }
+  };
+
+  // Return a book
+  const returnBook = async (bookId: string) => {
+    try {
+      const studentId = localStorage.getItem("userId") || "";
+      const response = await fetch("/api/library/return", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          studentId,
+          bookId,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error ${response.status}: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+
+      if (data.success) {
         // Remove from borrowed books
-        const updatedBorrowedBooks = borrowedBooks.filter(b => b.id !== bookId);
-        
+        const updatedBorrowedBooks = borrowedBooks.filter((b) => b.id !== bookId);
+
         // Update available count in books list
-        const updatedBooks = books.map(b => 
+        const updatedBooks = books.map((b) =>
           b.id === bookId ? { ...b, available: b.available + 1 } : b
         );
-    
+
         setBorrowedBooks(updatedBorrowedBooks);
         setBooks(updatedBooks);
-      };
-    
-      // Get unique categories
-      const categories = ["All", ...new Set(books.map(book => book.category))];
-    
-      // Filter books based on search query and category
-      const filteredBooks = books.filter(book => {
-        const matchesSearch = `${book.title} ${book.author} ${book.category}`
-          .toLowerCase()
-          .includes(searchQuery.toLowerCase());
-        
-        const matchesCategory = selectedCategory === "All" || book.category === selectedCategory;
-        
-        return matchesSearch && matchesCategory;
-      });
-    
-      // Group filtered books by category
-      const groupedBooks = filteredBooks.reduce((acc, book) => {
-        if (selectedCategory !== "All") {
-          // When a category is selected, don't group
-          acc["Selected"] = acc["Selected"] || [];
-          acc["Selected"].push(book);
-        } else {
-          // Group by category when "All" is selected
-          acc[book.category] = acc[book.category] || [];
-          acc[book.category].push(book);
-        }
-        return acc;
-      }, {} as { [key: string]: Book[] });
+        alert("Book returned successfully!");
+      } else {
+        alert(data.message || "Failed to return book");
+      }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Unknown error";
+      alert(`Error returning book: ${errorMessage}`);
+      console.error(err);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-900 text-gray-200 flex">
+        <StudentSidebar />
+        <div className="flex-1 p-6 ml-16">
+          <TopBar />
+          <div className="flex justify-center items-center h-[80vh]">
+            <div className="animate-spin h-10 w-10 border-4 border-green-500 rounded-full border-t-transparent"></div>
+            <span className="ml-3 text-xl">Loading library data...</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-900 text-gray-200 flex">
+        <StudentSidebar />
+        <div className="flex-1 p-6 ml-16">
+          <TopBar />
+          <div className="flex justify-center items-center h-[80vh] flex-col">
+            <div className="bg-red-500/20 border border-red-500 text-red-100 p-4 rounded-lg max-w-md">
+              <p>{error}</p>
+              <button
+                onClick={() => window.location.reload()}
+                className="mt-2 text-sm underline hover:text-white"
+              >
+                Try again
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Get unique categories
+  const categories = ["All", ...new Set(books.map((book) => book.category))];
+
+  // Filter books based on search query and category
+  const filteredBooks = books.filter((book) => {
+    const matchesSearch = `${book.title} ${book.author} ${book.category}`
+      .toLowerCase()
+      .includes(searchQuery.toLowerCase());
+
+    const matchesCategory = category === "All" || book.category === category;
+
+    return matchesSearch && matchesCategory;
+  });
+
+  // Group filtered books by category
+  const groupedBooks = filteredBooks.reduce((acc, book) => {
+    if (category !== "All") {
+      // When a category is selected, don't group
+      acc["Selected"] = acc["Selected"] || [];
+      acc["Selected"].push(book);
+    } else {
+      // Group by category when "All" is selected
+      acc[book.category] = acc[book.category] || [];
+      acc[book.category].push(book);
+    }
+    return acc;
+  }, {} as { [key: string]: Book[] });
 
   return (
     <div className="min-h-screen bg-gray-900 text-gray-200 flex">
@@ -157,7 +280,7 @@ const StudentBooks = () => {
         {/* Borrowed Books Section */}
         <div className="bg-gray-800 p-6 rounded shadow-md mb-8 ml-5">
           <h2 className="text-lg font-semibold mb-4">My Borrowed Books</h2>
-          
+
           {borrowedBooks.length === 0 ? (
             <p className="text-gray-400">You haven't borrowed any books yet.</p>
           ) : (
@@ -194,11 +317,11 @@ const StudentBooks = () => {
             </div>
           )}
         </div>
-        
+
         {/* Available Books Section */}
         <div className="bg-gray-800 p-6 rounded shadow-md mb-8 ml-5">
           <h2 className="text-lg font-semibold mb-4">Available Books</h2>
-          
+
           <div className="flex flex-col md:flex-row gap-4 mb-4">
             <input
               type="text"
@@ -207,13 +330,13 @@ const StudentBooks = () => {
               onChange={(e) => setSearchQuery(e.target.value)}
               className="flex-grow p-2 bg-gray-700 text-white rounded"
             />
-            
+
             <select
-              value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
               className="p-2 bg-gray-700 text-white rounded"
             >
-              {categories.map(category => (
+              {categories.map((category) => (
                 <option key={category} value={category}>
                   {category}
                 </option>
@@ -224,7 +347,7 @@ const StudentBooks = () => {
           {Object.entries(groupedBooks).map(([category, booksInCategory]) => (
             <div key={category} className="mb-6">
               <h3 className="text-indigo-400 font-semibold mb-2">
-                📘 {category === "Selected" ? selectedCategory : category}
+                📘 {category === "Selected" ? category : category}
               </h3>
               <div className="overflow-x-auto">
                 <table className="w-full text-left table-auto">
@@ -267,7 +390,6 @@ const StudentBooks = () => {
             </div>
           ))}
         </div>
-        
       </div>
     </div>
   );

@@ -8,32 +8,34 @@ import { FiUser } from "react-icons/fi";
 const StudentProfile: React.FC = () => {
   const router = useRouter();
   const [isEditing, setIsEditing] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   
   // Student profile data
   const [profileData, setProfileData] = useState({
     personal: {
-      name: "Rajesh K",
-      photo: "", // URL for photo
-      dob: "2003-08-15",
-      gender: "Male",
-      studentId: "CSE-2145",
-      joinYear: "2022",
-      bloodGroup: "O+",
-      nationality: "Indian"
+      name: "",
+      photo: "", 
+      dob: "",
+      gender: "",
+      studentId: "",
+      joinYear: "",
+      bloodGroup: "",
+      nationality: ""
     },
     contact: {
-      email: "vyshnav.kumar@university.edu",
-      phone: "+91 9876543210",
-      address: "H-234 Student Hostel, University Campus, Bangalore - 560001",
-      emergencyContact: "Rajesh Kumar (Father): +91 9876543211"
+      email: "",
+      phone: "",
+      address: "",
+      emergencyContact: ""
     },
     academic: {
-      department: "Computer Science and Engineering",
-      year: "3rd Year",
-      semester: "5",
-      cgpa: "8.7",
-      attendance: "92%",
-      advisor: "Prof. Anil Kumar"
+      department: "",
+      year: "",
+      semester: "",
+      cgpa: "",
+      attendance: "",
+      advisor: ""
     }
   });
   
@@ -42,8 +44,40 @@ const StudentProfile: React.FC = () => {
   
   useEffect(() => {
     const storedRole = localStorage.getItem("role");
-    if (storedRole !== "student") router.push("/");
+    if (storedRole !== "student") {
+      router.push("/");
+      return;
+    }
+    
+    fetchStudentProfile();
   }, [router]);
+  
+  const fetchStudentProfile = async () => {
+    try {
+      setLoading(true);
+      const studentId = localStorage.getItem("userId") || "";
+      const response = await fetch(`/api/students/${studentId}/profile`);
+      
+      if (!response.ok) {
+        throw new Error(`Error ${response.status}: ${response.statusText}`);
+      }
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        setProfileData(data.data);
+        setEditData(data.data);
+      } else {
+        setError(data.message || "Failed to load profile");
+      }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+      setError(`Failed to fetch profile: ${errorMessage}`);
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
   
   const handleEdit = () => {
     setEditData({...profileData});
@@ -54,10 +88,42 @@ const StudentProfile: React.FC = () => {
     setIsEditing(false);
   };
   
-  const handleSave = () => {
-    setProfileData({...editData});
-    setIsEditing(false);
-    // Here you would typically send data to backend
+  const handleSave = async () => {
+    try {
+      setLoading(true);
+      const studentId = localStorage.getItem("userId") || "";
+      const response = await fetch(`/api/students/${studentId}/profile`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          personal: editData.personal,
+          contact: editData.contact,
+          // Not sending academic data as it's read-only
+        }),
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Error ${response.status}: ${response.statusText}`);
+      }
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        setProfileData({...editData});
+        setIsEditing(false);
+        alert("Profile updated successfully!");
+      } else {
+        alert(data.message || "Failed to update profile");
+      }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+      alert(`Error updating profile: ${errorMessage}`);
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
   };
   
   const handleInputChange = (section: keyof typeof profileData, field: string, value: string) => {
@@ -69,6 +135,43 @@ const StudentProfile: React.FC = () => {
       }
     });
   };
+
+  if (loading && !isEditing) {
+    return (
+      <div className="flex min-h-screen bg-gray-900 text-gray-200">
+        <StudentSidebar />
+        <div className="flex-1 p-6 ml-16">
+          <TopBar />
+          <div className="flex justify-center items-center h-[80vh]">
+            <div className="animate-spin h-10 w-10 border-4 border-green-500 rounded-full border-t-transparent"></div>
+            <span className="ml-3 text-xl">Loading profile...</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error && !isEditing) {
+    return (
+      <div className="flex min-h-screen bg-gray-900 text-gray-200">
+        <StudentSidebar />
+        <div className="flex-1 p-6 ml-16">
+          <TopBar />
+          <div className="flex justify-center items-center h-[80vh] flex-col">
+            <div className="bg-red-500/20 border border-red-500 text-red-100 p-4 rounded-lg max-w-md">
+              <p>{error}</p>
+              <button 
+                onClick={fetchStudentProfile} 
+                className="mt-2 text-sm underline hover:text-white"
+              >
+                Try again
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen bg-gray-900 text-gray-200">
