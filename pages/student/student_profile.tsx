@@ -206,14 +206,6 @@ const StudentProfile: React.FC = () => {
               <p>{profileData.personal.studentId}</p>
             </div>
             <div>
-              <p className="text-gray-400">Blood Group</p>
-              <p>{profileData.personal.bloodGroup}</p>
-            </div>
-            <div>
-              <p className="text-gray-400">Nationality</p>
-              <p>{profileData.personal.nationality}</p>
-            </div>
-            <div>
               <p className="text-gray-400">Join Year</p>
               <p>{profileData.personal.joinYear}</p>
             </div>

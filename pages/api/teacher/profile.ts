@@ -39,8 +39,8 @@ export default async function handler(
         facultyId: teacher.teacherId,
         dob: teacher.dateOfBirth,
         gender: teacher.gender,
-        phone: teacher.phone || '',
-        address: teacher.address || '',
+        joinDate: teacher.joinDate, // Ensure joinDate is included
+        contact: teacher.contact || '', // Use contact field
         department: teacher.department?.name || '',
         designation: teacher.designation || 'Professor',
         specialization: teacher.specialization || '',

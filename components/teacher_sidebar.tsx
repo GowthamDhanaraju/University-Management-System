@@ -1,6 +1,6 @@
 import React from "react";
 import { useRouter } from "next/router";
-import {  ChartBarIcon, UserIcon,  CalendarIcon,  BookOpenIcon,   BuildingOfficeIcon, ClipboardDocumentCheckIcon, ChatBubbleLeftRightIcon } from "@heroicons/react/24/outline";
+import {  ChartBarIcon, UserIcon,  CalendarIcon,   BuildingOfficeIcon, ClipboardDocumentCheckIcon, ChatBubbleLeftRightIcon } from "@heroicons/react/24/outline";
 import { FiChevronRight } from "react-icons/fi";
 import { FaUser } from "react-icons/fa";
 
@@ -16,7 +16,6 @@ const TeacherSidebar: React.FC = () => {
     { icon: <ChartBarIcon className="w-6 h-6" />, path: "/teacher/teacher_dashboard", label: "Dashboard" },
     { icon: <UserIcon className="w-6 h-6" />, path: "/teacher/teacher_profile", label: "Profile" },
     { icon: <CalendarIcon className="w-6 h-6" />, path: "/teacher/teacher_timetable", label: "Timetable" },
-    { icon: <BookOpenIcon className="w-6 h-6" />, path: "/teacher/teacher_courses", label: "Courses" },
     { icon: <BuildingOfficeIcon className="w-6 h-6" />, path: "/teacher/teacher_auditorium", label: "Auditorium" },
     { icon: <ClipboardDocumentCheckIcon className="w-6 h-6" />, path: "/teacher/teacher_attendance", label: "Attendance" },
     { icon: <ChatBubbleLeftRightIcon className="w-6 h-6" />, path: "/teacher/teacher_feedback", label: "Feedback" },

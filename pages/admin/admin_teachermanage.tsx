@@ -108,6 +108,7 @@ const AdminTFeedback: React.FC = () => {
   useEffect(() => {
     const fetchTeachers = async () => {
       try {
+        setLoading(true);
         const response = await fetch("/api/teachers");
 
         if (!response.ok) {
@@ -134,7 +135,7 @@ const AdminTFeedback: React.FC = () => {
           // Fetch students to map student IDs to names
           const studentsMap = await fetchStudents();
 
-          // First, fetch all feedback in a single request if possible
+          // Fetch all feedback in a single request
           let allFeedback = [];
           try {
             const allFeedbackResponse = await fetch(`/api/feedback`);
@@ -142,6 +143,7 @@ const AdminTFeedback: React.FC = () => {
               const allFeedbackData = await allFeedbackResponse.json();
               if (allFeedbackData.success) {
                 allFeedback = allFeedbackData.data || [];
+                console.log("Fetched all feedback:", allFeedbackData.data);
               }
             }
           } catch (e) {
@@ -152,19 +154,22 @@ const AdminTFeedback: React.FC = () => {
             data.data.map(async (teacher: any) => {
               let feedback = [];
               
-              // Try to find feedback for this teacher from the allFeedback array
+              // Get feedback for this teacher from the allFeedback array
               if (allFeedback.length > 0) {
-                feedback = allFeedback.filter(fb => fb.teacherId === teacher.id || fb.facultyId === teacher.id);
+                feedback = allFeedback.filter(fb => fb.teacherId === teacher.id);
+                console.log(`Found ${feedback.length} feedback entries for teacher ${teacher.id}`);
               }
 
-              // If no feedback found or allFeedback didn't work, try individual fetch
+              // If no feedback found in the all feedback request, try individual endpoint
               if (feedback.length === 0) {
                 try {
+                  console.log(`Fetching individual feedback for teacher ${teacher.id}`);
                   const feedbackResponse = await fetch(`/api/teachers/${teacher.id}/feedback`);
                   if (feedbackResponse.ok) {
-                    const feedbackData = await feedbackResponse.json();
+                    const feedbackData = await feedback.json();
                     if (feedbackData.success) {
                       feedback = feedbackData.data || [];
+                      console.log(`Fetched individual feedback:`, feedbackData.data);
                     }
                   }
                 } catch (e) {
@@ -177,17 +182,16 @@ const AdminTFeedback: React.FC = () => {
                 // Get student name from the map or use fallbacks
                 const studentName = fb.studentName || 
                                    (fb.studentId && studentsMap[fb.studentId]) || 
-                                   (fb.student?.name) || 
                                    "Anonymous Student";
                 
                 return {
                   id: fb.id || `f${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-                  subject: fb.subject || fb.courseTitle || fb.courseName || "",
-                  section: fb.section || fb.courseSection || "",
-                  date: fb.date || fb.createdAt || new Date().toISOString().split('T')[0],
+                  subject: fb.subject || fb.courseName || "",
+                  section: fb.section || "All Sections",
+                  date: fb.date || new Date().toISOString().split('T')[0],
                   rating: fb.rating || fb.overallRating || 0,
-                  comment: fb.comment || fb.comments || fb.additionalFeedback || "",
-                  studentId: fb.studentId || fb.student?.id || "",
+                  comment: fb.comment || fb.comments || "",
+                  studentId: fb.studentId || "",
                   studentName: studentName,
                   courseRatings: fb.courseRatings || {
                     contentQuality: 0,
@@ -209,10 +213,10 @@ const AdminTFeedback: React.FC = () => {
                                    "Unassigned";
 
               // Get phone from contact attribute or from direct property
-              const phoneNumber = teacher.contact || teacher.user?.phone || teacher.phone || "Not provided";
+              const phoneNumber = teacher.contact || teacher.phone || "Not provided";
 
               return {
-                name: teacher.user?.name || "Unknown",
+                name: teacher.name || teacher.user?.name || "Unknown",
                 id: teacher.id,
                 dept: departmentName,
                 subjects: teacher.specialization || "No subjects assigned",

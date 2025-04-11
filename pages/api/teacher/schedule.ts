@@ -1,4 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
+import prisma from '../../../lib/prisma';
 import { verifyToken } from '../../../lib/auth';
 
 export default async function handler(
@@ -45,16 +46,68 @@ export default async function handler(
       return res.status(200).json([]);
     }
     
-    // In a real application, you would fetch schedule from a database
-    // For now, we'll return dummy data based on the day
-    const schedule = [
+    // Find teacher
+    const teacher = await prisma.teacher.findFirst({
+      where: {
+        userId: decoded.id
+      }
+    });
+
+    if (!teacher) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'Teacher not found' 
+      });
+    }
+    
+    // Get teacher's courses
+    const teacherCourses = await prisma.teacherCourse.findMany({
+      where: {
+        teacherId: teacher.id
+      },
+      include: {
+        course: true
+      },
+      take: 3 // Limit to 3 courses for schedule
+    });
+    
+    // Generate a schedule for the day
+    const schedule = teacherCourses.map((tc, index) => {
+      // Time slots for different periods of the day
+      const timeSlots = [
+        "9:00 AM - 10:30 AM",
+        "11:00 AM - 12:30 PM",
+        "2:00 PM - 3:30 PM"
+      ];
+      
+      // Room numbers
+      const rooms = ["Room 301", "Lab 2", "Room 105"];
+      
+      // Section names
+      const sections = ["CSE-A", "CSE-B", "CSE-C"];
+      
+      return {
+        id: String(index + 1),
+        courseName: `${tc.course.code}: ${tc.course.name}`,
+        section: sections[index % sections.length],
+        time: timeSlots[index % timeSlots.length],
+        room: rooms[index % rooms.length],
+        day: day
+      };
+    });
+
+    return res.status(200).json(schedule);
+  } catch (error) {
+    console.error('Error fetching teacher schedule:', error);
+    // Return sample schedule data on error
+    return res.status(200).json([
       {
         id: "1",
         courseName: "CS101: Intro to Programming",
         section: "CSE-A",
         time: "9:00 AM - 10:30 AM",
         room: "Room 301",
-        day: day
+        day: "Monday"
       },
       {
         id: "2",
@@ -62,7 +115,7 @@ export default async function handler(
         section: "CSE-A",
         time: "11:00 AM - 12:30 PM",
         room: "Lab 2",
-        day: day
+        day: "Monday"
       },
       {
         id: "3",
@@ -70,16 +123,8 @@ export default async function handler(
         section: "CSE-C",
         time: "2:00 PM - 3:30 PM",
         room: "Room 105",
-        day: day
+        day: "Monday"
       }
-    ];
-
-    return res.status(200).json(schedule);
-  } catch (error) {
-    console.error('Error fetching teacher schedule:', error);
-    return res.status(500).json({
-      success: false,
-      message: 'Failed to fetch schedule'
-    });
+    ]);
   }
 }
