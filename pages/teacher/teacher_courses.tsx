@@ -233,7 +233,7 @@ const CourseOverview: React.FC<{ course: Course }> = ({ course }) => {
           <Pie data={chartGradeData} />
         </div>
         <div className="md:col-span-2 bg-gray-700 p-4 rounded-lg">
-          <h4 className="text-purple-400 font-medium mb-2">Course Progress</h4>
+          <h4 className="text-blue-400 font-medium mb-2">Course Progress</h4>
           <Line data={chartProgressData} />
         </div>
       </div>
@@ -347,44 +347,41 @@ const TeacherCourseManagement: React.FC = () => {
       <div className="flex-1 p-6 ml-16">
         <TopBar />
         <div className="flex items-center space-x-4 ml-10">
-          <div className="p-3 bg-purple-700 rounded-xl shadow-lg">
+          <div className="p-3 bg-blue-700 rounded-xl shadow-lg">
             <BookOpenIcon className="w-8 h-8" />
           </div>
-          <Typography variant="h4" component="h1" className="font-bold bg-purple-600 bg-clip-text text-transparent">
+          <Typography variant="h4" component="h1" className="font-bold bg-blue-600 bg-clip-text text-transparent">
             Course Management
           </Typography>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-4 ml-8">
-          <div className="md:col-span-1">
-            <CourseSelector
-              courses={courses}
-              selectedCourse={selectedCourse}
-              onSelectCourse={handleSelectCourse}
-            />
-          </div>
-          
-          <div className="md:col-span-3">
-            {selectedCourse && (
-              <div>
-                <div className="mb-4 border-b border-gray-700">
-                  <div className="flex space-x-1">
-                    <button
-                      className={`px-4 py-2 rounded-lg ${
-                        activeTab === "overview" ? "bg-blue-600 text-white" : "bg-gray-700 text-gray-400"
-                      }`}
-                      onClick={() => setActiveTab("overview")}
-                    >
-                      Overview
-                    </button>
-                  </div>
-                </div>
-                
-                {activeTab === "overview" && <CourseOverview course={selectedCourse} />} 
-              </div>
-            )}
-          </div>
+        <div className="flex flex-col gap-6 mt-4 ml-8 max-w-5xl">
+  <CourseSelector
+    courses={courses}
+    selectedCourse={selectedCourse}
+    onSelectCourse={handleSelectCourse}
+  />
+
+  {selectedCourse && (
+    <div className="mt-2">
+      <div className="mb-4 border-b border-gray-700">
+        <div className="flex space-x-1">
+          <button
+            className={`px-4 py-2 rounded-lg ${
+              activeTab === "overview" ? "bg-blue-600 text-white" : "bg-gray-700 text-gray-400"
+            }`}
+            onClick={() => setActiveTab("overview")}
+          >
+            Overview
+          </button>
         </div>
+      </div>
+
+      {activeTab === "overview" && <CourseOverview course={selectedCourse} />}
+    </div>
+  )}
+</div>
+
       </div>
     </div>
   );
