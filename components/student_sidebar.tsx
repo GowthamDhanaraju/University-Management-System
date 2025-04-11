@@ -79,7 +79,7 @@ const StudentSidebar: React.FC = () => {
 
       <div className="absolute bottom-0 w-full p-4 border-t border-gray-700 hidden group-hover:block bg-gray-800/50">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center">
+          <div className="w-10 h-10 rounded-full bg-green-600 flex items-center justify-center">
             <FaUser className="text-white" />
           </div>
           <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
@@ -87,12 +87,6 @@ const StudentSidebar: React.FC = () => {
             <p className="text-xs text-gray-400">{studentEmail}</p>
           </div>
         </div>
-        <button 
-          onClick={handleLogout}
-          className="w-full mt-3 py-2 text-sm text-center text-red-300 hover:text-red-200 hover:bg-red-900/30 rounded-md transition-colors"
-        >
-          Logout
-        </button>
       </div>
     </div>
   );

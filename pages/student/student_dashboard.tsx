@@ -3,8 +3,7 @@ import { useRouter } from 'next/router';
 import axios from 'axios';
 import StudentSidebar from '@/components/student_sidebar';
 import TopBar from '@/components/topbar';
-import { FaUserCircle, FaCalendarAlt, FaBook, FaClock, FaClipboardList, FaAward, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
-import { FiAward } from 'react-icons/fi';
+import { FaUserCircle, FaCalendarAlt, FaBook, FaClock, FaClipboardList, FaAward } from 'react-icons/fa';
 
 // Component to display the header with student info
 const Header = ({ studentName, program, semester }) => {
@@ -19,7 +18,7 @@ const Header = ({ studentName, program, semester }) => {
   }
   
   return (
-    <div className="bg-gradient-to-r from-green-700 to-emerald-800 p-6 rounded-xl shadow-lg text-white">
+    <div className="bg-gradient-to-r from-green-700 to-emerald-800 p-6 rounded-xl shadow-lg text-white ml-5">
       <div className="flex justify-between items-center">
         <div>
           <h2 className="text-2xl font-bold">{greeting}, {studentName}</h2>
@@ -68,7 +67,7 @@ const Timetable = ({ scheduleData }) => {
   const activeSchedule = scheduleData[days[activeDay]] || [];
   
   return (
-    <div className="bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700">
+    <div className="bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700 ml-5">
       <div className="flex justify-between items-center mb-5">
         <h3 className="text-xl font-bold text-white">Today's Schedule</h3>
         <div className="flex space-x-2">
@@ -124,76 +123,26 @@ const Timetable = ({ scheduleData }) => {
   );
 };
 
-const RightSidebar = () => {
+// Quick Actions component
+const QuickActions = () => {
   const router = useRouter();
-  const current = new Date();
-  const [year, setYear] = useState(current.getFullYear());
-  const [month, setMonth] = useState(current.getMonth());
-
-  const handleMonthChange = (dir: number) => {
-    if (dir === -1 && month === 0) {
-      setMonth(11);
-      setYear(y => y - 1);
-    } else if (dir === 1 && month === 11) {
-      setMonth(0);
-      setYear(y => y + 1);
-    } else {
-      setMonth(m => m + dir);
-    }
-  };
-
-  const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-  const firstDay = new Date(year, month, 1).getDay();
-  const totalDays = new Date(year, month + 1, 0).getDate();
-  const today = current.getDate();
-  const events = [
-    { date: 15, title: "Midterm Exam", color: "bg-red-500" },
-    { date: 20, title: "Project Submission", color: "bg-blue-500" },
-    { date: 25, title: "Guest Lecture", color: "bg-green-500" },
-  ];
-
+  
   return (
-    <div className="bg-gray-800 text-white p-6 rounded-xl shadow-lg border border-gray-700 h-full flex flex-col">
-      <h2 className="text-xl font-bold mb-4 flex items-center"><FaCalendarAlt className="mr-2 text-green-400" />Academic Calendar</h2>
-
-      {/* Calendar Grid */}
-      <div className="bg-gray-700/50 p-4 rounded-lg shadow-inner mb-6">
-        <div className="flex justify-between items-center mb-4">
-          <button onClick={() => handleMonthChange(-1)} className="bg-gray-600 hover:bg-gray-500 p-2 rounded-full"><FaChevronLeft /></button>
-          <h3 className="text-grey-300 text-lg font-semibold">
-            {new Date(year, month).toLocaleString("default", { month: "long", year: "numeric" })}
-          </h3>
-          <button onClick={() => handleMonthChange(1)} className="bg-gray-600 hover:bg-gray-500 p-2 rounded-full"><FaChevronRight /></button>
-        </div>
-        <div className="grid grid-cols-7 text-xs text-gray-400 mb-2">{days.map(day => <div key={day} className="text-center">{day}</div>)}</div>
-        <div className="grid grid-cols-7 gap-1">
-          {Array.from({ length: firstDay }).map((_, i) => <div key={i}></div>)}
-          {Array.from({ length: totalDays }, (_, i) => {
-            const d = i + 1;
-            const ev = events.find(e => e.date === d);
-            const isToday = d === today && month === current.getMonth() && year === current.getFullYear();
-            return (
-              <div key={d} className={`relative text-center py-1 rounded-full cursor-pointer text-sm ${isToday ? "bg-green-600 text-white font-bold" : "hover:bg-gray-600"}`}>
-                {d}
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Buttons */}
-      <div className="space-y-4 mt-auto">
-        <button className="bg-gradient-to-r from-teal-600 to-teal-800 p-3 rounded-lg w-full flex items-center justify-center shadow-md hover:shadow-lg"
+    <div className="bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700 ml-5 mt-6">
+      <h3 className="text-xl font-bold text-white mb-4">Quick Actions</h3>
+      
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <button className="bg-gradient-to-r from-teal-600 to-teal-800 p-3 rounded-lg w-full flex items-center justify-center shadow-md hover:shadow-lg transition-all hover:from-teal-500 hover:to-teal-700"
           onClick={() => router.push("/student/student_courses")}>
-          <FaClipboardList className="mr-2" /> Courses Registered
+          <FaBook className="mr-2" /> Courses Registered
         </button>
-        <button className="bg-gradient-to-r from-purple-600 to-purple-800 p-3 rounded-lg w-full flex items-center justify-center shadow-md hover:shadow-lg"
+        <button className="bg-gradient-to-r from-purple-600 to-purple-800 p-3 rounded-lg w-full flex items-center justify-center shadow-md hover:shadow-lg transition-all hover:from-purple-500 hover:to-purple-700"
           onClick={() => router.push("/student/student_attendance")}>
           <FaClipboardList className="mr-2" /> Attendance
         </button>
-        <button className="bg-gradient-to-r from-rose-600 to-rose-800 p-3 rounded-lg w-full flex items-center justify-center shadow-md hover:shadow-lg"
+        <button className="bg-gradient-to-r from-rose-600 to-rose-800 p-3 rounded-lg w-full flex items-center justify-center shadow-md hover:shadow-lg transition-all hover:from-rose-500 hover:to-rose-700"
           onClick={() => router.push("/student/student_grade")}>
-          <FiAward className="mr-2" /> View Grades
+          <FaAward className="mr-2" /> View Grades
         </button>
       </div>
     </div>
@@ -400,20 +349,15 @@ const StudentDashboard = () => {
       <StudentSidebar />
       <div className="flex-1 p-6 ml-16">
         <TopBar />
-        <div className="flex flex-col lg:flex-row gap-6">
-          {/* Main content area */}
-          <div className="flex-1 space-y-6 ml-6">
+        <div className="flex flex-col">
+          <div className="flex-1 space-y-6">
             <Header 
               studentName={studentData?.name || "Student"} 
               program={studentData?.dept || "B.Tech CSE"} 
               semester={studentData?.semester || "1"}
             />
             <Timetable scheduleData={scheduleData} />
-          </div>
-          
-          {/* Right sidebar */}
-          <div className="lg:w-96 space-y-6">
-            <RightSidebar />
+            <QuickActions />
           </div>
         </div>
       </div>
