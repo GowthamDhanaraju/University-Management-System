@@ -14,9 +14,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         id: true,
         studentId: true,
         name: true,
+        semester: true,
+        contact: true,
+        academicInfo: true,
         departmentId: true,
         department: {
           select: {
+            id: true,
             name: true,
             code: true,
           }
@@ -33,13 +37,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
     });
 
-    // Format the data to make it easier to use
+    // Format the data for frontend use
     const formattedStudents = students.map(student => ({
       id: student.id,
       studentId: student.studentId,
       name: student.name || student.user.name,
       email: student.user.email,
-      department: student.department.code
+      contact: student.contact,
+      semester: student.semester,
+      academicInfo: student.academicInfo,
+      departmentId: student.departmentId,
+      department: student.department,
+      departmentCode: student.department?.code,
+      departmentName: student.department?.name
     }));
 
     return res.status(200).json({ 

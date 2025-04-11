@@ -73,7 +73,7 @@ const CreateAuditorium: React.FC = () => {
         <TopBar />
         <div className="flex-1 flex items-center justify-center">
           <div className="bg-gray-800 p-6 rounded-lg shadow-lg w-full max-w-md">
-            <h1 className="text-2xl font-bold mb-4">Create Auditorium</h1>
+            <h1 className="text-2xl font-bold mb-4">Book Auditorium</h1>
 
             {error && <div className="bg-red-800 text-red-200 p-3 rounded mb-4">{error}</div>}
             {successMessage && <div className="bg-green-800 text-green-200 p-3 rounded mb-4">{successMessage}</div>}

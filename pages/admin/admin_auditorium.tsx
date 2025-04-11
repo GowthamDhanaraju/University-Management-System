@@ -180,13 +180,28 @@ const AdminAuditoriumPage: React.FC = () => {
     }
 
     try {
-      await fetch(`/api/admin/auditoriums/${id}/status`, {
-        method: 'PATCH',
+      // Changed from PATCH to PUT as the API is implemented with PUT method
+      // Use auditoriums endpoint instead of a status-specific endpoint
+      const response = await fetch(`/api/auditoriums/${id}`, {
+        method: 'PUT',  // Changed from PATCH to PUT
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ status: newStatus, statusNote }),
+        body: JSON.stringify({ 
+          status: newStatus, 
+          statusNote,
+          // Include these required fields to maintain existing data
+          name: auditorium.name,
+          location: auditorium.location,
+          capacity: auditorium.capacity,
+          hasWhiteboard: auditorium.hasWhiteboard,
+          amenities: auditorium.amenities
+        }),
       });
+
+      if (!response.ok) {
+        throw new Error('Failed to update status');
+      }
 
       // Update local state
       setAuditoriums(prev => prev.map(a => 
@@ -393,20 +408,6 @@ const AdminAuditoriumPage: React.FC = () => {
                               </span>
                             ))}
                           </div>
-                        </div>
-                        <div className="mt-4 flex justify-end space-x-2">
-                          <button 
-                            onClick={() => handleStatusChange(auditorium.id)}
-                            className="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700"
-                          >
-                            Change Status
-                          </button>
-                          <button 
-                            onClick={() => handleAuditoriumDelete(auditorium.id)}
-                            className="bg-red-600 text-white px-3 py-1 rounded text-sm hover:bg-red-700"
-                          >
-                            Delete
-                          </button>
                         </div>
                       </div>
                     ))

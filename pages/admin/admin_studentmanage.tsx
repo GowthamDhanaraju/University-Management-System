@@ -19,20 +19,12 @@ const StudentManagement: React.FC = () => {
     const fetchStudents = async () => {
       try {
         const response = await fetch('/api/students');
-        
-        if (!response.ok) {
-          throw new Error(`Error: ${response.status}`);
-        }
-        
+        if (!response.ok) throw new Error(`Error: ${response.status}`);
         const data = await response.json();
-        
+
         if (data.success) {
-          console.log("Raw student data:", data.data); // Add logging to debug
-          
-          // Fetch departments to map department IDs to names
           const deptResponse = await fetch('/api/departments');
           let departmentsMap = {};
-          
           if (deptResponse.ok) {
             const deptData = await deptResponse.json();
             if (deptData.success && Array.isArray(deptData.data)) {
@@ -42,41 +34,76 @@ const StudentManagement: React.FC = () => {
               }, {});
             }
           }
-          
+
           const formattedStudents = data.data.map((student: any) => {
-            // Log each student to see their structure
-            console.log("Processing student:", student);
+            // Get department name through multiple fallback options
+            let departmentName = "Unassigned";
             
-            // Get department name from map or use fallbacks
-            const departmentName = student.department?.name || 
-                                  (student.departmentId && departmentsMap[student.departmentId]) || 
-                                  "Unassigned";
+            // First try department object
+            if (student.department && student.department.name) {
+              departmentName = student.department.name;
+            } 
+            // Then try departmentId with map
+            else if (student.departmentId && departmentsMap[student.departmentId]) {
+              departmentName = departmentsMap[student.departmentId];
+            }
+            // If we have a department code directly, use that
+            else if (student.departmentCode) {
+              departmentName = student.departmentCode;
+            }
             
+            // Parse academicInfo - could be a string or object
+            let academicInfo = {};
+            if (typeof student.academicInfo === 'object' && student.academicInfo !== null) {
+              academicInfo = student.academicInfo;
+            } else if (typeof student.academicInfo === 'string') {
+              try {
+                academicInfo = JSON.parse(student.academicInfo);
+              } catch (e) {
+                console.warn("Could not parse academicInfo for student:", student.id);
+              }
+            }
+            
+            // Try to access GPA with multiple fallback options
+            let gpa = "N/A";
+            if (academicInfo && typeof academicInfo.currentGPA !== 'undefined') {
+              gpa = academicInfo.currentGPA;
+            } else if (academicInfo && typeof academicInfo.gpa !== 'undefined') {
+              gpa = academicInfo.gpa;
+            } else if (student.gpa) {
+              gpa = student.gpa;
+            } else if (student.academic && student.academic.cgpa) {
+              gpa = student.academic.cgpa;
+            }
+            
+            // Get phone number directly from contact field
+            let phoneNumber = "N/A";
+            if (student.contact) {
+              phoneNumber = student.contact;
+            } else if (student.phone) {
+              phoneNumber = student.phone;
+            } else if (student.contactNumber) {
+              phoneNumber = student.contactNumber;
+            }
+
             return {
-              id: student.id,
-              name: student.user?.name || "Unknown",
+              id: student.id || "Unknown ID",
+              name: student.name || student.user?.name || "Unknown",
               dept: departmentName,
               year: calculateYearFromSemester(student.semester),
-              gpa: student.academicInfo?.currentGPA || student.academicInfo?.gpa || "N/A",
+              gpa: gpa,
               gradYear: new Date().getFullYear() + (4 - calculateYearNumber(student.semester)),
-              contact: student.contact || student.user?.phone || "N/A"
+              contact: phoneNumber
             };
           });
-          
+
           setStudents(formattedStudents);
-          
-          // Extract unique departments and years after getting data
-          const depts = [...new Set(formattedStudents.map(s => s.dept).filter(Boolean))];
-          const years = [...new Set(formattedStudents.map(s => s.year).filter(Boolean))];
-          
-          setUniqueDepts(depts);
-          setUniqueYears(years);
+          setUniqueDepts([...new Set(formattedStudents.map(s => s.dept).filter(Boolean))]);
+          setUniqueYears([...new Set(formattedStudents.map(s => s.year).filter(Boolean))]);
         } else {
-          console.error("API returned error:", data.message);
           setError("Failed to load students: " + (data.message || "Unknown error"));
         }
       } catch (err) {
-        console.error("Exception in fetchStudents:", err);
         setError(`Failed to fetch students: ${err instanceof Error ? err.message : 'Unknown error'}`);
       } finally {
         setLoading(false);
