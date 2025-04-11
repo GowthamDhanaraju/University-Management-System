@@ -4,6 +4,9 @@ import TeacherSidebar from "@/components/teacher_sidebar";
 import { Pie, Line } from "react-chartjs-2";
 import "chart.js/auto";
 import axios from "axios";
+import TopBar from "@/components/topbar";
+import { BookOpenIcon } from "@heroicons/react/24/outline";
+import { Typography } from "@mui/material";
 
 // Type definitions
 interface Course {
@@ -341,14 +344,18 @@ const TeacherCourseManagement: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-900 text-white flex">
       <TeacherSidebar />
-      
-      <div className="flex-1 p-4">
-        <header className="p-4 bg-gray-800 shadow-md flex justify-between items-center rounded-lg border border-gray-700 max-w-4xl mx-auto">
-          <h1 className="text-xl font-bold text-white">Course Management</h1>
-          {error && <div className="text-red-400">{error}</div>}
-        </header>
+      <div className="flex-1 p-6 ml-16">
+        <TopBar />
+        <div className="flex items-center space-x-4 ml-10">
+          <div className="p-3 bg-purple-700 rounded-xl shadow-lg">
+            <BookOpenIcon className="w-8 h-8" />
+          </div>
+          <Typography variant="h4" component="h1" className="font-bold bg-purple-600 bg-clip-text text-transparent">
+            Course Management
+          </Typography>
+        </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-4">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-4 ml-8">
           <div className="md:col-span-1">
             <CourseSelector
               courses={courses}

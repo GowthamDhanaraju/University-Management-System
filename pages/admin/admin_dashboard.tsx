@@ -215,13 +215,13 @@ const AdminDashboard: React.FC = () => {
           </div>
         )}
         
-        <div className="mb-6">
+        <div className="mb-6 ml-6">
           <h1 className="text-2xl font-bold mb-4">Admin Dashboard</h1>
           <p className="text-gray-400">Welcome to the university management system. Overview of all departments and activities.</p>
         </div>
         
         {/* Stat Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6 ml-6">
           <div className="bg-gradient-to-br from-purple-900/70 to-purple-800/40 p-4 rounded-lg shadow-lg border border-purple-700/50">
             <h3 className="text-purple-300 text-sm font-medium">Total Students</h3>
             <p className="text-white text-2xl font-bold">{stats.studentCount}</p>
@@ -243,17 +243,17 @@ const AdminDashboard: React.FC = () => {
           </div>
         </div>
         
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 mb-6 ml-6">
           {/* Student Distribution Chart */}
-          <div className="lg:col-span-2 bg-gray-800 p-4 rounded-lg shadow-lg border border-gray-700">
+          <div className="lg:col-span-3 bg-gray-800 p-4 rounded-lg shadow-lg border border-gray-700">
             <h2 className="text-xl font-semibold mb-4">Enrollment Overview</h2>
             <div className="h-80">
               <Bar data={chartData} options={chartOptions} />
             </div>
           </div>
-          
+
           {/* Faculty Distribution Chart */}
-          <div className="bg-gray-800 p-4 rounded-lg shadow-lg border border-gray-700">
+          <div className="lg:col-span-2 bg-gray-800 p-4 rounded-lg shadow-lg border border-gray-700">
             <h2 className="text-xl font-semibold mb-4">Faculty Distribution</h2>
             <div className="h-80 flex items-center justify-center">
               <Pie data={facultyChartData} options={facultyChartOptions} />
@@ -262,7 +262,7 @@ const AdminDashboard: React.FC = () => {
         </div>
 
         {/* Department-wise Table */}
-        <div className="grid grid-cols-1 gap-6 mb-6">
+        <div className="grid grid-cols-1 gap-6 mb-6 ml-6">
           <div className="bg-gray-800 p-4 rounded-lg shadow-lg border border-gray-700">
             <h2 className="text-xl font-semibold mb-4">Department Statistics</h2>
             <div className="overflow-x-auto">

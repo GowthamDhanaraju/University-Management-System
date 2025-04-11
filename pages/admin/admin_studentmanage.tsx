@@ -178,10 +178,10 @@ const StudentManagement: React.FC = () => {
       <div className="flex-1 p-6 ml-16">
         <TopBar />
         <div className="flex items-center space-x-4 ml-10">
-          <div className="p-3 bg-blue-500 rounded-xl shadow-lg">
+          <div className="p-3 bg-purple-700 rounded-xl shadow-lg">
             <AcademicCapIcon className="w-8 h-8" />
           </div>
-          <Typography variant="h4" component="h1" className="font-bold bg-blue-500 bg-clip-text text-transparent">
+          <Typography variant="h4" component="h1" className="font-bold bg-purple-600 bg-clip-text text-transparent">
             Student Management
           </Typography>
         </div>

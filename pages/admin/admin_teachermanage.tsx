@@ -459,14 +459,14 @@ const AdminTFeedback: React.FC = () => {
       <div className="flex-1 p-6 ml-16 overflow-hidden">
         <TopBar />
         <div className="flex items-center space-x-4 ml-4 md:ml-10">
-          <div className="p-3 bg-blue-500 rounded-xl shadow-lg">
+          <div className="p-3 bg-purple-700 rounded-xl shadow-lg">
             <UserGroupIcon className="w-8 h-8" />
           </div>
-          <Typography variant="h4" component="h1" className="font-bold bg-blue-500 bg-clip-text text-transparent">
+          <Typography variant="h4" component="h1" className="font-bold bg-purple-600 bg-clip-text text-transparent">
             Teacher Management
           </Typography>
         </div>
-        <div className="ml-0 md:ml-10 p-2 md:p-6 w-full text-gray-200 overflow-hidden">
+        <div className="ml-4 p-2 md:p-6 w-full text-gray-200 overflow-hidden">
           {selectedTeacherIndex === null ? (
             <>
               <div className="bg-gray-800 p-4 rounded-lg shadow-md mt-6 border border-gray-700 overflow-x-auto max-w-full">

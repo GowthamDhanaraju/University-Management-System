@@ -282,13 +282,13 @@ const TimetableManagement: React.FC = () => {
         <TopBar />
         <div className="ml-6 p-6 w-full text-gray-200">
           <div className="flex items-center mb-6">
-            <div className="p-3 mr-4 bg-blue-500 rounded-xl shadow-lg">
+            <div className="p-3 mr-4 bg-purple-700 rounded-xl shadow-lg">
               <ClockIcon className="text-gray-100 w-6 h-6" />
             </div>
             <Typography
               variant="h4"
               component="h1"
-              className="font-bold bg-blue-500 bg-clip-text text-transparent"
+              className="font-bold bg-purple-600 bg-clip-text text-transparent"
             >
               Timetable Management
             </Typography>
@@ -296,13 +296,15 @@ const TimetableManagement: React.FC = () => {
           
           {/* Control Panel */}
           <div className="bg-gray-800 p-4 rounded-lg shadow-md mb-6 border border-gray-700">
-            <div className="flex flex-wrap gap-4 items-center">
-              <div className="flex-1 min-w-[200px]">
-                <label className="block text-sm font-medium text-gray-400 mb-1">Select Class</label>
-                {renderClassSelector()}
+              <div className="flex justify-between items-center flex-wrap gap-4">
+                <h1 className="text-base font-semibold text-gray-200">
+                  Select Class
+                </h1>
+                <div className="ml-auto">
+                  {renderClassSelector()}
+                </div>
               </div>
             </div>
-          </div>
 
           {/* Timetable Grid */}
           <div className="bg-gray-800 p-4 rounded-lg shadow-md overflow-x-auto border border-gray-700">
@@ -342,7 +344,7 @@ const TimetableManagement: React.FC = () => {
                                 <select
                                   value={tempSubject}
                                   onChange={(e) => setTempSubject(e.target.value)}
-                                  className="w-full bg-gray-700 border border-gray-600 rounded px-2 py-1 text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                  className="w-full bg-gray-700 border border-gray-600 rounded px-2 py-1 text-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
                                 >
                                   <option value="">Select subject</option>
                                   {subjects.map((subject) => (

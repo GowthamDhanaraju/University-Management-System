@@ -387,15 +387,15 @@ const BookManagement: React.FC = () => {
       <div className="flex-1 p-6 ml-16">
         <TopBar />
         <div className="flex items-center space-x-4 ml-10">
-          <div className="p-3 bg-blue-500 rounded-xl shadow-lg">
+          <div className="p-3 bg-purple-700 rounded-xl shadow-lg">
             <BookOpenIcon className="w-8 h-8" />
           </div>
-          <Typography variant="h4" component="h1" className="font-bold bg-blue-500 bg-clip-text text-transparent">
+          <Typography variant="h4" component="h1" className="font-bold bg-purple-600 bg-clip-text text-transparent">
             Library Management
           </Typography>
         </div>
       <div className="ml-16 p-6 w-full text-gray-200 ml-4">
-        <div className="bg-gray-800 p-6 rounded shadow-md mb-8">
+        <div className="bg-gray-800 p-6 rounded-lg shadow-md mb-8">
           <h2 className="text-lg font-semibold mb-4">
             {editingBook ? "Edit Book" : "Add Book"}
           </h2>
@@ -465,7 +465,7 @@ const BookManagement: React.FC = () => {
             {editingBook ? (
               <button
                 onClick={saveEdits}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
+                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"
               >
                 Save
               </button>

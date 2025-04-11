@@ -5,6 +5,7 @@ import TopBar from "@/components/topbar";
 import { Bar } from "react-chartjs-2";
 import "chart.js/auto";
 import axios from "axios";
+import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 
 // Interfaces
 interface TeacherProfile {
@@ -23,15 +24,6 @@ interface Course {
   students: number;
 }
 
-interface ClassSchedule {
-  id: string;
-  courseName: string;
-  section: string;
-  time: string;
-  room: string;
-  day: string;
-}
-
 interface Event {
   id: string;
   title: string;
@@ -41,54 +33,84 @@ interface Event {
 
 // Calendar Component
 const Calendar: React.FC = () => {
-  const [date, setDate] = useState(new Date());
-  const [schedule, setSchedule] = useState<ClassSchedule[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const current = new Date();
+  const [year, setYear] = useState(current.getFullYear());
+  const [month, setMonth] = useState(current.getMonth());
 
-  useEffect(() => {
-    const fetchSchedule = async () => {
-      try {
-        setLoading(true);
-        const token = localStorage.getItem("token");
-        const formattedDate = date.toISOString().split("T")[0];
-        const response = await axios.get(
-          `/api/teacher/schedule?date=${formattedDate}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        setSchedule(response.data);
-      } catch (err) {
-        console.error("Failed to fetch schedule:", err);
-        setError("Failed to load schedule");
-      } finally {
-        setLoading(false);
-      }
-    };
+  const handleMonthChange = (dir: number) => {
+    if (dir === -1 && month === 0) {
+      setMonth(11);
+      setYear((y) => y - 1);
+    } else if (dir === 1 && month === 11) {
+      setMonth(0);
+      setYear((y) => y + 1);
+    } else {
+      setMonth((m) => m + dir);
+    }
+  };
 
-    fetchSchedule();
-  }, [date]);
-
-  const currentDay = date.getDate();
-  const calendarDates = Array.from({ length: 7 }, (_, i) => currentDay - 3 + i);
+  const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  const firstDay = new Date(year, month, 1).getDay();
+  const totalDays = new Date(year, month + 1, 0).getDate();
+  const today = current.getDate();
+  const events = [
+    { date: 15, title: "Midterm Exam", color: "bg-red-500" },
+    { date: 20, title: "Project Submission", color: "bg-blue-500" },
+    { date: 25, title: "Guest Lecture", color: "bg-green-500" },
+  ];
 
   return (
-    <div className="bg-gray-800 p-4 rounded-lg shadow-md border border-gray-700">
-      <h3 className="text-blue-400 text-lg font-semibold mb-2">Calendar</h3>
-      <div className="grid grid-cols-7 gap-1">
-        {calendarDates.map((d) => (
-          <div
-            key={d}
-            className={`text-center py-2 rounded-full ${
-              currentDay === d ? "bg-blue-600" : "hover:bg-gray-700"
-            } cursor-pointer`}
+    <div className="bg-gray-800 text-white p-6 rounded-xl shadow-lg border border-gray-700 h-full flex flex-col">
+      <div className="bg-gray-700/50 p-4 rounded-lg shadow-inner mb-6">
+        <div className="flex justify-between items-center mb-4">
+          <button
+            onClick={() => handleMonthChange(-1)}
+            className="bg-gray-600 hover:bg-gray-500 p-2 rounded-full"
           >
-            {d}
-          </div>
-        ))}
+            <FaChevronLeft />
+          </button>
+          <h3 className="text-gray-300 text-lg font-semibold">
+            {new Date(year, month).toLocaleString("default", {
+              month: "long",
+              year: "numeric",
+            })}
+          </h3>
+          <button
+            onClick={() => handleMonthChange(1)}
+            className="bg-gray-600 hover:bg-gray-500 p-2 rounded-full"
+          >
+            <FaChevronRight />
+          </button>
+        </div>
+        <div className="grid grid-cols-7 text-xs text-gray-400 mb-2">
+          {days.map((day) => (
+            <div key={day} className="text-center">
+              {day}
+            </div>
+          ))}
+        </div>
+        <div className="grid grid-cols-7 gap-1">
+          {Array.from({ length: firstDay }).map((_, i) => (
+            <div key={i}></div>
+          ))}
+          {Array.from({ length: totalDays }, (_, i) => {
+            const d = i + 1;
+            const isToday =
+              d === today &&
+              month === current.getMonth() &&
+              year === current.getFullYear();
+            return (
+              <div
+                key={d}
+                className={`relative text-center py-1 rounded-full cursor-pointer text-sm ${
+                  isToday ? "bg-blue-600 text-white font-bold" : "hover:bg-gray-600"
+                }`}
+              >
+                {d}
+              </div>
+            );
+          })}
+        </div>
       </div>
     </div>
   );
@@ -139,7 +161,6 @@ const TeacherDashboard: React.FC = () => {
           headers: { Authorization: `Bearer ${token}` },
         });
 
-        // Remove duplicate courses by ID
         const uniqueCourses = response.data.filter(
           (course: Course, index: number, self: Course[]) =>
             index === self.findIndex((c) => c.id === course.id)
@@ -230,8 +251,7 @@ const TeacherDashboard: React.FC = () => {
 
         {/* Courses and Performance */}
         <div className="mt-6 flex gap-6">
-          {/* Courses */}
-          <div className="w-1/2 ml-6 bg-gray-800 text-white p-4 rounded-lg shadow-md border border-gray-700">
+          <div className="w-1/2 bg-gray-800 text-white p-4 rounded-lg shadow-md border border-gray-700 ml-6">
             <h3 className="text-blue-400 text-lg font-semibold mb-3">
               Current Courses
             </h3>
@@ -261,7 +281,7 @@ const TeacherDashboard: React.FC = () => {
           </div>
 
           {/* Performance Chart */}
-          <div className="w-1/2 ml-6 bg-gray-800 p-4 rounded-lg shadow-md border border-gray-700 h-[320px]">
+          <div className="w-1/2 bg-gray-800 p-4 rounded-lg shadow-md border border-gray-700 h-[320px]">
             <h3 className="text-blue-400 text-lg font-semibold mb-2">
               Class Performance
             </h3>
@@ -286,32 +306,9 @@ const TeacherDashboard: React.FC = () => {
         {/* Events and Calendar */}
         <div className="mt-6 flex gap-6">
           {/* Events */}
-          <div className="w-1/2 bg-gray-800 p-4 rounded-lg shadow-md border border-gray-700">
-            <h3 className="text-blue-400 text-lg font-semibold mb-3">
-              Upcoming Events & Workshops
-            </h3>
-            <ul className="text-left space-y-2">
-              {events.length > 0 ? (
-                events.map((event) => (
-                  <li
-                    key={event.id}
-                    className="border-l-4 border-indigo-500 pl-2"
-                  >
-                    <div className="font-medium">{event.title}</div>
-                    <div className="text-sm text-gray-400">
-                      {new Date(event.date).toLocaleDateString()} •{" "}
-                      {event.location}
-                    </div>
-                  </li>
-                ))
-              ) : (
-                <li>No upcoming events</li>
-              )}
-            </ul>
-          </div>
 
           {/* Calendar */}
-          <div className="w-1/2">
+          <div className="w-full ml-6">
             <Calendar />
           </div>
         </div>

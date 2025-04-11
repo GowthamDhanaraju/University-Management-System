@@ -69,7 +69,7 @@ const CreateAuditorium: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-900 text-gray-200 flex">
       <TeacherSidebar />
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 p-6 ml-16">
         <TopBar />
         <div className="flex-1 flex items-center justify-center">
           <div className="bg-gray-800 p-6 rounded-lg shadow-lg w-full max-w-md">
@@ -167,7 +167,7 @@ const CreateAuditorium: React.FC = () => {
                 type="submit"
                 className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded font-medium"
               >
-                Create Auditorium
+                Book Auditorium
               </button>
             </form>
           </div>

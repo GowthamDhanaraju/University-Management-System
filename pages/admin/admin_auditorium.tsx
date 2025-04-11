@@ -327,15 +327,15 @@ const AdminAuditoriumPage: React.FC = () => {
       <AdminSidebar />
       <div className="flex-1 p-6 ml-16">
         <TopBar />
-        <div className="flex items-center space-x-4 ml-6">
-          <div className="p-3 bg-blue-500 rounded-xl shadow-lg">
+        <div className="flex items-center space-x-4 ml-12">
+          <div className="p-3 bg-purple-700 rounded-xl shadow-lg">
             <BuildingOfficeIcon className="w-8 h-8" />
           </div>
-          <Typography variant="h4" component="h1" className="font-bold bg-blue-500 bg-clip-text text-transparent">
+          <Typography variant="h4" component="h1" className="font-bold bg-purple-600 bg-clip-text text-transparent">
             Auditorium Management
           </Typography>
         </div>
-        <div className="ml-16 p-6">
+        <div className="ml-8 p-6">
           <div className="bg-gray-800 rounded-lg shadow-md p-6 mb-6 border border-gray-700">
             {/* Tabs */}
             <div className="flex border-b border-gray-700 mb-6 overflow-x-auto">

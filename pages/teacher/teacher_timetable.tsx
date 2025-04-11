@@ -2,27 +2,19 @@ import React, { useState, useEffect } from "react";
 import TeacherSidebar from "@/components/teacher_sidebar";
 import TopBar from "@/components/topbar";
 import { CalendarIcon, MapPinIcon, UserGroupIcon, ClockIcon } from "@heroicons/react/24/outline";
-import { FaChalkboardTeacher } from "react-icons/fa";
 import { Typography } from "@mui/material";
 import axios from "axios";
 import { useRouter } from "next/router";
 
 const TIME_SLOTS = [
-  "9:00 - 9:50",
-  "10:00 - 10:50",
-  "11:00 - 11:50",
-  "12:00 - 12:50",
-  "1:00 - 1:50",
-  "2:00 - 2:50",
-  "3:00 - 3:50",
-  "4:00 - 4:50"
+  "9:00 - 9:50", "10:00 - 10:50", "11:00 - 11:50",
+  "12:00 - 12:50", "1:00 - 1:50", "2:00 - 2:50",
+  "3:00 - 3:50", "4:00 - 4:50"
 ];
 
 const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
-
 const CLASSES = ["CSE-A", "CSE-B", "CSE-C", "CSE-D", "AID-A", "AID-B"];
 
-// Sample data for teacher's timetable
 interface ClassSession {
   id: string;
   subject: string;
@@ -37,14 +29,11 @@ type TeacherTimetable = {
   };
 };
 
-// Generate teacher timetable data
 const generateTeacherTimetable = (): TeacherTimetable => {
   const timetable: TeacherTimetable = {};
-  
   DAYS.forEach(day => {
     timetable[day] = {};
     TIME_SLOTS.forEach(timeSlot => {
-      // Lunch break
       if (timeSlot === "1:00 - 1:50") {
         timetable[day][timeSlot] = {
           id: "BREAK",
@@ -54,16 +43,13 @@ const generateTeacherTimetable = (): TeacherTimetable => {
           type: "break"
         };
       } else {
-        // 30% chance of having a class in this slot
         const hasClass = Math.random() < 0.3;
-        
         if (hasClass) {
           const subjectIndex = Math.floor(Math.random() * CLASSES.length);
           const classIndex = Math.floor(Math.random() * CLASSES.length);
           const roomNumber = Math.floor(Math.random() * 10) + 101;
           const sessionTypes: ("lecture" | "lab" | "tutorial")[] = ["lecture", "lab", "tutorial"];
           const sessionType = sessionTypes[Math.floor(Math.random() * sessionTypes.length)];
-          
           timetable[day][timeSlot] = {
             id: `${day}-${timeSlot}`,
             subject: CLASSES[subjectIndex],
@@ -77,7 +63,6 @@ const generateTeacherTimetable = (): TeacherTimetable => {
       }
     });
   });
-  
   return timetable;
 };
 
@@ -95,26 +80,23 @@ const TeacherTimetable: React.FC = () => {
   const router = useRouter();
 
   useEffect(() => {
-    // Get current day of the week
     const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
     const today = days[new Date().getDay()];
     setCurrentDay(today === 'Sunday' || today === 'Saturday' ? 'Monday' : today);
-    
+
     const fetchTimetableData = async () => {
       try {
         setIsLoading(true);
         const token = localStorage.getItem("token");
-        
         if (!token) {
           router.push("/login");
           return;
         }
-        
-        // Fetch teacher profile first to get basic info
+
         const profileResponse = await axios.get("/api/teacher/profile", {
           headers: { Authorization: `Bearer ${token}` }
         });
-        
+
         if (profileResponse.data) {
           setTeacherInfo({
             id: profileResponse.data.facultyId || "T102",
@@ -123,26 +105,20 @@ const TeacherTimetable: React.FC = () => {
             subjects: profileResponse.data.subjects || []
           });
         }
-        
-        // Fetch timetable data
+
         const timetableResponse = await axios.get("/api/teacher/timetable", {
           headers: { Authorization: `Bearer ${token}` }
         });
-        
+
         if (timetableResponse.data) {
-          // Transform API response to our timetable format
           const formattedTimetable: TeacherTimetable = {};
-          
           DAYS.forEach(day => {
             formattedTimetable[day] = {};
-            
-            // Initialize all time slots as empty
             TIME_SLOTS.forEach(timeSlot => {
               formattedTimetable[day][timeSlot] = null;
             });
           });
-          
-          // Fill in the timetable with fetched sessions
+
           timetableResponse.data.forEach((session: any) => {
             if (session.day && session.timeSlot) {
               formattedTimetable[session.day][session.timeSlot] = {
@@ -154,21 +130,19 @@ const TeacherTimetable: React.FC = () => {
               };
             }
           });
-          
+
           setTimetable(formattedTimetable);
         } else {
-          // Fall back to generated data if no real data exists
           setTimetable(generateTeacherTimetable());
         }
       } catch (err) {
         console.error("Failed to fetch timetable:", err);
-        // Fall back to generated data if API fails
         setTimetable(generateTeacherTimetable());
       } finally {
         setIsLoading(false);
       }
     };
-    
+
     fetchTimetableData();
   }, [router]);
 
@@ -179,20 +153,16 @@ const TeacherTimetable: React.FC = () => {
   const getCellColorClass = (session: ClassSession | null) => {
     if (!session) return "bg-gray-800/50";
     if (session.type === "break") return "bg-gray-700";
-    
     const typeColors = {
       lecture: "bg-blue-900/60",
       lab: "bg-green-900/60",
       tutorial: "bg-purple-900/60"
     };
-    
     return typeColors[session.type];
   };
 
-  // Filter days if a day filter is applied
   const daysToDisplay = filterDay ? [filterDay] : DAYS;
 
-  // Count total teaching hours
   const getTeachingHours = () => {
     let count = 0;
     Object.values(timetable).forEach(day => {
@@ -203,39 +173,25 @@ const TeacherTimetable: React.FC = () => {
     return count;
   };
 
-  // Get next class
   const getNextClass = () => {
     if (!timetable[currentDay]) return null;
-    
     const now = new Date();
-    const currentHour = now.getHours();
-    const currentMinute = now.getMinutes();
-    
-    // Convert to 24-hour format
+    const currentTimeInMinutes = now.getHours() * 60 + now.getMinutes();
     const convertTimeToMinutes = (timeSlot: string) => {
-      const [startTime] = timeSlot.split(' - ');
-      const [hours, minutes] = startTime.split(':').map(Number);
+      const [hours, minutes] = timeSlot.split(' - ')[0].split(':').map(Number);
       return hours * 60 + minutes;
     };
-    
-    const currentTimeInMinutes = currentHour * 60 + currentMinute;
-    
-    // Find the next class
-    let nextClass: { timeSlot: string; session: ClassSession } | null = null;
-    
+
     for (const timeSlot in timetable[currentDay]) {
       const session = timetable[currentDay][timeSlot];
       if (!session || session.type === "break") continue;
-      
       const classTimeInMinutes = convertTimeToMinutes(timeSlot);
-      
       if (classTimeInMinutes > currentTimeInMinutes) {
-        nextClass = { timeSlot, session };
-        break;
+        return { timeSlot, session };
       }
     }
-    
-    return nextClass;
+
+    return null;
   };
 
   if (isLoading) {
@@ -254,44 +210,36 @@ const TeacherTimetable: React.FC = () => {
 
   const nextClass = getNextClass();
 
-
   return (
     <div className="min-h-screen bg-gray-900 text-gray-200 flex">
       <TeacherSidebar />
       <div className="flex-1 p-6 ml-16">
         <TopBar />
         <div className="flex flex-col gap-6 ml-6 mr-6">
+          {/* Header */}
           <div className="flex items-center justify-between">
             <div className="flex items-center">
               <div className="p-3 mr-4 bg-blue-500 rounded-xl shadow-lg">
                 <CalendarIcon className="text-gray-100 w-6 h-6" />
               </div>
-              <Typography
-                variant="h4"
-                component="h1"
-                className="font-bold bg-blue-500 bg-clip-text text-transparent"
-              >
+              <Typography variant="h4" component="h1" className="font-bold bg-blue-500 bg-clip-text text-transparent">
                 My Teaching Schedule
               </Typography>
             </div>
-            <div className="flex items-center gap-2">
-              <select
-                id="day-filter"
-                value={filterDay}
-                onChange={handleFilterDayChange}
-                className="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="">All Days</option>
-                {DAYS.map(day => (
-                  <option key={day} value={day}>{day}</option>
-                ))}
-              </select>
-            </div>
+            <select
+              id="day-filter"
+              value={filterDay}
+              onChange={handleFilterDayChange}
+              className="bg-gray-700 border border-gray-600 rounded px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="">All Days</option>
+              {DAYS.map(day => <option key={day} value={day}>{day}</option>)}
+            </select>
           </div>
 
           {/* Stat Cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="bg-gradient-to-br from-blue-900/70 to-blue-800/40 p-4 rounded-lg border border-blue-700/50 shadow-lg">
+            <div className="bg-blue-900/70 p-4 rounded-lg border border-blue-700/50 shadow-lg">
               <div className="flex items-center">
                 <div className="p-3 bg-blue-800 rounded-lg mr-3">
                   <ClockIcon className="h-6 w-6 text-blue-200" />
@@ -302,137 +250,118 @@ const TeacherTimetable: React.FC = () => {
                 </div>
               </div>
             </div>
-
-            <div className="bg-gradient-to-br from-purple-900/70 to-purple-800/40 p-4 rounded-lg border border-purple-700/50 shadow-lg">
-            <div className="bg-gradient-to-br from-purple-900/70 to-purple-800/40 p-4 rounded-lg border border-purple-700/50 shadow-lg">
-                <div className="flex items-center">
-                  <div className="p-3 bg-purple-800 rounded-lg mr-3">
-                    <UserGroupIcon className="h-6 w-6 text-purple-200" />
-                  </div>
-                  <div>
-                    <h3 className="text-purple-200 text-sm font-medium">Teaching Classes</h3>
-                    <p className="text-white text-xl font-bold">{teacherInfo.subjects.length || 3} Subjects</p>
-                  </div>
+            <div className="bg-purple-900/70 p-4 rounded-lg border border-purple-700/50 shadow-lg">
+              <div className="flex items-center">
+                <div className="p-3 bg-purple-800 rounded-lg mr-3">
+                  <UserGroupIcon className="h-6 w-6 text-purple-200" />
                 </div>
-              </div>
-
-              <div className="bg-gradient-to-br from-green-900/70 to-green-800/40 p-4 rounded-lg border border-green-700/50 shadow-lg">
-                <div className="flex items-center">
-                  <div className="p-3 bg-green-800 rounded-lg mr-3">
-                    <MapPinIcon className="h-6 w-6 text-green-200" />
-                  </div>
-                  <div>
-                    <h3 className="text-green-200 text-sm font-medium">Department</h3>
-                    <p className="text-white text-xl font-bold">{teacherInfo.department}</p>
-                  </div>
+                <div>
+                  <h3 className="text-purple-200 text-sm font-medium">Teaching Classes</h3>
+                  <p className="text-white text-xl font-bold">{teacherInfo.subjects.length || 3} Subjects</p>
                 </div>
               </div>
             </div>
-
-            {/* Next Class Card */}
-            {nextClass && (
-              <div className="bg-gradient-to-r from-indigo-900/80 to-purple-900/60 p-4 rounded-lg border border-indigo-700/50 shadow-lg">
-                <h3 className="text-lg font-medium text-white mb-2 flex items-center">
-                  <ClockIcon className="h-5 w-5 mr-2 text-indigo-300" />
-                  Next Class
-                </h3>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-indigo-200 font-medium">{nextClass.session.subject}</p>
-                    <p className="text-gray-300 text-sm">{nextClass.session.className} • {nextClass.session.room}</p>
-                  </div>
-                  <div className="bg-indigo-800/80 px-3 py-1 rounded-lg text-white font-medium">
-                    {nextClass.timeSlot}
-                  </div>
+            <div className="bg-green-900/70 p-4 rounded-lg border border-green-700/50 shadow-lg">
+              <div className="flex items-center">
+                <div className="p-3 bg-green-800 rounded-lg mr-3">
+                  <MapPinIcon className="h-6 w-6 text-green-200" />
                 </div>
-              </div>
-            )}
-
-            {/* Timetable Grid */}
-            <div className="overflow-x-auto mt-4 bg-gray-900/50 rounded-xl border border-gray-800">
-              <table className="min-w-full divide-y divide-gray-800">
-                <thead>
-                  <tr>
-                    <th className="py-3 px-4 bg-gray-800 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
-                      Time
-                    </th>
-                    {daysToDisplay.map((day) => (
-                      <th 
-                        key={day} 
-                        className={`py-3 px-4 bg-gray-800 text-left text-xs font-medium text-gray-400 uppercase tracking-wider ${
-                          day === currentDay ? "bg-gray-700" : ""
-                        }`}
-                      >
-                        {day}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-800">
-                  {TIME_SLOTS.map((timeSlot) => (
-                    <tr key={timeSlot} className="hover:bg-gray-800/60">
-                      <td className="py-3 px-4 whitespace-nowrap text-sm font-medium text-gray-300">
-                        {timeSlot}
-                      </td>
-                      {daysToDisplay.map((day) => {
-                        const session = timetable[day]?.[timeSlot];
-                        return (
-                          <td 
-                            key={`${day}-${timeSlot}`} 
-                            className={`py-2 px-4 whitespace-nowrap text-sm text-gray-300 ${getCellColorClass(session)}`}
-                          >
-                            {session ? (
-                              <div className="p-2">
-                                <div className="font-medium">{session.subject}</div>
-                                {session.type !== "break" && (
-                                  <>
-                                    <div className="text-xs text-gray-400 flex items-center">
-                                      <UserGroupIcon className="h-3 w-3 mr-1" />
-                                      {session.className}
-                                    </div>
-                                    <div className="text-xs text-gray-400 flex items-center">
-                                      <MapPinIcon className="h-3 w-3 mr-1" />
-                                      {session.room}
-                                    </div>
-                                  </>
-                                )}
-                              </div>
-                            ) : (
-                              <div className="p-2 text-gray-500 italic">Free</div>
-                            )}
-                          </td>
-                        );
-                      })}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            {/* Legend */}
-            <div className="mt-4 flex flex-wrap gap-4">
-              <div className="flex items-center">
-                <span className="w-4 h-4 inline-block mr-2 rounded bg-blue-900/60"></span>
-                <span className="text-sm text-gray-400">Lecture</span>
-              </div>
-              <div className="flex items-center">
-                <span className="w-4 h-4 inline-block mr-2 rounded bg-green-900/60"></span>
-                <span className="text-sm text-gray-400">Lab</span>
-              </div>
-              <div className="flex items-center">
-                <span className="w-4 h-4 inline-block mr-2 rounded bg-purple-900/60"></span>
-                <span className="text-sm text-gray-400">Tutorial</span>
-              </div>
-              <div className="flex items-center">
-                <span className="w-4 h-4 inline-block mr-2 rounded bg-gray-700"></span>
-                <span className="text-sm text-gray-400">Break</span>
-              </div>
-              <div className="flex items-center">
-                <span className="w-4 h-4 inline-block mr-2 rounded bg-gray-800/50"></span>
-                <span className="text-sm text-gray-400">Free</span>
+                <div>
+                  <h3 className="text-green-200 text-sm font-medium">Department</h3>
+                  <p className="text-white text-xl font-bold">{teacherInfo.department}</p>
+                </div>
               </div>
             </div>
           </div>
+
+          {/* Next Class */}
+          {nextClass && (
+            <div className="bg-indigo-900/70 p-4 rounded-lg border border-indigo-700/50 shadow-lg">
+              <h3 className="text-lg font-medium text-white mb-2 flex items-center">
+                <ClockIcon className="h-5 w-5 mr-2 text-indigo-300" />
+                Next Class
+              </h3>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-indigo-200 font-medium">{nextClass.session.subject}</p>
+                  <p className="text-gray-300 text-sm">{nextClass.session.className} • {nextClass.session.room}</p>
+                </div>
+                <div className="bg-indigo-800/80 px-3 py-1 rounded-lg text-white font-medium">
+                  {nextClass.timeSlot}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Timetable Grid */}
+          <div className="overflow-x-auto mt-4 bg-gray-900/50 rounded-xl border border-gray-800 w-[1320px]">
+            <table className="min-w-full divide-y divide-gray-800">
+              <thead>
+                <tr>
+                  <th className="py-3 px-4 bg-gray-800 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Time</th>
+                  {daysToDisplay.map(day => (
+                    <th key={day} className={`py-3 px-4 bg-gray-800 text-left text-xs font-medium text-gray-400 uppercase tracking-wider ${day === currentDay ? "bg-gray-700" : ""}`}>{day}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-800">
+                {TIME_SLOTS.map(timeSlot => (
+                  <tr key={timeSlot} className="hover:bg-gray-800/60">
+                    <td className="py-3 px-4 text-sm font-medium text-gray-300">{timeSlot}</td>
+                    {daysToDisplay.map(day => {
+                      const session = timetable[day]?.[timeSlot];
+                      return (
+                        <td key={`${day}-${timeSlot}`} className={`py-2 px-4 text-sm text-gray-300 ${getCellColorClass(session)}`}>
+                          {session ? (
+                            <div className="p-2">
+                              <div className="font-medium">{session.subject}</div>
+                              {session.type !== "break" && (
+                                <>
+                                  <div className="text-xs text-gray-400 flex items-center">
+                                    <UserGroupIcon className="h-3 w-3 mr-1" />{session.className}
+                                  </div>
+                                  <div className="text-xs text-gray-400 flex items-center">
+                                    <MapPinIcon className="h-3 w-3 mr-1" />{session.room}
+                                  </div>
+                                </>
+                              )}
+                            </div>
+                          ) : (
+                            <div className="p-2 text-gray-500 italic">Free</div>
+                          )}
+                        </td>
+                      );
+                    })}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Legend */}
+          <div className="mt-6 flex flex-wrap gap-4">
+            <div className="flex items-center">
+              <span className="w-4 h-4 inline-block mr-2 rounded bg-blue-900/60"></span>
+              <span className="text-sm text-gray-400">Lecture</span>
+            </div>
+            <div className="flex items-center">
+              <span className="w-4 h-4 inline-block mr-2 rounded bg-green-900/60"></span>
+              <span className="text-sm text-gray-400">Lab</span>
+            </div>
+            <div className="flex items-center">
+              <span className="w-4 h-4 inline-block mr-2 rounded bg-purple-900/60"></span>
+              <span className="text-sm text-gray-400">Tutorial</span>
+            </div>
+            <div className="flex items-center">
+              <span className="w-4 h-4 inline-block mr-2 rounded bg-gray-700"></span>
+              <span className="text-sm text-gray-400">Break</span>
+            </div>
+            <div className="flex items-center">
+              <span className="w-4 h-4 inline-block mr-2 rounded bg-gray-800/50"></span>
+              <span className="text-sm text-gray-400">Free</span>
+            </div>
+          </div>
+
         </div>
       </div>
     </div>
