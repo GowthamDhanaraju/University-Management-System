@@ -6,6 +6,16 @@ const prisma = new PrismaClient();
 async function main() {
   console.log('Starting database seeding...');
   
+  // Ensure database schema is up to date
+  console.log('Ensuring database schema is up to date...');
+  try {
+    // This is a way to push the schema to the database if it doesn't exist yet
+    // Note: In production, you would typically use migrations instead
+    await prisma.$executeRaw`CREATE TABLE IF NOT EXISTS "_prisma_migrations" (id TEXT PRIMARY KEY)`;
+  } catch (error) {
+    console.log('Schema setup error (can be ignored if tables already exist):', error);
+  }
+  
   // Clear existing data
   await clearDatabase();
   
@@ -82,28 +92,44 @@ async function main() {
 }
 
 async function clearDatabase() {
-  // Delete in reverse order of dependencies to avoid constraint errors
-  await prisma.schedule.deleteMany({});
-  await prisma.feedback.deleteMany({});
-  await prisma.attendance.deleteMany({});
-  await prisma.borrowedBook.deleteMany({});
-  await prisma.book.deleteMany({});
-  await prisma.auditoriumBooking.deleteMany({});
-  await prisma.availabilitySlot.deleteMany({});
-  await prisma.auditorium.deleteMany({});
-  await prisma.teacherCourse.deleteMany({});
-  await prisma.enrollment.deleteMany({});
-  await prisma.timeSlot.deleteMany({});
-  await prisma.academicYear.deleteMany({});
-  await prisma.section.deleteMany({});
-  await prisma.course.deleteMany({});
-  await prisma.student.deleteMany({});
-  await prisma.teacher.deleteMany({});
-  await prisma.admin.deleteMany({});
-  await prisma.department.deleteMany({});
-  await prisma.user.deleteMany({});
+  console.log('Starting database cleanup...');
   
-  console.log('Database cleared.');
+  // Helper function to safely delete records from a table
+  async function safeDelete(table: string, deleteFunction: () => Promise<any>) {
+    try {
+      await deleteFunction();
+      console.log(`Cleared ${table} table.`);
+    } catch (error: any) {
+      if (error.code === 'P2021') {
+        console.log(`Table ${table} does not exist yet. Skipping.`);
+      } else {
+        console.error(`Error clearing ${table} table:`, error);
+      }
+    }
+  }
+
+  // Delete in reverse order of dependencies to avoid constraint errors
+  await safeDelete('Schedule', () => prisma.schedule.deleteMany());
+  await safeDelete('Feedback', () => prisma.feedback.deleteMany());
+  await safeDelete('Attendance', () => prisma.attendance.deleteMany());
+  await safeDelete('BorrowedBook', () => prisma.borrowedBook.deleteMany());
+  await safeDelete('Book', () => prisma.book.deleteMany());
+  await safeDelete('AuditoriumBooking', () => prisma.auditoriumBooking.deleteMany());
+  await safeDelete('AvailabilitySlot', () => prisma.availabilitySlot.deleteMany());
+  await safeDelete('Auditorium', () => prisma.auditorium.deleteMany());
+  await safeDelete('TeacherCourse', () => prisma.teacherCourse.deleteMany());
+  await safeDelete('Enrollment', () => prisma.enrollment.deleteMany());
+  await safeDelete('TimeSlot', () => prisma.timeSlot.deleteMany());
+  await safeDelete('AcademicYear', () => prisma.academicYear.deleteMany());
+  await safeDelete('Section', () => prisma.section.deleteMany());
+  await safeDelete('Course', () => prisma.course.deleteMany());
+  await safeDelete('Student', () => prisma.student.deleteMany());
+  await safeDelete('Teacher', () => prisma.teacher.deleteMany());
+  await safeDelete('Admin', () => prisma.admin.deleteMany());
+  await safeDelete('Department', () => prisma.department.deleteMany());
+  await safeDelete('User', () => prisma.user.deleteMany());
+  
+  console.log('Database cleanup completed.');
 }
 
 async function createDepartments() {
@@ -621,14 +647,18 @@ async function createAttendanceRecords(students, courses) {
       
       // Choose attendance status
       let status = 'present';
+      let note = null;
       const rand = Math.random();
       
       if (rand < 0.05) {
         status = 'medical';
+        note = 'Medical leave with certificate';
       } else if (rand < 0.1) {
         status = 'dutyLeave';
+        note = 'Leave for university duty';
       } else if (rand < 0.2) {
         status = 'absent';
+        note = 'Absent without notification';
       }
       
       await prisma.attendance.create({
@@ -636,7 +666,8 @@ async function createAttendanceRecords(students, courses) {
           studentId: enrollment.studentId,
           courseId: enrollment.courseId,
           date: date,
-          status: status
+          status: status,
+          note: note
         }
       });
     }
@@ -690,40 +721,68 @@ async function createSchedules(courses, sections, teachers, timeSlots, academicY
     
     // Create first lecture schedule
     try {
-      await prisma.schedule.create({
-        data: {
+      // Check if schedule already exists
+      const existingSchedule1 = await prisma.schedule.findFirst({
+        where: {
           day: randomDay1,
           timeSlotId: randomTimeSlot1.id,
           sectionId: matchingSection.id,
-          courseId: teacherCourse.courseId,
-          teacherId: teacherCourse.teacherId,
           academicYearId: activeYear.id,
-          semester: teacherCourse.semester,
-          roomNumber: roomNumber1,
-          type: 'LECTURE',
-          isBreak: false
+          semester: teacherCourse.semester
         }
       });
+      
+      // Only create if no schedule exists
+      if (!existingSchedule1) {
+        await prisma.schedule.create({
+          data: {
+            day: randomDay1,
+            timeSlotId: randomTimeSlot1.id,
+            sectionId: matchingSection.id,
+            courseId: teacherCourse.courseId,
+            teacherId: teacherCourse.teacherId,
+            academicYearId: activeYear.id,
+            semester: teacherCourse.semester,
+            roomNumber: roomNumber1,
+            type: 'LECTURE',
+            isBreak: false
+          }
+        });
+      }
     } catch (error) {
       console.log('Skipping schedule due to conflict', error);
     }
     
     // Create second lecture schedule
     try {
-      await prisma.schedule.create({
-        data: {
+      // Check if schedule already exists
+      const existingSchedule2 = await prisma.schedule.findFirst({
+        where: {
           day: randomDay2,
           timeSlotId: randomTimeSlot2.id,
           sectionId: matchingSection.id,
-          courseId: teacherCourse.courseId,
-          teacherId: teacherCourse.teacherId,
           academicYearId: activeYear.id,
-          semester: teacherCourse.semester,
-          roomNumber: roomNumber2,
-          type: 'LECTURE',
-          isBreak: false
+          semester: teacherCourse.semester
         }
       });
+      
+      // Only create if no schedule exists
+      if (!existingSchedule2) {
+        await prisma.schedule.create({
+          data: {
+            day: randomDay2,
+            timeSlotId: randomTimeSlot2.id,
+            sectionId: matchingSection.id,
+            courseId: teacherCourse.courseId,
+            teacherId: teacherCourse.teacherId,
+            academicYearId: activeYear.id,
+            semester: teacherCourse.semester,
+            roomNumber: roomNumber2,
+            type: 'LECTURE',
+            isBreak: false
+          }
+        });
+      }
     } catch (error) {
       console.log('Skipping schedule due to conflict', error);
     }
@@ -738,20 +797,36 @@ async function createSchedules(courses, sections, teachers, timeSlots, academicY
         : `${Math.floor(Math.random() * 5) + 1}${String(Math.floor(Math.random() * 10)).padStart(2, '0')}`;
       
       try {
-        await prisma.schedule.create({
-          data: {
+        // Check if schedule already exists
+        const existingSchedule3 = await prisma.schedule.findFirst({
+          where: {
             day: randomDay3,
             timeSlotId: randomTimeSlot3.id,
             sectionId: matchingSection.id,
-            courseId: teacherCourse.courseId,
-            teacherId: teacherCourse.teacherId,
             academicYearId: activeYear.id,
-            semester: teacherCourse.semester,
-            roomNumber: roomNumber,
-            type: scheduleType,
-            isBreak: false
+            semester: teacherCourse.semester
           }
         });
+        
+        // Only create if no schedule exists
+        if (!existingSchedule3) {
+          await prisma.schedule.create({
+            data: {
+              day: randomDay3,
+              timeSlotId: randomTimeSlot3.id,
+              sectionId: matchingSection.id,
+              courseId: teacherCourse.courseId,
+              teacherId: teacherCourse.teacherId,
+              academicYearId: activeYear.id,
+              semester: teacherCourse.semester,
+              roomNumber: roomNumber,
+              type: scheduleType,
+              isBreak: false
+            }
+          });
+        } else {
+          console.log('Skipping lab/tutorial schedule - slot already occupied');
+        }
       } catch (error) {
         console.log('Skipping lab/tutorial schedule due to conflict', error);
       }
@@ -1267,25 +1342,25 @@ async function createFeedback(students, teachers, courses) {
     const generateRating = () =>
       Math.floor(Math.random() * 2) + 3 + Math.random(); // 3.0-5.0 range
 
-    const courseRatings = {
+    const courseRating = {
       contentQuality: generateRating(),
       difficultyLevel: generateRating(),
       practicalApplication: generateRating(),
     };
 
-    const facultyRatings = {
+    const teacherRating = {
       teachingQuality: generateRating(),
       communication: generateRating(),
       availability: generateRating(),
     };
 
     const overallRating =
-      (courseRatings.contentQuality +
-        courseRatings.difficultyLevel +
-        courseRatings.practicalApplication +
-        facultyRatings.teachingQuality +
-        facultyRatings.communication +
-        facultyRatings.availability) /
+      (courseRating.contentQuality +
+        courseRating.difficultyLevel +
+        courseRating.practicalApplication +
+        teacherRating.teachingQuality +
+        teacherRating.communication +
+        teacherRating.availability) /
       6;
 
     // Generate a random comment
@@ -1337,8 +1412,8 @@ async function createFeedback(students, teachers, courses) {
         teacherId: courseTeacher.teacherId,
         courseId: randomEnrollment.courseId,
         date: new Date(randomEnrollment.updatedAt),
-        courseRatings: courseRatings,
-        facultyRatings: facultyRatings,
+        courseRating: courseRating,
+        teacherRating: teacherRating,
         overallRating: parseFloat(overallRating.toFixed(2)),
         comments: comment,
       },

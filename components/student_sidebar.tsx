@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/router";
-import { FiUser, FiBarChart2, FiAward, FiChevronRight } from "react-icons/fi";
+import { FiChevronRight } from "react-icons/fi";
 import {
   ChartBarIcon,
   UserCircleIcon,
   AcademicCapIcon,
-  ClipboardDocumentListIcon,
   ClipboardDocumentCheckIcon,
   ChatBubbleBottomCenterTextIcon,
   BuildingLibraryIcon,
+  ClockIcon,
 } from "@heroicons/react/24/outline";
 import { FaUser } from "react-icons/fa";
 

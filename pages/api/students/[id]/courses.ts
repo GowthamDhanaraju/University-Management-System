@@ -1,57 +1,115 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import prisma from '../../../../lib/prisma';
+import { PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient();
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const { id } = req.query;
-  
   if (req.method !== 'GET') {
-    return res.status(405).json({ success: false, message: 'Method not allowed' });
+    return res.status(405).json({
+      success: false,
+      message: 'Method not allowed'
+    });
   }
 
+  const { id } = req.query;
+  const studentId = Array.isArray(id) ? id[0] : id;
+
   try {
-    // Fetch courses the student is enrolled in
+    // First, try to find the student by various ID fields
+    let student = null;
+    
+    // Try finding by ID directly
+    student = await prisma.student.findUnique({
+      where: { id: studentId }
+    });
+    
+    // If not found, try by studentId field
+    if (!student) {
+      student = await prisma.student.findUnique({
+        where: { studentId: studentId }
+      });
+    }
+    
+    // If still not found, try by userId
+    if (!student) {
+      student = await prisma.student.findFirst({
+        where: { userId: studentId }
+      });
+    }
+    
+    if (!student) {
+      return res.status(404).json({
+        success: false,
+        message: 'Student not found'
+      });
+    }
+
+    // Fetch all enrollments for this student
     const enrollments = await prisma.enrollment.findMany({
       where: {
-        studentId: id as string,
+        studentId: student.id,
+        status: {
+          notIn: ['Withdrawn', 'Cancelled']
+        }
       },
       include: {
         course: {
           include: {
-            department: true,
-            teacherCourses: {
-              include: {
-                teacher: {
-                  include: {
-                    user: true
-                  }
-                },
-              },
-            },
-          },
-        },
+            department: true
+          }
+        }
       },
+      orderBy: {
+        updatedAt: 'desc'
+      }
     });
 
-    // Format the data to match your frontend expectations
+    // Get teachers for these courses
+    const courseIds = enrollments.map(e => e.courseId);
+    const teacherCourses = await prisma.teacherCourse.findMany({
+      where: {
+        courseId: { in: courseIds }
+      },
+      include: {
+        teacher: {
+          include: {
+            user: true
+          }
+        }
+      }
+    });
+
+    // Check for existing feedback
+    const existingFeedback = await prisma.feedback.findMany({
+      where: {
+        studentId: student.id,
+        courseId: { in: courseIds }
+      }
+    });
+
+    // Create a mapping of course IDs to feedback status
+    const feedbackSubmitted = new Map();
+    existingFeedback.forEach(feedback => {
+      feedbackSubmitted.set(feedback.courseId, true);
+    });
+
+    // Format courses with teacher information
     const courses = enrollments.map(enrollment => {
-      const teacherCourse = enrollment.course.teacherCourses[0];
+      // Find teacher for this course
+      const teacherCourse = teacherCourses.find(tc => tc.courseId === enrollment.courseId);
+      
       return {
         id: enrollment.courseId,
-        code: enrollment.course.code,
         title: enrollment.course.name,
-        description: enrollment.course.description || "",
+        code: enrollment.course.code,
         credits: enrollment.course.credits,
         department: enrollment.course.department.name,
         instructorId: teacherCourse?.teacherId || '',
-        instructorName: teacherCourse?.teacher.user?.name || '',
-        instructorDesignation: teacherCourse?.teacher.designation || 'Professor',
-        instructorRating: teacherCourse?.teacher.rating || 4.5,
+        instructorName: teacherCourse?.teacher?.name || teacherCourse?.teacher?.user?.name || 'Instructor',
+        instructorDesignation: teacherCourse?.teacher?.designation || 'Faculty',
         semester: `${enrollment.year} - Semester ${enrollment.semester}`,
-        sections: [enrollment.section || 'A'],
-        hasFeedbackSubmitted: false, // You may need to implement a check for this
-        status: "Enrolled",
-        schedule: enrollment.schedule || "Mon, Wed 10:00-11:30 AM",
-        location: enrollment.location || "Room 101"
+        status: enrollment.status,
+        hasFeedbackSubmitted: feedbackSubmitted.has(enrollment.courseId)
       };
     });
 
@@ -61,9 +119,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
   } catch (error) {
     console.error('Failed to fetch student courses:', error);
-    return res.status(500).json({ 
-      success: false, 
-      message: 'Failed to fetch courses' 
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to fetch courses',
+      error: error instanceof Error ? error.message : 'Unknown error'
     });
   }
 }

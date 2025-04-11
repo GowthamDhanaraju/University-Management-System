@@ -20,6 +20,7 @@ interface Book {
 interface BorrowedBook extends Book {
   borrowDate: string;
   dueDate: string;
+  borrowId?: string;
 }
 
 const StudentBooks = () => {
@@ -39,46 +40,147 @@ const StudentBooks = () => {
       return;
     }
 
-    const fetchBooks = async () => {
+    // Load real data from API endpoints
+    const loadData = async () => {
       try {
         setLoading(true);
+        const userId = localStorage.getItem("userId");
+        
+        if (!userId) {
+          throw new Error("User ID not found in local storage");
+        }
 
         // Fetch available books
-        const booksResponse = await fetch("/api/library/books");
-
+        const booksResponse = await fetch('/api/library/available-books');
+        
         if (!booksResponse.ok) {
-          throw new Error(`Error ${booksResponse.status}: ${booksResponse.statusText}`);
+          throw new Error(`Error fetching books: ${booksResponse.status}`);
         }
-
+        
         const booksData = await booksResponse.json();
-
-        if (booksData.success) {
-          setBooks(booksData.data || []);
-        } else {
-          setError(booksData.message || "Failed to load books");
+        
+        // Fetch borrowed books
+        const borrowedResponse = await fetch(`/api/students/borrowed-books-list?studentId=${userId}`);
+        
+        if (!borrowedResponse.ok) {
+          throw new Error(`Error fetching borrowed books: ${borrowedResponse.status}`);
         }
-
-        // Fetch student's borrowed books
-        const studentId = localStorage.getItem("userId") || "";
-        const borrowedResponse = await fetch(`/api/students/${studentId}/borrowed-books`);
-
-        if (borrowedResponse.ok) {
-          const borrowedData = await borrowedResponse.json();
-
-          if (borrowedData.success) {
-            setBorrowedBooks(borrowedData.data || []);
-          }
+        
+        const borrowedData = await borrowedResponse.json();
+        
+        // Set the state with the data from the API
+        if (booksData.success) {
+          setBooks(booksData.data);
+        }
+        
+        if (borrowedData.success) {
+          setBorrowedBooks(borrowedData.data);
         }
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : "Unknown error";
-        setError(`Failed to fetch books: ${errorMessage}`);
+        setError(`Failed to load book data: ${errorMessage}`);
+        console.error(err);
+        
+        // Fall back to mock data if API fails
+        loadMockData();
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    // Use mock data instead of API calls
+    const loadMockData = () => {
+      try {
+        setLoading(true);
+
+        // Mock books data
+        const mockBooks = [
+          { 
+            id: "1", 
+            title: 'Introduction to Algorithms', 
+            author: 'Thomas H. Cormen', 
+            category: 'Computer Science',
+            isbn: '9780262033848',
+            publisher: 'MIT Press',
+            copies: 10,
+            available: 8,
+            location: 'CS Section, Shelf 1'
+          },
+          { 
+            id: "2", 
+            title: 'Database System Concepts', 
+            author: 'Abraham Silberschatz', 
+            category: 'Computer Science',
+            isbn: '9780073523323',
+            publisher: 'McGraw-Hill',
+            copies: 8,
+            available: 5,
+            location: 'CS Section, Shelf 2'
+          },
+          { 
+            id: "3", 
+            title: 'Digital Design', 
+            author: 'M. Morris Mano', 
+            category: 'Electronics',
+            isbn: '9780132774208',
+            publisher: 'Pearson',
+            copies: 9,
+            available: 7,
+            location: 'EC Section, Shelf 1'
+          },
+          { 
+            id: "4", 
+            title: 'Engineering Mechanics', 
+            author: 'R.C. Hibbeler', 
+            category: 'Mechanical Engineering',
+            isbn: '9780133918922',
+            publisher: 'Pearson',
+            copies: 10,
+            available: 7,
+            location: 'ME Section, Shelf 1'
+          },
+          { 
+            id: "5", 
+            title: 'Deep Learning', 
+            author: 'Ian Goodfellow', 
+            category: 'AI & Data Science',
+            isbn: '9780262035613',
+            publisher: 'MIT Press',
+            copies: 6,
+            available: 4,
+            location: 'AI Section, Shelf 1'
+          }
+        ];
+
+        // Mock borrowed books data
+        const mockBorrowedBooks = [
+          {
+            id: "6",
+            title: 'Operating System Concepts',
+            author: 'Abraham Silberschatz',
+            category: 'Computer Science',
+            isbn: '9781118063330',
+            publisher: 'Wiley',
+            copies: 12,
+            available: 9,
+            location: 'CS Section, Shelf 2',
+            borrowDate: '2023-05-01',
+            dueDate: '2023-05-15'
+          }
+        ];
+
+        setBooks(mockBooks);
+        setBorrowedBooks(mockBorrowedBooks);
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : "Unknown error";
+        setError(`Failed to load book data: ${errorMessage}`);
         console.error(err);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchBooks();
+    loadData();
   }, [router]);
 
   // Generate a due date 14 days from now
@@ -102,28 +204,35 @@ const StudentBooks = () => {
         return;
       }
 
-      const studentId = localStorage.getItem("userId") || "";
-      const response = await fetch("/api/library/borrow", {
-        method: "POST",
+      const userId = localStorage.getItem("userId");
+      
+      if (!userId) {
+        alert("User ID not found. Please log in again.");
+        router.push("/");
+        return;
+      }
+
+      // Call the borrow book API
+      const response = await fetch('/api/library/borrow-book', {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          studentId,
           bookId: book.id,
-          borrowDate: new Date().toISOString().split("T")[0],
-          dueDate: generateDueDate(),
+          studentId: userId
         }),
       });
 
       if (!response.ok) {
-        throw new Error(`Error ${response.status}: ${response.statusText}`);
+        const errorData = await response.json();
+        throw new Error(errorData.message || `Error: ${response.status}`);
       }
 
       const data = await response.json();
-
+      
       if (data.success) {
-        // Update available count in books list
+        // Update the UI
         const updatedBooks = books.map((b) =>
           b.id === book.id ? { ...b, available: b.available - 1 } : b
         );
@@ -133,13 +242,14 @@ const StudentBooks = () => {
           ...book,
           borrowDate: new Date().toISOString().split("T")[0],
           dueDate: generateDueDate(),
+          borrowId: data.data.id
         };
 
         setBooks(updatedBooks);
         setBorrowedBooks([...borrowedBooks, borrowedBook]);
         alert("Book borrowed successfully!");
       } else {
-        alert(data.message || "Failed to borrow book");
+        alert("Failed to borrow book");
       }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Unknown error";
@@ -151,24 +261,36 @@ const StudentBooks = () => {
   // Return a book
   const returnBook = async (bookId: string) => {
     try {
-      const studentId = localStorage.getItem("userId") || "";
-      const response = await fetch("/api/library/return", {
-        method: "POST",
+      // Find book in borrowed books
+      const bookToReturn = borrowedBooks.find(b => b.id === bookId);
+      
+      if (!bookToReturn) {
+        alert("Book not found in your borrowed books");
+        return;
+      }
+
+      const borrowId = bookToReturn.borrowId;
+      
+      // Call return book API
+      const response = await fetch('/api/library/return', {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          studentId,
-          bookId,
+          bookId: bookId,
+          borrowId: borrowId,
+          studentId: localStorage.getItem("userId")
         }),
       });
 
       if (!response.ok) {
-        throw new Error(`Error ${response.status}: ${response.statusText}`);
+        const errorData = await response.json();
+        throw new Error(errorData.message || `Error: ${response.status}`);
       }
 
       const data = await response.json();
-
+      
       if (data.success) {
         // Remove from borrowed books
         const updatedBorrowedBooks = borrowedBooks.filter((b) => b.id !== bookId);
@@ -182,7 +304,7 @@ const StudentBooks = () => {
         setBooks(updatedBooks);
         alert("Book returned successfully!");
       } else {
-        alert(data.message || "Failed to return book");
+        alert("Failed to return book");
       }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Unknown error";
