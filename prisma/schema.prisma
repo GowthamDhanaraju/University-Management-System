@@ -134,6 +134,7 @@ model Attendance {
   courseId  String
   date      DateTime
   status    String
+  note      String?  // Adding note field
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   course    Course   @relation(fields: [courseId], references: [id])
@@ -141,6 +142,7 @@ model Attendance {
 
   @@unique([studentId, courseId, date])
 }
+
 model Feedback {
   id            String   @id @default(cuid())
   studentId     String?  // Student ID (optional if anonymous feedback is allowed)

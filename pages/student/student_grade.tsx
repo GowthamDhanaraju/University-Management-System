@@ -10,11 +10,16 @@ const GradesPage: React.FC = () => {
   const [selectedSemester, setSelectedSemester] = useState("current");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [studentInfo, setStudentInfo] = useState({
+    name: "",
+    id: "",
+    program: ""
+  });
   const [gradesData, setGradesData] = useState<{
     cgpa: number;
     totalCredits: number;
     semesters: Array<{
-      semester: string;
+      semester: number;
       year: number;
       gpa: number;
       courses: Array<{
@@ -23,7 +28,10 @@ const GradesPage: React.FC = () => {
         credits: number;
         grade: string;
         points: number;
+        department?: string;
       }>;
+      totalCredits: number;
+      totalPoints: number;
     }>;
   }>({
     cgpa: 0,
@@ -32,7 +40,7 @@ const GradesPage: React.FC = () => {
   });
 
   const [currentSemester, setCurrentSemester] = useState<{
-    semester: string;
+    semester: number;
     year: number;
     gpa: number;
     courses: Array<{
@@ -41,86 +49,124 @@ const GradesPage: React.FC = () => {
       credits: number;
       grade: string;
       points: number;
+      department?: string;
     }>;
+    totalCredits: number;
+    totalPoints: number;
   }>({
-    semester: "",
+    semester: 0,
     year: 0,
     gpa: 0,
-    courses: []
+    courses: [],
+    totalCredits: 0,
+    totalPoints: 0
   });
 
   useEffect(() => {
     // Authentication check
+    const token = localStorage.getItem("token");
     const storedRole = localStorage.getItem("role");
-    if (storedRole !== "student") {
-      router.push("/");
+    
+    if (!token || storedRole !== "student") {
+      router.push("/login");
       return;
     }
 
-    const fetchGrades = async () => {
-      try {
-        setLoading(true);
-        const studentId = localStorage.getItem("userId") || "";
-        if (!studentId) {
-          throw new Error("Student ID not found");
-        }
-
-        const timestamp = new Date().getTime();
-        const response = await fetch(`/api/students/${studentId}/grades?t=${timestamp}`);
-
-        if (!response.ok) {
-          throw new Error(`Error ${response.status}: ${response.statusText}`);
-        }
-
-        const data = await response.json();
-
-        if (data.success) {
-          setGradesData(data.data);
-          
-          // Set current semester
-          if (data.data.semesters.length > 0) {
-            const currentSem = data.data.semesters.reduce((latest: any, sem: any) => {
-              if (!latest || sem.year > latest.year || 
-                  (sem.year === latest.year && 
-                   (sem.semester === "Fall" && latest.semester === "Spring"))) {
-                return sem;
-              }
-              return latest;
-            }, null);
-            
-            setCurrentSemester(currentSem);
-          }
-        } else {
-          setError(data.message || "Failed to load grades data");
-        }
-      } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'Unknown error';
-        setError(`Failed to fetch grades: ${errorMessage}`);
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchGrades();
+    // Fetch student info and grades
+    fetchStudentData();
   }, [router]);
+
+  const fetchStudentData = async () => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem("token");
+      const studentId = localStorage.getItem("userId");
+      
+      if (!token || !studentId) {
+        throw new Error("Authentication required");
+      }
+      
+      // Get student profile info
+      const profileResponse = await fetch(`/api/students/${studentId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      if (!profileResponse.ok) {
+        throw new Error(`Error ${profileResponse.status}: ${profileResponse.statusText}`);
+      }
+      
+      const profileData = await profileResponse.json();
+      setStudentInfo({
+        name: profileData.user?.name || profileData.name || "Student",
+        id: profileData.studentId || studentId,
+        program: profileData.department?.name || "Program"
+      });
+
+      // Get grades data
+      const gradesResponse = await fetch(`/api/students/${profileData.id || studentId}/grades`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (!gradesResponse.ok) {
+        throw new Error(`Error ${gradesResponse.status}: ${gradesResponse.statusText}`);
+      }
+
+      const data = await gradesResponse.json();
+
+      if (data.success) {
+        setGradesData(data.data);
+        
+        // Set current semester (most recent one)
+        if (data.data.semesters.length > 0) {
+          const sortedSemesters = [...data.data.semesters].sort((a, b) => {
+            if (a.year !== b.year) return b.year - a.year;
+            return b.semester - a.semester;
+          });
+          
+          setCurrentSemester(sortedSemesters[0]);
+          // Default to showing the most recent semester
+          setSelectedSemester(`${sortedSemesters[0].semester}-${sortedSemesters[0].year}`);
+        }
+      } else {
+        setError(data.message || "Failed to load grades data");
+      }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+      setError(`Failed to fetch grades: ${errorMessage}`);
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Map for grade colors
   const gradeColors: Record<string, string> = {
     "A+": "bg-green-500",
     "A": "bg-green-400",
+    "A-": "bg-green-300",
     "B+": "bg-blue-500",
     "B": "bg-blue-400",
+    "B-": "bg-blue-300",
     "C+": "bg-yellow-500",
     "C": "bg-yellow-400",
-    "D": "bg-orange-500",
+    "C-": "bg-yellow-300",
+    "D+": "bg-orange-500",
+    "D": "bg-orange-400",
     "F": "bg-red-500",
     "In Progress": "bg-gray-500"
   };
 
-  const displayedSemester = selectedSemester === "current" ? currentSemester : gradesData.semesters.find(
-    sem => `${sem.semester}-${sem.year}` === selectedSemester
-  ) || currentSemester;
+  // Convert semester number to text
+  const getSemesterText = (sem: number | undefined) => {
+    if (!sem) return "Unknown";
+    return sem % 2 === 1 ? "Spring" : "Fall";
+  };
+
+  const displayedSemester = selectedSemester === "current" 
+    ? currentSemester 
+    : gradesData.semesters.find(
+        sem => `${sem.semester}-${sem.year}` === selectedSemester
+      ) || currentSemester;
 
   if (loading) {
     return (
@@ -131,6 +177,29 @@ const GradesPage: React.FC = () => {
           <div className="flex justify-center items-center h-[80vh]">
             <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-green-500"></div>
             <span className="ml-3 text-xl">Loading grades...</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex min-h-screen bg-gray-900 text-gray-200">
+        <StudentSidebar />
+        <div className="flex-1 p-6 ml-16">
+          <TopBar />
+          <div className="flex justify-center items-center h-[80vh]">
+            <div className="bg-red-500/20 border border-red-500 text-red-100 p-4 rounded-lg max-w-lg">
+              <p className="font-bold text-lg mb-2">Error Loading Grades</p>
+              <p>{error}</p>
+              <button 
+                onClick={() => fetchStudentData()}
+                className="mt-4 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
+              >
+                Try Again
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -162,10 +231,9 @@ const GradesPage: React.FC = () => {
               value={selectedSemester}
               onChange={(e) => setSelectedSemester(e.target.value)}
             >
-              <option value="current">Current Semester</option>
               {gradesData.semesters.map(sem => (
                 <option key={`${sem.semester}-${sem.year}`} value={`${sem.semester}-${sem.year}`}>
-                  Semester {sem.semester} ({sem.year})
+                  {getSemesterText(sem.semester)} {sem.year}
                 </option>
               ))}
             </select>
@@ -176,9 +244,9 @@ const GradesPage: React.FC = () => {
         <div className="bg-gray-800 p-6 rounded-lg shadow-md mt-4 border border-gray-700 ml-6">
           <div className="flex flex-wrap items-center justify-between">
             <div>
-              <h2 className="text-xl font-bold">Student Name</h2>
-              <p className="text-gray-400">Program Name</p>
-              <p className="text-sm text-gray-400">Student ID: ID</p>
+              <h2 className="text-xl font-bold">{studentInfo.name}</h2>
+              <p className="text-gray-400">{studentInfo.program}</p>
+              <p className="text-sm text-gray-400">Student ID: {studentInfo.id}</p>
               <p className="text-sm text-gray-400 mt-1">Completed Credits: {gradesData.totalCredits}</p>
             </div>
             <div className="flex gap-4">
@@ -188,9 +256,9 @@ const GradesPage: React.FC = () => {
               </div>
               <div className="bg-gray-700 p-4 rounded-lg text-center">
                 <span className="block text-blue-400 text-3xl font-bold">
-                  {displayedSemester.gpa > 0 ? displayedSemester.gpa.toFixed(2) : "IP"}
+                  {displayedSemester?.gpa > 0 ? displayedSemester.gpa.toFixed(2) : "IP"}
                 </span>
-                <span className="text-sm text-gray-400">Sem {displayedSemester.semester} GPA</span>
+                <span className="text-sm text-gray-400">{getSemesterText(displayedSemester?.semester)} GPA</span>
               </div>
             </div>
           </div>
@@ -199,8 +267,8 @@ const GradesPage: React.FC = () => {
         {/* Semester Details */}
         <div className="bg-gray-800 p-6 rounded-lg shadow-md mt-6 border border-gray-700 mb-6 ml-6">
           <h3 className="text-xl font-bold mb-4 text-green-500 flex items-center">
-            Semester {displayedSemester.semester} ({displayedSemester.year})
-            {displayedSemester.courses.some(c => c.grade === "In Progress") && 
+            {getSemesterText(displayedSemester?.semester)} {displayedSemester?.year}
+            {displayedSemester?.courses.some(c => c.grade === "In Progress") && 
               <span className="ml-2 text-sm bg-blue-600 px-2 py-1 rounded-full">In Progress</span>
             }
           </h3>
@@ -217,7 +285,7 @@ const GradesPage: React.FC = () => {
                 </tr>
               </thead>
               <tbody>
-                {displayedSemester.courses.map((course, index) => (
+                {displayedSemester?.courses.map((course, index) => (
                   <tr key={course.code} className={index % 2 === 0 ? 'bg-gray-750' : 'bg-gray-800'}>
                     <td className="p-3">{course.code}</td>
                     <td className="p-3">{course.name}</td>
@@ -227,11 +295,11 @@ const GradesPage: React.FC = () => {
                         {course.grade}
                       </span>
                     </td>
-                    <td className="p-3">{course.grade !== "In Progress" ? course.points : "-"}</td>
+                    <td className="p-3">{course.grade !== "In Progress" ? course.points.toFixed(1) : "-"}</td>
                   </tr>
                 ))}
               </tbody>
-              {displayedSemester.gpa > 0 && (
+              {displayedSemester?.gpa > 0 && (
                 <tfoot>
                   <tr className="bg-gray-700">
                     <td colSpan={4} className="p-3 text-right font-bold">Semester GPA:</td>

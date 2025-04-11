@@ -40,30 +40,53 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     let roleSpecificData = {};
     
     if (user.role === 'STUDENT') {
-      const student = await prisma.student.findUnique({
+      const student = await prisma.student.findFirst({
         where: { userId: user.id },
+        include: { department: true }
       });
-      roleSpecificData = { studentId: student?.studentId };
+      
+      if (student) {
+        roleSpecificData = {
+          studentId: student.studentId,
+          department: student.department?.name || '',
+          semester: student.semester
+        };
+      }
     } else if (user.role === 'TEACHER') {
-      const teacher = await prisma.teacher.findUnique({
+      const teacher = await prisma.teacher.findFirst({
         where: { userId: user.id },
+        include: { department: true }
       });
-      roleSpecificData = { teacherId: teacher?.teacherId };
+      
+      if (teacher) {
+        roleSpecificData = {
+          teacherId: teacher.teacherId,
+          department: teacher.department?.name || '',
+          designation: teacher.designation
+        };
+      }
+    } else if (user.role === 'ADMIN') {
+      const admin = await prisma.admin.findFirst({
+        where: { userId: user.id }
+      });
+      
+      if (admin) {
+        roleSpecificData = {
+          adminId: admin.adminId
+        };
+      }
     }
 
-    // Return user data and token
     return res.status(200).json({
       token,
-      user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        ...roleSpecificData
-      }
+      role: user.role.toLowerCase(),
+      userId: user.id,
+      userName: user.name,
+      email: user.email,
+      ...roleSpecificData
     });
   } catch (error) {
     console.error('Login error:', error);
-    return res.status(500).json({ message: 'An error occurred during login' });
+    return res.status(500).json({ message: 'Internal server error' });
   }
 }

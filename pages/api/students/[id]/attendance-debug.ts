@@ -17,47 +17,28 @@ export default async function handler(
   const { id } = req.query;
   const studentId = Array.isArray(id) ? id[0] : id;
 
-  console.log(`Fetching attendance for student: ${studentId}`);
-
   try {
-    // First verify if the student exists - try multiple lookup methods
-    let student = null;
-    
-    // Try finding by ID first
-    student = await prisma.student.findUnique({
-      where: { id: studentId as string },
+    // First, check if the student exists
+    const student = await prisma.student.findUnique({
+      where: {
+        id: studentId as string,
+      },
     });
-    
-    // If not found, try finding by studentId field
-    if (!student) {
-      student = await prisma.student.findUnique({
-        where: { studentId: studentId as string },
-      });
-    }
-    
-    // If still not found, check if it might be the userId
-    if (!student) {
-      student = await prisma.student.findUnique({
-        where: { userId: studentId as string },
-      });
-    }
 
     if (!student) {
-      console.log(`Student with ID/studentId/userId ${studentId} not found`);
       return res.status(404).json({
         success: false,
         message: 'Student not found'
       });
     }
-    
-    // For consistent behavior in the rest of the code, use the actual student.id
-    const studentDbId = student.id;
-    console.log(`Found student: ${student.name} (ID: ${studentDbId})`);
 
+    // Check if there are any attendance records in the database at all
+    const totalAttendanceCount = await prisma.attendance.count();
+    
     // Get all attendance records for this student
     const attendanceRecords = await prisma.attendance.findMany({
       where: {
-        studentId: studentDbId,
+        studentId: studentId as string,
       },
       include: {
         course: true,
@@ -67,20 +48,56 @@ export default async function handler(
       },
     });
 
-    console.log(`Found ${attendanceRecords.length} attendance records for student ${studentId}`);
-
+    // If no attendance records were found, but there are records in the database,
+    // let's check if this student has any enrollments
     if (attendanceRecords.length === 0) {
-      // If no attendance records, return empty array with success status
-      console.log('No attendance records found, returning empty array');
+      const enrollments = await prisma.enrollment.findMany({
+        where: {
+          studentId: studentId as string,
+        },
+        include: {
+          course: true,
+        },
+      });
+
+      // If the student has enrollments but no attendance records, we need to create some
+      if (enrollments.length > 0) {
+        // This would be the place to seed some attendance records if needed
+        // For now, let's just return diagnostic information
+        return res.status(200).json({
+          success: true,
+          message: 'No attendance records found for this student, but student has enrollments',
+          diagnosticInfo: {
+            studentExists: !!student,
+            studentId: student.id,
+            totalAttendanceRecordsInDb: totalAttendanceCount,
+            enrollmentsCount: enrollments.length,
+            enrollments: enrollments.map(e => ({
+              courseCode: e.course.code,
+              courseName: e.course.name,
+              status: e.status
+            }))
+          }
+        });
+      }
+
       return res.status(200).json({
         success: true,
-        data: []
+        message: 'No attendance records or enrollments found for this student',
+        data: [],
+        diagnosticInfo: {
+          studentExists: !!student,
+          studentId: student.id,
+          totalAttendanceRecordsInDb: totalAttendanceCount
+        }
       });
     }
 
+    // Process the attendance records as in the original API
+    // ... (rest of the code from the original handler)
+    
     // Get unique courses from attendance records
     const courseIds = [...new Set(attendanceRecords.map(record => record.courseId))];
-    console.log(`Student has attendance for ${courseIds.length} unique courses`);
     
     // Get section information for each course
     const teacherCourses = await prisma.teacherCourse.findMany({
@@ -116,7 +133,7 @@ export default async function handler(
       }
       
       // Create entry for course if it doesn't exist
-      const courseKey = `${semester}-${year}-${record.courseId}`;
+      const courseKey = `${key}-${record.courseId}`;
       if (!courseAttendanceMap.has(courseKey)) {
         // Find section for this course
         const teacherCourse = teacherCourses.find(tc => tc.courseId === record.courseId);
@@ -145,7 +162,7 @@ export default async function handler(
       
       courseAttendance.totalClasses++;
       
-      // Update counters based on status
+      // Update counters based on status - make case insensitive
       const status = record.status.toUpperCase();
       if (status === 'PRESENT') courseAttendance.present++;
       else if (status === 'ABSENT') courseAttendance.absent++;
@@ -155,7 +172,6 @@ export default async function handler(
 
     // Calculate attendance percentages and add courses to semester groups
     courseAttendanceMap.forEach((courseAttendance, key) => {
-      console.log(`Processing attendance for course key: ${key}`);
       const [semester, year, courseId] = key.split('-');
       
       // Calculate attendance percentage
@@ -170,12 +186,7 @@ export default async function handler(
       courseAttendance.records.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
       
       // Add course to appropriate semester
-      const semesterKey = `${semester}-${year}`;
-      if (semesterGroups.has(semesterKey)) {
-        semesterGroups.get(semesterKey).courses.push(courseAttendance);
-      } else {
-        console.log(`Warning: Could not find semester group for key ${semesterKey}`);
-      }
+      semesterGroups.get(`${semester}-${year}`).courses.push(courseAttendance);
     });
 
     // Convert Map to array for response
@@ -190,45 +201,13 @@ export default async function handler(
       return b.semester - a.semester;
     });
 
-    console.log(`Returning ${semesterData.length} semesters with attendance data`);
-    
-    // If no records were actually processed, provide a fallback
-    if (semesterData.length === 0) {
-      console.log("Warning: No semester data was created despite having attendance records");
-      
-      // Create mock attendance data as a fallback for debugging
-      // This helps identify whether the issue is with processing or with the UI
-      const fallbackData = [{
-        semester: 1,
-        year: new Date().getFullYear(),
-        courses: [{
-          id: "fallback-course-1",
-          code: "CSE101",
-          name: "Introduction to Programming",
-          section: "A",
-          records: [
-            { date: new Date().toISOString(), status: "PRESENT", note: "" },
-            { date: new Date(Date.now() - 86400000).toISOString(), status: "ABSENT", note: "Without notification" }
-          ],
-          present: 1,
-          absent: 1,
-          medical: 0,
-          dutyLeave: 0,
-          totalClasses: 2,
-          attendancePercentage: 50
-        }]
-      }];
-      
-      return res.status(200).json({
-        success: true,
-        data: fallbackData,
-        message: "Using fallback data - actual records processing failed"
-      });
-    }
-
     return res.status(200).json({
       success: true,
-      data: semesterData
+      data: semesterData,
+      diagnosticInfo: {
+        totalRecordsFound: attendanceRecords.length,
+        uniqueCourses: courseIds.length
+      }
     });
   } catch (error) {
     console.error('Error fetching attendance:', error);

@@ -32,7 +32,7 @@ export interface DecodedToken {
 }
 
 export function verifyToken(token?: string): DecodedToken | null {
-  if (!token) return null;
+  if (!token || typeof token !== 'string') return null;
   
   try {
     return jwt.verify(token, JWT_SECRET) as DecodedToken;
@@ -40,6 +40,10 @@ export function verifyToken(token?: string): DecodedToken | null {
     console.error('Token verification error:', error);
     return null;
   }
+}
+
+export function generateToken(payload: { id: string; email: string; role: string }): string {
+  return jwt.sign(payload, JWT_SECRET, { expiresIn: '24h' });
 }
 
 export async function authenticate(
@@ -61,6 +65,7 @@ export async function authenticate(
       return res.status(401).json({ message: 'Invalid token' });
     }
     
+    // When finding the user, ensure to check all casing variants of role
     const user = await prisma.user.findUnique({
       where: { id: decoded.id },
     });
@@ -79,7 +84,7 @@ export async function authenticate(
     next();
   } catch (error) {
     console.error('Authentication error:', error);
-    return res.status(401).json({ message: 'Invalid token' });
+    return res.status(401).json({ message: 'Authentication failed' });
   }
 }
 

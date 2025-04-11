@@ -1,92 +1,70 @@
-import { NextApiRequest, NextApiResponse } from 'next'
-import { prisma } from '../../../lib/prisma'
-import { withAuth, AuthenticatedRequest } from '../../../lib/auth'
+import type { NextApiRequest, NextApiResponse } from 'next';
+import { prisma } from '../../../lib/prisma';
+import { verifyToken } from '../../../lib/auth';
 
-async function handler(
-  req: AuthenticatedRequest,
+export default async function handler(
+  req: NextApiRequest,
   res: NextApiResponse
 ) {
+  // Only allow GET requests
+  if (req.method !== 'GET') {
+    return res.status(405).json({ message: 'Method not allowed' });
+  }
+
   try {
-    const { id } = req.query
-    const studentId = String(id)
-
-    switch (req.method) {
-      case 'GET':
-        // Get a specific student with related data
-        const student = await prisma.student.findUnique({
-          where: { id: studentId },
-          include: {
-            user: {
-              select: {
-                id: true,
-                email: true,
-                role: true,
-                createdAt: true
-              }
-            },
-            department: true,
-            enrollments: {
-              include: {
-                course: true
-              }
-            },
-            attendance: true
-          }
-        })
-
-        if (!student) {
-          return res.status(404).json({ error: 'Student not found' })
-        }
-        
-        // Authorization check removed - allow access to all students
-        
-        return res.status(200).json(student)
-
-      case 'PUT':
-        // Authorization check removed - allow all updates
-        const targetStudent = await prisma.student.findUnique({
-          where: { id: studentId },
-          select: { userId: true }
-        })
-        
-        if (!targetStudent) {
-          return res.status(404).json({ error: 'Student not found' })
-        }
-        
-        const { dob, joinDate, ...updateData } = req.body
-        
-        const updatedStudent = await prisma.student.update({
-          where: { id: studentId },
-          data: {
-            ...updateData,
-            ...(dob && { dob: new Date(dob) }),
-            ...(joinDate && { joinDate: new Date(joinDate) })
-          }
-        })
-        
-        return res.status(200).json(updatedStudent)
-
-      case 'DELETE':
-        // Authorization check removed - allow all deletions
-        const deletedStudent = await prisma.student.delete({
-          where: { id: studentId }
-        })
-        
-        return res.status(200).json(deletedStudent)
-        
-      default:
-        res.setHeader('Allow', ['GET', 'PUT', 'DELETE'])
-        return res.status(405).end(`Method ${req.method} Not Allowed`)
+    // Authentication check
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ message: 'Unauthorized: Missing or invalid token format' });
     }
+
+    const token = authHeader.split(' ')[1];
+    const decoded = verifyToken(token);
+
+    if (!decoded) {
+      return res.status(401).json({ message: 'Unauthorized: Invalid token' });
+    }
+
+    // Get student ID from the URL
+    const { id } = req.query;
+    
+    if (!id || typeof id !== 'string') {
+      return res.status(400).json({ message: 'Student ID is required' });
+    }
+
+    // Authorization check - only allow access to own profile or by admin/teacher
+    if (decoded.role !== 'ADMIN' && decoded.role !== 'TEACHER' && decoded.id !== id) {
+      return res.status(403).json({ message: 'Forbidden: You can only view your own profile' });
+    }
+
+    // Get student data
+    const student = await prisma.student.findFirst({
+      where: {
+        OR: [
+          { id: id },
+          { userId: id }
+        ]
+      },
+      include: {
+        department: true,
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            role: true
+          }
+        }
+      }
+    });
+
+    if (!student) {
+      return res.status(404).json({ message: 'Student not found' });
+    }
+
+    return res.status(200).json(student);
   } catch (error) {
-    console.error('Request error:', error)
-    
-    if (error.code === 'P2025') {
-      return res.status(404).json({ error: 'Student not found' })
-    }
-    
-    return res.status(500).json({ error: 'Internal Server Error', details: error.message })
+    console.error('Error fetching student:', error);
+    return res.status(500).json({ message: 'An error occurred while fetching student data' });
   }
 }
-
-export default withAuth(handler)

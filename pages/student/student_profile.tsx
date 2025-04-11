@@ -56,7 +56,18 @@ const StudentProfile: React.FC = () => {
     try {
       setLoading(true);
       const studentId = localStorage.getItem("userId") || "";
-      const response = await fetch(`/api/students/${studentId}/profile`);
+      const token = localStorage.getItem("token");
+      
+      if (!token) {
+        router.push("/login");
+        return;
+      }
+      
+      const response = await fetch(`/api/students/${studentId}/profile`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
       
       if (!response.ok) {
         throw new Error(`Error ${response.status}: ${response.statusText}`);
@@ -67,6 +78,10 @@ const StudentProfile: React.FC = () => {
       if (data.success) {
         setProfileData(data.data);
         setEditData(data.data);
+        
+        // Update local storage with latest name and email
+        localStorage.setItem("userName", data.data.personal.name || "Student");
+        localStorage.setItem("userEmail", data.data.contact.email || "student@university.edu");
       } else {
         setError(data.message || "Failed to load profile");
       }
@@ -92,10 +107,18 @@ const StudentProfile: React.FC = () => {
     try {
       setLoading(true);
       const studentId = localStorage.getItem("userId") || "";
+      const token = localStorage.getItem("token");
+      
+      if (!token) {
+        router.push("/login");
+        return;
+      }
+      
       const response = await fetch(`/api/students/${studentId}/profile`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
           personal: editData.personal,
@@ -113,6 +136,11 @@ const StudentProfile: React.FC = () => {
       if (data.success) {
         setProfileData({...editData});
         setIsEditing(false);
+        
+        // Update local storage with new name and email
+        localStorage.setItem("userName", editData.personal.name || "Student");
+        localStorage.setItem("userEmail", editData.contact.email || "student@university.edu");
+        
         alert("Profile updated successfully!");
       } else {
         alert(data.message || "Failed to update profile");

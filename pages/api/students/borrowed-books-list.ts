@@ -9,24 +9,39 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    const { id } = req.query;
+    const { studentId } = req.query;
 
-    if (!id || typeof id !== "string") {
-      return res.status(400).json({ success: false, message: "Invalid student ID" });
+    if (!studentId || typeof studentId !== "string") {
+      return res.status(400).json({ success: false, message: "Student ID is required" });
+    }
+
+    // Find student by user ID
+    let student = await prisma.student.findFirst({
+      where: { userId: studentId }
+    });
+
+    // If not found, check if studentId is an actual student ID (not user ID)
+    if (!student) {
+      student = await prisma.student.findUnique({
+        where: { id: studentId }
+      });
+    }
+
+    if (!student) {
+      return res.status(404).json({ success: false, message: "Student not found" });
     }
 
     // Fetch borrowed books for this student
     const borrowedBooks = await prisma.borrowedBook.findMany({
       where: {
-        student: {
-          user: {
-            id: id
-          }
-        },
+        studentId: student.id,
         status: "active" // Only show currently borrowed books
       },
       include: {
         book: true
+      },
+      orderBy: {
+        borrowDate: 'desc'
       }
     });
 
@@ -42,7 +57,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       available: item.book.available,
       location: item.book.location,
       borrowDate: item.borrowDate.toISOString().split('T')[0],
-      dueDate: item.dueDate.toISOString().split('T')[0]
+      dueDate: item.dueDate.toISOString().split('T')[0],
+      borrowId: item.id // Include the borrow record ID for return operations
     }));
 
     return res.status(200).json({ success: true, data: formattedBooks });

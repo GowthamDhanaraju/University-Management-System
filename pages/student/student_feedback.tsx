@@ -40,7 +40,7 @@ const StarRating: React.FC<StarRatingProps> = ({ rating, setRating, maxRating = 
 
 const StudentFeedback: React.FC = () => {
   const router = useRouter();
-  const [faculties, setFaculties] = useState<{ id: number | string, name: string, course: string }[]>([]);
+  const [faculties, setFaculties] = useState<{ id: number | string, courseId: number | string, name: string, course: string }[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
@@ -94,6 +94,7 @@ const StudentFeedback: React.FC = () => {
           // Extract unique faculty members from enrolled courses
           const facultyList = data.data.map((course: any) => ({
             id: course.instructorId,
+            courseId: course.id, // Store the actual course ID
             name: course.instructorName,
             course: course.title
           }));
@@ -163,17 +164,28 @@ const StudentFeedback: React.FC = () => {
       setSubmitting(true);
       const studentId = localStorage.getItem("userId") || "";
       
-      // Find faculty ID
+      // Find faculty information
       const faculty = faculties.find(f => f.name === selectedFaculty);
       if (!faculty) {
         throw new Error("Faculty not found");
       }
       
+      // Ensure all required ratings are provided
+      const allRatingsProvided = Object.values(courseRatings).every(rating => rating > 0) && 
+                                 Object.values(facultyRatings).every(rating => rating > 0) &&
+                                 overallRating > 0;
+      
+      if (!allRatingsProvided) {
+        alert("Please provide all ratings before submitting");
+        setSubmitting(false);
+        return;
+      }
+      
       const feedbackData = {
         studentId,
-        courseId: faculty.id, // This should be the actual course ID
-        courseName: selectedCourse,
+        courseId: faculty.courseId, // Use the proper course ID
         facultyId: faculty.id,
+        courseName: selectedCourse,
         facultyName: selectedFaculty,
         courseRatings,
         facultyRatings,
@@ -190,11 +202,11 @@ const StudentFeedback: React.FC = () => {
         body: JSON.stringify(feedbackData),
       });
       
-      if (!response.ok) {
-        throw new Error(`Error ${response.status}: ${response.statusText}`);
-      }
-      
       const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.message || `Error ${response.status}: ${response.statusText}`);
+      }
       
       if (data.success) {
         alert("Feedback submitted successfully!");
