@@ -1,87 +1,56 @@
-import { NextApiRequest, NextApiResponse } from 'next';
-import prisma from '../../../lib/prisma';
-import bcrypt from 'bcrypt';
+import { NextApiRequest, NextApiResponse } from "next";
+import { PrismaClient } from "@prisma/client";
 
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse
-) {
-  // GET all students
-  if (req.method === 'GET') {
-    try {
-      const students = await prisma.student.findMany({
-        include: {
-          user: {
-            select: {
-              id: true,
-              name: true,
-              email: true,
-            },
-          },
-        },
-      });
+const prisma = new PrismaClient();
 
-      return res.status(200).json({ 
-        success: true, 
-        data: students 
-      });
-    } catch (error) {
-      console.error(error);
-      return res.status(500).json({ error: 'Failed to fetch students' });
-    }
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  if (req.method !== "GET") {
+    return res.status(405).json({ success: false, message: "Method not allowed" });
   }
 
-  // POST create a new student
-  if (req.method === 'POST') {
-    try {
-      const { 
-        name, 
-        email, 
-        password, 
-        dept, 
-        year, 
-        dob, 
-        phone, 
-        address 
-      } = req.body;
-
-      // Create user first
-      const user = await prisma.user.create({
-        data: {
-          name,
-          email,
-          password: await bcrypt.hash(password, 10),
-          role: 'student',
+  try {
+    const students = await prisma.student.findMany({
+      select: {
+        id: true,
+        studentId: true,
+        name: true,
+        departmentId: true,
+        department: {
+          select: {
+            name: true,
+            code: true,
+          }
         },
-      });
-
-      // Then create student profile
-      const student = await prisma.student.create({
-        data: {
-          userId: user.id,
-          dept,
-          year,
-          dob: new Date(dob),
-          phone,
-          address,
-        },
-      });
-
-      return res.status(201).json({ 
-        success: true, 
-        data: {
-          id: student.id,
-          name,
-          email,
-          dept,
-          year,
+        user: {
+          select: {
+            name: true,
+            email: true,
+          }
         }
-      });
-    } catch (error) {
-      console.error(error);
-      return res.status(500).json({ error: 'Failed to create student' });
-    }
-  }
+      },
+      orderBy: {
+        name: 'asc'
+      }
+    });
 
-  return res.status(405).json({ error: 'Method not allowed' });
+    // Format the data to make it easier to use
+    const formattedStudents = students.map(student => ({
+      id: student.id,
+      studentId: student.studentId,
+      name: student.name || student.user.name,
+      email: student.user.email,
+      department: student.department.code
+    }));
+
+    return res.status(200).json({ 
+      success: true, 
+      data: formattedStudents 
+    });
+  } catch (error) {
+    console.error("Error fetching students:", error);
+    return res.status(500).json({ 
+      success: false, 
+      message: "Failed to fetch students" 
+    });
+  }
 }

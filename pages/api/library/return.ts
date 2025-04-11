@@ -9,59 +9,33 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    const { studentId, bookId } = req.body;
+    const { borrowId, bookId } = req.body;
 
-    if (!studentId || !bookId) {
-      return res.status(400).json({ success: false, message: 'Missing required fields' });
+    if (!borrowId || !bookId) {
+      return res.status(400).json({ success: false, message: 'Borrow ID and Book ID are required' });
     }
 
-    // First, get the student by userId or other identifiers
-    let student = null;
-    
-    // Try finding by ID directly
-    student = await prisma.student.findUnique({
-      where: { id: studentId }
-    });
-    
-    // If not found, try by studentId field
-    if (!student) {
-      student = await prisma.student.findUnique({
-        where: { studentId: studentId }
-      });
-    }
-    
-    // If still not found, try by userId
-    if (!student) {
-      student = await prisma.student.findFirst({
-        where: { userId: studentId }
-      });
-    }
-
-    if (!student) {
-      return res.status(404).json({ success: false, message: 'Student not found' });
-    }
-
-    // Find the active borrowed book record
-    const borrowedBook = await prisma.borrowedBook.findFirst({
-      where: {
-        bookId,
-        studentId: student.id,
-        status: 'active',
-      },
+    // Find the borrowed book record
+    const borrowedBook = await prisma.borrowedBook.findUnique({
+      where: { id: borrowId },
       include: {
         book: true,
       },
     });
 
     if (!borrowedBook) {
-      return res.status(404).json({ success: false, message: 'No active borrow record found for this book' });
+      return res.status(404).json({ success: false, message: 'Borrow record not found' });
+    }
+
+    if (borrowedBook.status !== 'active') {
+      return res.status(400).json({ success: false, message: 'This book has already been returned or is not in an active state' });
     }
 
     // Start a transaction to ensure data consistency
     const result = await prisma.$transaction([
       // Update the borrowed book record
       prisma.borrowedBook.update({
-        where: { id: borrowedBook.id },
+        where: { id: borrowId },
         data: {
           status: 'returned',
           returnDate: new Date(),

@@ -205,6 +205,7 @@ const StudentBooks = () => {
       }
 
       const userId = localStorage.getItem("userId");
+      const studentId = localStorage.getItem("studentId");
       
       if (!userId) {
         alert("User ID not found. Please log in again.");
@@ -220,7 +221,8 @@ const StudentBooks = () => {
         },
         body: JSON.stringify({
           bookId: book.id,
-          studentId: userId
+          studentId: studentId || userId, // Use studentId if available, fallback to userId
+          isUserIdNotStudentId: !studentId // Flag to indicate if we're sending userId instead of studentId
         }),
       });
 

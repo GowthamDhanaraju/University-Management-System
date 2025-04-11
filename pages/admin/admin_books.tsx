@@ -31,6 +31,12 @@ interface BorrowedBook {
   };
 }
 
+interface Student {
+  id: string;
+  name: string;
+  studentId: string;
+}
+
 const BookManagement: React.FC = () => {
   const [books, setBooks] = useState<Book[]>([]);
   const [loading, setLoading] = useState(true);
@@ -53,6 +59,10 @@ const BookManagement: React.FC = () => {
   const [borrowedBooks, setBorrowedBooks] = useState<BorrowedBook[]>([]);
   const [selectedBook, setSelectedBook] = useState<Book | null>(null);
   const [borrowHistoryVisible, setBorrowHistoryVisible] = useState(false);
+  const [students, setStudents] = useState<Student[]>([]);
+  const [selectedStudent, setSelectedStudent] = useState<string>("");
+  const [showBorrowModal, setShowBorrowModal] = useState(false);
+  const [borrowingBook, setBorrowingBook] = useState<Book | null>(null);
 
   useEffect(() => {
     const fetchBooks = async () => {
@@ -100,6 +110,7 @@ const BookManagement: React.FC = () => {
         setLoading(false);
         // Attempt to fetch borrowed books data regardless of books fetch success
         fetchBorrowedBooks();
+        fetchStudents();
       }
     };
     
@@ -129,6 +140,33 @@ const BookManagement: React.FC = () => {
         }
       } catch (err) {
         console.error("Error fetching borrowed books:", err);
+      }
+    };
+
+    const fetchStudents = async () => {
+      try {
+        const response = await fetch('/api/students', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (!response.ok) {
+          console.warn(`Failed to fetch students: ${response.status}`);
+          return;
+        }
+
+        const data = await response.json();
+        if (data.success && Array.isArray(data.data)) {
+          setStudents(data.data);
+        } else if (Array.isArray(data)) {
+          setStudents(data);
+        } else {
+          console.warn("Could not retrieve students data");
+        }
+      } catch (err) {
+        console.error("Error fetching students:", err);
       }
     };
     
@@ -332,6 +370,133 @@ const BookManagement: React.FC = () => {
     }
   };
 
+  const startBorrowing = (book: Book) => {
+    if (book.available <= 0) {
+      alert("No copies available for borrowing");
+      return;
+    }
+    setBorrowingBook(book);
+    setShowBorrowModal(true);
+  };
+
+  const handleBorrow = async () => {
+    if (!borrowingBook || !selectedStudent) {
+      alert("Please select a student to borrow the book");
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/library/borrow-book', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          bookId: borrowingBook.id,
+          studentId: selectedStudent
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || `Error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      
+      if (data.success) {
+        // Update the UI - reduce available copies for the borrowed book
+        setBooks(books.map(book => 
+          book.id === borrowingBook.id 
+            ? { ...book, available: book.available - 1 } 
+            : book
+        ));
+
+        // Update borrowed books list
+        fetchBorrowedBooks();
+        
+        alert("Book borrowed successfully!");
+        setShowBorrowModal(false);
+        setBorrowingBook(null);
+        setSelectedStudent("");
+      } else {
+        alert("Failed to borrow book");
+      }
+    } catch (err) {
+      alert(`Error borrowing book: ${err instanceof Error ? err.message : 'Unknown error'}`);
+      console.error(err);
+    }
+  };
+
+  const handleReturn = async (borrowId: string, bookId: string) => {
+    try {
+      const response = await fetch('/api/library/return', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          borrowId: borrowId,
+          bookId: bookId
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || `Error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      
+      if (data.success) {
+        // Update the UI - increase available copies for the returned book
+        setBooks(books.map(book => 
+          book.id === bookId 
+            ? { ...book, available: book.available + 1 } 
+            : book
+        ));
+
+        // Update borrowed books list
+        setBorrowedBooks(borrowedBooks.filter(item => item.id !== borrowId));
+        
+        alert("Book returned successfully!");
+      } else {
+        alert("Failed to return book");
+      }
+    } catch (err) {
+      alert(`Error returning book: ${err instanceof Error ? err.message : 'Unknown error'}`);
+      console.error(err);
+    }
+  };
+
+  const fetchBorrowedBooks = async () => {
+    try {
+      const response = await fetch('/api/library/borrowed-books', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (!response.ok) {
+        console.warn(`Failed to fetch borrowed books: ${response.status}`);
+        return;
+      }
+      
+      const data = await response.json();
+      
+      if (data.success && Array.isArray(data.data)) {
+        setBorrowedBooks(data.data);
+      } else if (Array.isArray(data)) {
+        setBorrowedBooks(data);
+      } else {
+        console.warn("Could not retrieve borrowed books data");
+      }
+    } catch (err) {
+      console.error("Error fetching borrowed books:", err);
+    }
+  };
+
   const filteredBooks = books.filter((book) =>
     `${book.title} ${book.author} ${book.category}`
       .toLowerCase()
@@ -394,160 +559,306 @@ const BookManagement: React.FC = () => {
             Library Management
           </Typography>
         </div>
-      <div className="ml-16 p-6 w-full text-gray-200 ml-4">
-        <div className="bg-gray-800 p-6 rounded-lg shadow-md mb-8">
-          <h2 className="text-lg font-semibold mb-4">
-            {editingBook ? "Edit Book" : "Add Book"}
-          </h2>
-  
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
-            <input
-              name="title"
-              placeholder="Title"
-              value={editingBook ? editingBook.title : newBook.title}
-              onChange={handleInputChange}
-              className="p-2 rounded bg-gray-700 text-white"
-            />
-            <input
-              name="author"
-              placeholder="Author"
-              value={editingBook ? editingBook.author : newBook.author}
-              onChange={handleInputChange}
-              className="p-2 rounded bg-gray-700 text-white"
-            />
-            <input
-              name="category"
-              placeholder="Category"
-              value={editingBook ? editingBook.category : newBook.category}
-              onChange={handleInputChange}
-              className="p-2 rounded bg-gray-700 text-white"
-            />
-            <input
-              name="copies"
-              type="number"
-              placeholder="Copies"
-              value={editingBook ? editingBook.copies : newBook.copies}
-              onChange={handleInputChange}
-              className="p-2 rounded bg-gray-700 text-white"
-            />
-            <input
-              name="available"
-              type="number"
-              placeholder="Available"
-              value={editingBook ? editingBook.available : newBook.available}
-              onChange={handleInputChange}
-              className="p-2 rounded bg-gray-700 text-white"
-            />
-            <input
-              name="isbn"
-              placeholder="ISBN"
-              value={editingBook ? editingBook.isbn : newBook.isbn}
-              onChange={handleInputChange}
-              className="p-2 rounded bg-gray-700 text-white"
-            />
-            <input
-              name="publisher"
-              placeholder="Publisher"
-              value={editingBook ? editingBook.publisher : newBook.publisher}
-              onChange={handleInputChange}
-              className="p-2 rounded bg-gray-700 text-white"
-            />
-            <input
-              name="location"
-              placeholder="Location"
-              value={editingBook ? editingBook.location : newBook.location}
-              onChange={handleInputChange}
-              className="p-2 rounded bg-gray-700 text-white"
-            />
-          </div>
-  
-          <div className="mt-4 flex space-x-2">
-            {editingBook ? (
-              <button
-                onClick={saveEdits}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"
-              >
-                Save
-              </button>
-            ) : (
-              <button
-                onClick={addBook}
-                className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded"
-              >
-                Add Book
-              </button>
-            )}
+
+        <div className="mt-4 ml-10 mb-6">
+          <div className="flex space-x-4">
             <button
-              onClick={() => {
-                setShowModal(false);
-                setEditingBook(null);
-              }}
-              className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded"
+              onClick={() => setActiveTab('books')}
+              className={`px-4 py-2 rounded-lg ${
+                activeTab === 'books' 
+                  ? 'bg-purple-600 text-white' 
+                  : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+              }`}
             >
-              Cancel
+              Manage Books
+            </button>
+            <button
+              onClick={() => setActiveTab('borrowed')}
+              className={`px-4 py-2 rounded-lg ${
+                activeTab === 'borrowed' 
+                  ? 'bg-purple-600 text-white' 
+                  : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+              }`}
+            >
+              Borrowed Books
             </button>
           </div>
         </div>
-  
-        <div className="bg-gray-800 p-6 rounded shadow-md">
-          <h2 className="text-lg font-semibold mb-4">Book List</h2>
-          <input
-            type="text"
-            placeholder="🔍 Search by title, author, or category..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="mb-4 w-full p-2 bg-gray-700 text-white rounded"
-          />
-  
-          {books.length === 0 && !loading ? (
-            <div className="text-center py-4 text-gray-400">
-              No books found. Add some books to get started.
-            </div>
-          ) : (
-            Object.entries(groupedBooks).map(([category, booksInCategory]) => (
-              <div key={category} className="mb-6">
-                <h3 className="text-indigo-400 font-semibold mb-2">📘 {category}</h3>
-                <table className="w-full text-left table-auto">
-                  <thead className="text-indigo-300">
-                    <tr>
-                      <th className="p-2">Title</th>
-                      <th className="p-2">Author</th>
-                      <th className="p-2">Available</th>
-                      <th className="p-2">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {booksInCategory.map((book) => (
-                      <tr key={book.id} className="border-t border-gray-700">
-                        <td className="p-2">{book.title}</td>
-                        <td className="p-2">{book.author}</td>
-                        <td className="p-2">
-                          {book.available}/{book.copies}
-                        </td>
-                        <td className="p-2">
-                          <button
-                            onClick={() => startEditing(book)}
-                            className="text-blue-400 hover:underline mr-4"
-                          >
-                            Edit
-                          </button>
-                          <button
-                            onClick={() => deleteBook(book.id)}
-                            className="text-red-400 hover:underline"
-                          >
-                            Delete
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+
+      <div className="ml-16 p-6 w-full text-gray-200 ml-4">
+        {activeTab === 'books' && (
+          <>
+            <div className="bg-gray-800 p-6 rounded-lg shadow-md mb-8">
+              <h2 className="text-lg font-semibold mb-4">
+                {editingBook ? "Edit Book" : "Add Book"}
+              </h2>
+      
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
+                <input
+                  name="title"
+                  placeholder="Title"
+                  value={editingBook ? editingBook.title : newBook.title}
+                  onChange={handleInputChange}
+                  className="p-2 rounded bg-gray-700 text-white"
+                />
+                <input
+                  name="author"
+                  placeholder="Author"
+                  value={editingBook ? editingBook.author : newBook.author}
+                  onChange={handleInputChange}
+                  className="p-2 rounded bg-gray-700 text-white"
+                />
+                <input
+                  name="category"
+                  placeholder="Category"
+                  value={editingBook ? editingBook.category : newBook.category}
+                  onChange={handleInputChange}
+                  className="p-2 rounded bg-gray-700 text-white"
+                />
+                <input
+                  name="copies"
+                  type="number"
+                  placeholder="Copies"
+                  value={editingBook ? editingBook.copies : newBook.copies}
+                  onChange={handleInputChange}
+                  className="p-2 rounded bg-gray-700 text-white"
+                />
+                <input
+                  name="available"
+                  type="number"
+                  placeholder="Available"
+                  value={editingBook ? editingBook.available : newBook.available}
+                  onChange={handleInputChange}
+                  className="p-2 rounded bg-gray-700 text-white"
+                />
+                <input
+                  name="isbn"
+                  placeholder="ISBN"
+                  value={editingBook ? editingBook.isbn : newBook.isbn}
+                  onChange={handleInputChange}
+                  className="p-2 rounded bg-gray-700 text-white"
+                />
+                <input
+                  name="publisher"
+                  placeholder="Publisher"
+                  value={editingBook ? editingBook.publisher : newBook.publisher}
+                  onChange={handleInputChange}
+                  className="p-2 rounded bg-gray-700 text-white"
+                />
+                <input
+                  name="location"
+                  placeholder="Location"
+                  value={editingBook ? editingBook.location : newBook.location}
+                  onChange={handleInputChange}
+                  className="p-2 rounded bg-gray-700 text-white"
+                />
               </div>
-            ))
-          )}
-        </div>
+      
+              <div className="mt-4 flex space-x-2">
+                {editingBook ? (
+                  <button
+                    onClick={saveEdits}
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"
+                  >
+                    Save
+                  </button>
+                ) : (
+                  <button
+                    onClick={addBook}
+                    className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded"
+                  >
+                    Add Book
+                  </button>
+                )}
+                <button
+                  onClick={() => {
+                    setShowModal(false);
+                    setEditingBook(null);
+                  }}
+                  className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+      
+            <div className="bg-gray-800 p-6 rounded shadow-md">
+              <h2 className="text-lg font-semibold mb-4">Book List</h2>
+              <input
+                type="text"
+                placeholder="🔍 Search by title, author, or category..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="mb-4 w-full p-2 bg-gray-700 text-white rounded"
+              />
+      
+              {books.length === 0 && !loading ? (
+                <div className="text-center py-4 text-gray-400">
+                  No books found. Add some books to get started.
+                </div>
+              ) : (
+                Object.entries(groupedBooks).map(([category, booksInCategory]) => (
+                  <div key={category} className="mb-6">
+                    <h3 className="text-indigo-400 font-semibold mb-2">📘 {category}</h3>
+                    <table className="w-full text-left table-auto">
+                      <thead className="text-indigo-300">
+                        <tr>
+                          <th className="p-2">Title</th>
+                          <th className="p-2">Author</th>
+                          <th className="p-2">Available</th>
+                          <th className="p-2">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {booksInCategory.map((book) => (
+                          <tr key={book.id} className="border-t border-gray-700">
+                            <td className="p-2">{book.title}</td>
+                            <td className="p-2">{book.author}</td>
+                            <td className="p-2">
+                              {book.available}/{book.copies}
+                            </td>
+                            <td className="p-2 flex space-x-2">
+                              <button
+                                onClick={() => startEditing(book)}
+                                className="text-blue-400 hover:underline"
+                              >
+                                Edit
+                              </button>
+                              <button
+                                onClick={() => deleteBook(book.id)}
+                                className="text-red-400 hover:underline"
+                              >
+                                Delete
+                              </button>
+                              <button
+                                onClick={() => startBorrowing(book)}
+                                disabled={book.available <= 0}
+                                className={`${
+                                  book.available > 0 
+                                    ? "text-green-400 hover:underline" 
+                                    : "text-gray-500 cursor-not-allowed"
+                                }`}
+                              >
+                                Borrow
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ))
+              )}
+            </div>
+          </>
+        )}
+
+        {activeTab === 'borrowed' && (
+          <div className="bg-gray-800 p-6 rounded shadow-md">
+            <h2 className="text-lg font-semibold mb-4">Currently Borrowed Books</h2>
+            
+            {borrowedBooks.length === 0 ? (
+              <div className="text-center py-4 text-gray-400">
+                No books are currently borrowed.
+              </div>
+            ) : (
+              <table className="w-full text-left table-auto">
+                <thead className="text-indigo-300">
+                  <tr>
+                    <th className="p-2">Book Title</th>
+                    <th className="p-2">Student</th>
+                    <th className="p-2">Borrow Date</th>
+                    <th className="p-2">Due Date</th>
+                    <th className="p-2">Status</th>
+                    <th className="p-2">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {borrowedBooks.map((borrowed) => (
+                    <tr key={borrowed.id} className="border-t border-gray-700">
+                      <td className="p-2">{borrowed.book?.title || "Unknown Book"}</td>
+                      <td className="p-2">{borrowed.student?.name || "Unknown Student"}</td>
+                      <td className="p-2">{new Date(borrowed.borrowDate).toLocaleDateString()}</td>
+                      <td className="p-2">{new Date(borrowed.dueDate).toLocaleDateString()}</td>
+                      <td className="p-2">
+                        <span className={`px-2 py-1 rounded-full text-xs ${
+                          borrowed.status === 'active' 
+                            ? 'bg-green-900 text-green-300' 
+                            : borrowed.status === 'overdue'
+                            ? 'bg-red-900 text-red-300'
+                            : 'bg-gray-700 text-gray-300'
+                        }`}>
+                          {borrowed.status.charAt(0).toUpperCase() + borrowed.status.slice(1)}
+                        </span>
+                      </td>
+                      <td className="p-2">
+                        {borrowed.status === 'active' && (
+                          <button
+                            onClick={() => handleReturn(borrowed.id, borrowed.bookId)}
+                            className="text-yellow-400 hover:underline"
+                          >
+                            Return
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+        )}
       </div>
     </div>
+
+    {/* Borrow Modal */}
+    {showBorrowModal && borrowingBook && (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="bg-gray-800 p-6 rounded-lg shadow-xl max-w-md w-full">
+          <h2 className="text-xl font-semibold mb-4">Borrow Book: {borrowingBook.title}</h2>
+          
+          <div className="mb-4">
+            <label className="block text-gray-300 mb-2">Select Student:</label>
+            <select
+              value={selectedStudent}
+              onChange={(e) => setSelectedStudent(e.target.value)}
+              className="w-full p-2 bg-gray-700 text-white rounded"
+            >
+              <option value="">-- Select Student --</option>
+              {students.map(student => (
+                <option key={student.id} value={student.id}>
+                  {student.name} ({student.studentId})
+                </option>
+              ))}
+            </select>
+          </div>
+          
+          <div className="flex justify-end space-x-3 mt-6">
+            <button
+              onClick={() => {
+                setShowBorrowModal(false);
+                setBorrowingBook(null);
+                setSelectedStudent("");
+              }}
+              className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleBorrow}
+              disabled={!selectedStudent}
+              className={`px-4 py-2 rounded ${
+                selectedStudent 
+                  ? "bg-green-600 text-white hover:bg-green-700" 
+                  : "bg-gray-500 text-gray-300 cursor-not-allowed"
+              }`}
+            >
+              Confirm Borrow
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
   </div>
   );
 };

@@ -1,4 +1,4 @@
-import { NextApiRequest, NextApiResponse } from 'next';
+import type { NextApiRequest, NextApiResponse } from 'next';
 import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
@@ -20,37 +20,44 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             }
           }
         },
+        orderBy: { date: 'desc' }
       });
       
-      // Format feedback response
+      // Format feedback response with student data fetched separately
       const formattedFeedback = await Promise.all(feedback.map(async (item) => {
-        // Get student name if not anonymous
+        // Determine student name, handling anonymous feedback
         let studentName = 'Anonymous Student';
         if (item.studentId) {
           const student = await prisma.student.findUnique({
             where: { id: item.studentId },
-            select: { name: true }
+            include: {
+              user: {
+                select: {
+                  name: true
+                }
+              }
+            }
           });
           if (student) {
-            studentName = student.name;
+            studentName = student.name || student.user.name || 'Anonymous Student';
           }
         }
         
         return {
           id: item.id,
           subject: item.course.name,
-          section: 'All Sections', // Default section
+          section: 'All Sections',
           date: item.date.toISOString().split('T')[0],
           rating: item.overallRating,
           comment: item.comments || '',
-          studentId: item.studentId,
+          studentId: item.studentId || '',
           studentName: studentName,
           courseId: item.courseId,
           courseName: item.course.name,
           teacherId: item.teacherId,
           teacherName: item.teacher.name || item.teacher.user?.name || 'Unknown Teacher',
-          courseRatings: item.courseRating,
-          facultyRatings: item.teacherRating,
+          courseRating: item.courseRating,
+          teacherRating: item.teacherRating,
           overallRating: item.overallRating
         };
       }));
@@ -60,6 +67,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       console.error('Error fetching feedback:', error);
       return res.status(500).json({ success: false, message: 'Error fetching feedback data' });
     }
+  } else if (req.method === 'POST') {
+    // Keep existing POST method handler
+    // ...existing code...
   } else {
     return res.status(405).json({ success: false, message: 'Method not allowed' });
   }

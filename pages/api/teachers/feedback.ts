@@ -26,6 +26,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             }
           }
         },
+        orderBy: { date: 'desc' }
       });
       
       // Format feedback response
@@ -35,10 +36,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         if (item.studentId) {
           const student = await prisma.student.findUnique({
             where: { id: item.studentId },
-            select: { name: true }
+            include: {
+              user: {
+                select: {
+                  name: true
+                }
+              }
+            }
           });
           if (student) {
-            studentName = student.name;
+            studentName = student.name || student.user.name || 'Anonymous Student';
           }
         }
         

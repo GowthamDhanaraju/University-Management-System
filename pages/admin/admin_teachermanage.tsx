@@ -165,15 +165,22 @@ const AdminTFeedback: React.FC = () => {
                 try {
                   console.log(`Fetching individual feedback for teacher ${teacher.id}`);
                   const feedbackResponse = await fetch(`/api/teachers/${teacher.id}/feedback`);
+                  
                   if (feedbackResponse.ok) {
-                    const feedbackData = await feedback.json();
+                    const feedbackData = await feedbackResponse.json();
+                    console.log(`Response from /api/teachers/${teacher.id}/feedback:`, feedbackData);
+                    
                     if (feedbackData.success) {
                       feedback = feedbackData.data || [];
-                      console.log(`Fetched individual feedback:`, feedbackData.data);
+                      console.log(`Fetched ${feedback.length} feedback entries for teacher ${teacher.id}`);
+                    } else {
+                      console.error(`API returned error: ${feedbackData.message || "Unknown error"}`);
                     }
+                  } else {
+                    console.error(`Failed to fetch feedback: HTTP ${feedbackResponse.status}`);
                   }
                 } catch (e) {
-                  console.error(`Failed to fetch feedback for teacher ${teacher.id}`, e);
+                  console.error(`Exception when fetching feedback for teacher ${teacher.id}:`, e);
                 }
               }
 
@@ -193,12 +200,12 @@ const AdminTFeedback: React.FC = () => {
                   comment: fb.comment || fb.comments || "",
                   studentId: fb.studentId || "",
                   studentName: studentName,
-                  courseRatings: fb.courseRatings || {
+                  courseRatings: fb.courseRatings || fb.courseRating || {
                     contentQuality: 0,
                     difficultyLevel: 0,
                     practicalApplication: 0
                   },
-                  facultyRatings: fb.facultyRatings || {
+                  facultyRatings: fb.facultyRatings || fb.teacherRating || {
                     teachingQuality: 0,
                     communication: 0,
                     availability: 0
@@ -633,13 +640,16 @@ const AdminTFeedback: React.FC = () => {
                         ? teachers[selectedTeacherIndex].feedback
                         : teachers[selectedTeacherIndex].feedback!.slice(0, 10)
                       ).map((feedback) => (
-                        <div key={feedback.id} className="bg-gray-700 p-3 rounded-lg border border-gray-600">
+                        <div key={feedback.id} className="bg-gray-700 p-4 rounded-lg border border-gray-600">
                           <div className="flex justify-between items-start flex-wrap gap-2">
                             <div>
-                              <p className="text-green-300 text-sm font-medium">
+                              <p className="text-green-300 text-sm font-medium flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                </svg>
                                 {feedback.studentName && feedback.studentName !== 'Anonymous' 
                                   ? feedback.studentName.replace(/\(\)/g, '').trim() 
-                                  : 'Anonymous'}
+                                  : 'Anonymous Student'}
                               </p>
                               <p className="text-blue-300 text-xs mt-1 flex items-center">
                                 <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -647,26 +657,42 @@ const AdminTFeedback: React.FC = () => {
                                 </svg>
                                 {formatDate(feedback.date)}
                               </p>
-                              <p className="text-gray-400 text-xs mt-1">
-                                {feedback.subject} {feedback.section && `(${feedback.section})`}
+                              <p className="text-gray-400 text-xs mt-1 flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                                </svg>
+                                {feedback.subject} {feedback.section && feedback.section !== 'All Sections' && `(${feedback.section})`}
                               </p>
                             </div>
                             <div className="flex items-center">
-                              <span className="bg-blue-900 text-white px-3 py-1 rounded text-md font-bold">
+                              <span className="bg-blue-900 text-white px-3 py-1 rounded text-md font-bold flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1 text-yellow-300" fill="currentColor" viewBox="0 0 24 24">
+                                  <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+                                </svg>
                                 {(feedback.overallRating || feedback.rating).toFixed(1)}
                               </span>
                             </div>
                           </div>
                           
                           <div className="mt-3 bg-gray-800 p-3 rounded-md">
-                            <p className="text-gray-300 font-semibold text-sm mb-1">Comment:</p>
-                            <p className="text-gray-200 break-words text-sm">{feedback.comment}</p>
+                            <p className="text-gray-300 font-semibold text-sm mb-1 flex items-center">
+                              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+                              </svg>
+                              Feedback:
+                            </p>
+                            <p className="text-gray-200 break-words text-sm">{feedback.comment || "No comments provided."}</p>
                           </div>
                         </div>
                       ))}
                     </div>
                   ) : (
-                    <p className="text-gray-400">No feedback available for this teacher.</p>
+                    <p className="text-gray-400 flex items-center p-4 bg-gray-800 rounded-lg">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      No feedback available for this teacher.
+                    </p>
                   )}
                 </div>
               )}

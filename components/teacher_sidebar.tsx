@@ -1,12 +1,41 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
-import {  ChartBarIcon, UserIcon,  CalendarIcon,   BuildingOfficeIcon, ClipboardDocumentCheckIcon, ChatBubbleLeftRightIcon } from "@heroicons/react/24/outline";
+import { ChartBarIcon, UserIcon, CalendarIcon, BuildingOfficeIcon, ClipboardDocumentCheckIcon } from "@heroicons/react/24/outline";
 import { FiChevronRight } from "react-icons/fi";
 import { FaUser } from "react-icons/fa";
+import axios from "axios";
+
+interface TeacherProfile {
+  name: string;
+  email: string;
+}
 
 const TeacherSidebar: React.FC = () => {
   const router = useRouter();
   const currentPath = router.pathname;
+  const [profile, setProfile] = useState<TeacherProfile>({ name: "", email: "" });
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) return;
+
+        const response = await axios.get("/api/teacher/profile", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        setProfile({
+          name: response.data.name || "Teacher Name",
+          email: response.data.email || "teacher@university.edu",
+        });
+      } catch (error) {
+        console.error("Failed to fetch teacher profile:", error);
+      }
+    };
+
+    fetchProfile();
+  }, []);
 
   const navigateTo = (path: string) => {
     router.push(path);
@@ -18,7 +47,6 @@ const TeacherSidebar: React.FC = () => {
     { icon: <CalendarIcon className="w-6 h-6" />, path: "/teacher/teacher_timetable", label: "Timetable" },
     { icon: <BuildingOfficeIcon className="w-6 h-6" />, path: "/teacher/teacher_auditorium", label: "Auditorium" },
     { icon: <ClipboardDocumentCheckIcon className="w-6 h-6" />, path: "/teacher/teacher_attendance", label: "Attendance" },
-    { icon: <ChatBubbleLeftRightIcon className="w-6 h-6" />, path: "/teacher/teacher_feedback", label: "Feedback" },
   ];
 
   return (
@@ -53,8 +81,8 @@ const TeacherSidebar: React.FC = () => {
             <FaUser className="text-white" />
           </div>
           <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-            <p className="font-medium">Teacher Name</p>
-            <p className="text-xs text-gray-400">teacher@university.edu</p>
+            <p className="font-medium">{profile.name}</p>
+            <p className="text-xs text-gray-400">{profile.email}</p>
           </div>
         </div>
       </div>

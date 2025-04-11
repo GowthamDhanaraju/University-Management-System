@@ -9,7 +9,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    const { bookId, studentId } = req.body;
+    const { bookId, studentId, isUserIdNotStudentId } = req.body;
 
     if (!bookId || !studentId) {
       return res.status(400).json({ 
@@ -34,10 +34,27 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
     }
 
-    // Get student record
-    const student = await prisma.student.findFirst({
-      where: { userId: studentId }
-    });
+    // Get student record - handle the case where studentId might be a userId
+    let student;
+    
+    if (isUserIdNotStudentId) {
+      // If what we got is a userId, find the student by userId
+      student = await prisma.student.findFirst({
+        where: { userId: studentId }
+      });
+    } else {
+      // Otherwise try to find the student directly by student ID
+      student = await prisma.student.findUnique({
+        where: { id: studentId }
+      });
+    }
+
+    // If still not found and looks like a userId, try again
+    if (!student && !isUserIdNotStudentId && studentId.startsWith('cl')) {
+      student = await prisma.student.findFirst({
+        where: { userId: studentId }
+      });
+    }
 
     if (!student) {
       return res.status(404).json({ success: false, message: "Student not found" });
@@ -55,7 +72,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (existingBorrow) {
       return res.status(400).json({
         success: false,
-        message: "You have already borrowed this book"
+        message: "This student has already borrowed this book"
       });
     }
 
