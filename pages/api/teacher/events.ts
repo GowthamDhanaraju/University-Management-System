@@ -1,5 +1,4 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import prisma from '../../../lib/prisma';
 import { verifyToken } from '../../../lib/auth';
 
 export default async function handler(
@@ -33,45 +32,41 @@ export default async function handler(
   }
 
   try {
-    // In a production app, you would fetch the teacher's courses from the database
-    // For now, we'll return dummy data to unblock the frontend
-    const courses = [
+    // In a real application, you would fetch events from a database
+    // For now, we'll return dummy data
+    const events = [
       {
-        id: "cs101",
-        code: "CS101",
-        name: "Introduction to Programming",
-        sections: ["CSE-A", "CSE-B"],
-        students: 45
+        id: "1",
+        title: "Faculty Meeting",
+        date: new Date(Date.now() + 86400000).toISOString(),
+        location: "Conference Room 302"
       },
       {
-        id: "cs202",
-        code: "CS202",
-        name: "Data Structures",
-        sections: ["CSE-A"],
-        students: 38
+        id: "2",
+        title: "Research Symposium",
+        date: new Date(Date.now() + 259200000).toISOString(),
+        location: "Main Auditorium"
       },
       {
-        id: "cs303",
-        code: "CS303",
-        name: "Database Systems",
-        sections: ["CSE-C"],
-        students: 42
+        id: "3",
+        title: "Course Planning Session",
+        date: new Date(Date.now() + 604800000).toISOString(),
+        location: "Department Office"
       },
       {
-        id: "ai401",
-        code: "AI401",
-        name: "Artificial Intelligence",
-        sections: ["AID-A"],
-        students: 35
+        id: "4",
+        title: "Department Workshop",
+        date: new Date(Date.now() + 345600000).toISOString(),
+        location: "Room 105"
       }
     ];
 
-    return res.status(200).json(courses);
+    return res.status(200).json(events);
   } catch (error) {
-    console.error('Error fetching teacher courses:', error);
+    console.error('Error fetching teacher events:', error);
     return res.status(500).json({
       success: false,
-      message: 'Failed to fetch courses'
+      message: 'Failed to fetch events'
     });
   }
 }
