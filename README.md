@@ -1,4 +1,10 @@
-<<<<<<< HEAD
+The Final-ui branch has the complete version of the project.
+
+The university management system hopes to fill in the relation in between Student,Teacher and the management(admins).
+
+Furthur details of the project and its backbone are mentioned in the Presentation and Report
+
+
 # S4_UMS
 =======
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/pages/api-reference/create-next-app).
