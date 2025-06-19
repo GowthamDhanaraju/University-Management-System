@@ -6,7 +6,7 @@ const prisma = new PrismaClient();
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') {
     try {
-      // Get all feedback entries
+      // Get all feedback entries with related course, teacher, and student (including user)
       const feedback = await prisma.feedback.findMany({
         include: {
           course: true,
@@ -18,18 +18,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 }
               }
             }
-          }
-        },
-        orderBy: { date: 'desc' }
-      });
-      
-      // Format feedback response with student data fetched separately
-      const formattedFeedback = await Promise.all(feedback.map(async (item) => {
-        // Determine student name, handling anonymous feedback
-        let studentName = 'Anonymous Student';
-        if (item.studentId) {
-          const student = await prisma.student.findUnique({
-            where: { id: item.studentId },
+          },
+          student: {
             include: {
               user: {
                 select: {
@@ -37,12 +27,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 }
               }
             }
-          });
-          if (student) {
-            studentName = student.name || student.user.name || 'Anonymous Student';
           }
+        },
+        orderBy: { date: 'desc' }
+      });
+      
+      // Format feedback response with student data (no extra DB calls)
+      const formattedFeedback = feedback.map((item) => {
+        let studentName = 'Anonymous Student';
+        if (item.student) {
+          studentName = item.student.name || (item.student.user && item.student.user.name) || 'Anonymous Student';
         }
-        
         return {
           id: item.id,
           subject: item.course.name,
@@ -55,12 +50,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           courseId: item.courseId,
           courseName: item.course.name,
           teacherId: item.teacherId,
-          teacherName: item.teacher.name || item.teacher.user?.name || 'Unknown Teacher',
+          teacherName: item.teacher.name || (item.teacher.user && item.teacher.user.name) || 'Unknown Teacher',
           courseRating: item.courseRating,
           teacherRating: item.teacherRating,
           overallRating: item.overallRating
         };
-      }));
+      });
       
       return res.status(200).json({ success: true, data: formattedFeedback });
     } catch (error) {
